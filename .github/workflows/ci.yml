@@ -11,14 +11,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install
-        run: '[ -f package.json ] && npm ci || echo "no package.json yet"'
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - name: Typecheck
-        run: '[ -f package.json ] && npm run --if-present typecheck || true'
+        run: npm run typecheck
       - name: Lint
-        run: '[ -f package.json ] && npm run --if-present lint || true'
-      - name: Test
-        run: '[ -f package.json ] && npm run --if-present test || true'
+        run: npm run lint
+      - name: Unit tests
+        run: npm test -- --ci
       - name: Dependency audit
-        run: '[ -f package.json ] && npm audit --omit=dev --audit-level=high || true'
+        run: npm audit --omit=dev --audit-level=high
+
+  # Proves user A cannot read or write user B's data (pgTAP, local Supabase in Docker).
+  rls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start local Supabase (database + auth only)
+        run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: RLS tests
+        run: npx supabase test db
