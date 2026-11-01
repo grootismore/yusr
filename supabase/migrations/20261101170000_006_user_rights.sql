@@ -134,9 +134,6 @@ revoke all on function public.purge_due_account_deletions() from public, anon, a
 grant execute on function public.request_account_deletion() to authenticated;
 grant execute on function public.cancel_account_deletion() to authenticated;
 
-create extension if not exists pg_cron with schema pg_catalog;
-select cron.schedule('purge-due-account-deletions', '17 3 * * *', 'select public.purge_due_account_deletions()');
-
 -- ---------------------------------------------------------------- export
 
 create function public.export_my_data()
