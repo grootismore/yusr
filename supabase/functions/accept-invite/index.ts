@@ -56,8 +56,10 @@ Deno.serve(async (req) => {
       req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
     const result = await handleInvite({ method: req.method, body, ip }, db);
     return new Response(JSON.stringify(result.json), { status: result.status, headers });
-  } catch {
-    // Never echo internals (or the token) back to a public caller.
+  } catch (error) {
+    // Log why (a status line like "database request failed (403)", never the token or any data),
+    // but never echo internals back to a public caller.
+    console.error('accept-invite failed:', error instanceof Error ? error.message : 'unknown error');
     return new Response(JSON.stringify({ ok: false, error: 'server_error' }), { status: 500, headers });
   }
 });
