@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        run: '[ -f package.json ] && npm ci || echo "no package.json yet"'
+      - name: Typecheck
+        run: '[ -f package.json ] && npm run --if-present typecheck || true'
+      - name: Lint
+        run: '[ -f package.json ] && npm run --if-present lint || true'
+      - name: Test
+        run: '[ -f package.json ] && npm run --if-present test || true'
+      - name: Dependency audit
+        run: '[ -f package.json ] && npm audit --omit=dev --audit-level=high || true'

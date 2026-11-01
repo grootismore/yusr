@@ -1,0 +1,24 @@
+node_modules/
+.expo/
+dist/
+web-build/
+ios/
+android/
+*.log
+.DS_Store
+
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
