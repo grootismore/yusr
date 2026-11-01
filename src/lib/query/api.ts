@@ -20,6 +20,11 @@ export interface RowApi {
   /** The caller's own profile row. */
   fetchProfile(): Promise<Record<string, unknown> | null>;
   updateProfile(patch: Record<string, unknown>): Promise<void>;
+  /** User rights: JSON export of the caller's data, and account deletion with a 7-day grace period. */
+  exportMyData(): Promise<Record<string, unknown>>;
+  fetchDeletionDate(): Promise<string | null>;
+  requestAccountDeletion(): Promise<string>;
+  cancelAccountDeletion(): Promise<void>;
 }
 
 export interface DebtSecrets {
@@ -105,6 +110,25 @@ export const createRowApi = (getClient: () => SupabaseClient): RowApi => ({
     const { data: auth } = await getClient().auth.getUser();
     if (!auth.user) throw new Error('not signed in');
     const { error } = await getClient().from('profiles').update(patch).eq('user_id', auth.user.id);
+    if (error) throw error;
+  },
+  async exportMyData() {
+    const { data, error } = await getClient().rpc('export_my_data');
+    if (error) throw error;
+    return data as Record<string, unknown>;
+  },
+  async fetchDeletionDate() {
+    const { data, error } = await getClient().from('deletion_requests').select('scheduled_for').maybeSingle();
+    if (error) throw error;
+    return (data?.scheduled_for as string | undefined) ?? null;
+  },
+  async requestAccountDeletion() {
+    const { data, error } = await getClient().rpc('request_account_deletion');
+    if (error) throw error;
+    return data as string;
+  },
+  async cancelAccountDeletion() {
+    const { error } = await getClient().rpc('cancel_account_deletion');
     if (error) throw error;
   },
 });

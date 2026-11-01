@@ -28,6 +28,10 @@ const fakeApi = () => ({
   logRegisterShared: jest.fn(async (_sections: string[]): Promise<void> => undefined),
   fetchProfile: jest.fn(async (): Promise<Record<string, unknown> | null> => null),
   updateProfile: jest.fn(async (_patch: Record<string, unknown>): Promise<void> => undefined),
+  exportMyData: jest.fn(async (): Promise<Record<string, unknown>> => ({})),
+  fetchDeletionDate: jest.fn(async (): Promise<string | null> => null),
+  requestAccountDeletion: jest.fn(async (): Promise<string> => '2026-11-08T00:00:00Z'),
+  cancelAccountDeletion: jest.fn(async (): Promise<void> => undefined),
 });
 
 const upsertObserver = (client: QueryClient) =>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { I18nManager, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { DeletionBanner } from '@/features/account/DeletionBanner';
 import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
 import { planInput } from '@/features/debts/logic';
 import { planDebts } from '@/features/debts/plan';
@@ -63,6 +64,7 @@ export default function HomeScreen() {
   if (accounts.active.length === 0) {
     return (
       <Screen>
+        <DeletionBanner />
         <EmptyState
           title={t('home.noAccountsTitle')}
           body={t('home.noAccountsBody')}
@@ -92,6 +94,7 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      <DeletionBanner />
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <HeaderIconButton
           icon={rtl ? 'chevron-forward' : 'chevron-back'}

@@ -2,23 +2,23 @@
 
 Nothing ships to the App Store or Play Store until every item is done, with evidence (link, screenshot or test). Legal documents (1 to 4) need review by a Maldivian lawyer.
 
-- [ ] 1. Privacy policy: public URL, linked in stores and in-app, English + Dhivehi. Covers the register, trusted contacts, release flow, owner-access limitation, retention, and every processor (Supabase, Resend, Expo push, Sentry).
-- [ ] 2. Terms of service: guidance-only disclaimer (no fatwa, financial or legal advice), release flow and its limits, acceptable use, liability.
-- [ ] 3. Refund policy: state the app is free; if anything is ever paid, link Apple and Google refund rules.
-- [ ] 4. Cookie policy: for the marketing site and the trusted-contact web view only. List each cookie or storage item.
-- [ ] 5. Cookie consent banner: only on web surfaces; essential-only storage preferred; any non-essential item is opt-in with equal-weight Accept and Reject.
-- [ ] 6. Form consents: unticked boxes, separate consent for terms and privacy, specific consent when inviting a trusted contact, timestamped consent records.
-- [ ] 7. Collect only needed data: field-by-field review of the data model; optional fields optional; no bank passwords, card or ID numbers.
-- [ ] 8. Audit third-party SDKs: list each SDK and its data use; no ad or tracking SDKs; no amounts, lenders or notes in analytics or crash events; store privacy labels match.
-- [ ] 9. Remove dark patterns: no guilt wording, streaks, fake urgency, pre-ticked boxes, hidden decline or cancel.
-- [ ] 10. No hidden fees: free, or price shown before commitment.
-- [ ] 11. No fake reviews: honest tester reviews only, no rating-conditioned incentives.
-- [ ] 12. No unsupported claims: no "fully secure" or "100% private"; state the owner-access limit; Islamic content framed as guidance with scholar review recorded.
-- [ ] 13. Alt text: accessibility labels for every icon, chart and image; alt text on website and store screenshots.
-- [ ] 14. Color contrast: WCAG AA (4.5:1 text) in light and dark, including Dhivehi text.
-- [ ] 15. Keyboard navigation: external keyboard and switch control on mobile; full keyboard navigation on web surfaces.
-- [ ] 16. Business details: name, address, contact email, registration number (if any) in listings, website footer and legal docs.
-- [ ] 17. Age consent: adults only (18+), age confirmation at sign-up, not in the Kids category, not marketed to children.
-- [ ] 18. Unsubscribe link: one-click on every non-essential email; service emails explained; frequency settings.
-- [ ] 19. License stock images: owned or properly licensed assets only; log in `docs/LICENSES.md`, including the Thaana font.
-- [ ] 20. Data deletion: in-app account deletion removing all data, contacts and cases; web deletion request page for Google Play.
+- [ ] 1. Privacy policy: public URL, linked in stores and in-app, English + Dhivehi. Covers the register, trusted contacts, release flow, owner-access limitation, retention, and every processor (Supabase, Resend, Expo push, Sentry). **Status:** draft in `web/legal/pages/privacy.html` (EN + DV summary). Needs your business details, a Maldivian lawyer, a native Dhivehi reader, then `web/legal/build.cjs` and hosting. Not published. In-app link works once `EXPO_PUBLIC_LEGAL_URL` is set.
+- [ ] 2. Terms of service: guidance-only disclaimer (no fatwa, financial or legal advice), release flow and its limits, acceptable use, liability. **Status:** draft in `web/legal/pages/terms.html`; same review and hosting steps as 1.
+- [ ] 3. Refund policy: state the app is free; if anything is ever paid, link Apple and Google refund rules. **Status:** draft in `web/legal/pages/refunds.html` (app is free); same steps as 1.
+- [ ] 4. Cookie policy: for the marketing site and the trusted-contact web view only. List each cookie or storage item. **Status:** draft in `web/legal/pages/cookies.html`; the site uses no cookies or storage (browser check, `docs/SECURITY_REVIEW.md`); same steps as 1.
+- [x] 5. Cookie consent banner: only on web surfaces; essential-only storage preferred; any non-essential item is opt-in with equal-weight Accept and Reject. **Status:** no banner needed: the web surfaces set no cookies and use no localStorage/sessionStorage (checked in Chromium on every legal page and the accept page, `web/accept/smoke.cjs`). Revisit if anything optional is added.
+- [x] 6. Form consents: unticked boxes, separate consent for terms and privacy, specific consent when inviting a trusted contact, timestamped consent records. **Status:** sign-up has three separate, unticked consents (terms, privacy, 18+) recorded server-side with a timestamp (migration 006, pgTAP + integration tests). Inviting a contact needs its own unticked consent (`app/(tabs)/more/contact-invite.tsx`), stored as `consented_at`.
+- [ ] 7. Collect only needed data: field-by-field review of the data model; optional fields optional; no bank passwords, card or ID numbers. **Status:** partly done: no bank passwords, cards or IDs are collected (`docs/SECURITY_REVIEW.md` §4); phone and notes are optional. Field-by-field sign-off against PRD §8 still to do.
+- [x] 8. Audit third-party SDKs: list each SDK and its data use; no ad or tracking SDKs; no amounts, lenders or notes in analytics or crash events; store privacy labels match. **Status:** `docs/SDK_INVENTORY.md`: no ad, analytics or crash SDK; draft store labels included. Re-check whenever a dependency is added.
+- [x] 9. Remove dark patterns: no guilt wording, streaks, fake urgency, pre-ticked boxes, hidden decline or cancel. **Status:** copy swept: no streaks, guilt or urgency wording; consents unticked; decline/cancel always visible. Re-check with new strings.
+- [x] 10. No hidden fees: free, or price shown before commitment. **Status:** free; stated in Terms and Refund Policy drafts.
+- [ ] 11. No fake reviews: honest tester reviews only, no rating-conditioned incentives. **Status:** process item for the beta: ask testers for honest reviews only.
+- [ ] 12. No unsupported claims: no "fully secure" or "100% private"; state the owner-access limit; Islamic content framed as guidance with scholar review recorded. **Status:** copy has no "fully secure" or "100% private" claims (searched); owner-access limit stated in the privacy draft. Scholar review of Islamic content not yet recorded.
+- [ ] 13. Alt text: accessibility labels for every icon, chart and image; alt text on website and store screenshots. **Status:** interactive controls have roles and labels; full VoiceOver/TalkBack pass on a device and store screenshot alt text still to do.
+- [ ] 14. Color contrast: WCAG AA (4.5:1 text) in light and dark, including Dhivehi text. **Status:** web pages measured (all text at least 5.78:1 in light and dark). In-app colours and Dhivehi text still need a device check.
+- [ ] 15. Keyboard navigation: external keyboard and switch control on mobile; full keyboard navigation on web surfaces. **Status:** needs a device test with an external keyboard and switch control. Web pages have visible focus styles.
+- [ ] 16. Business details: name, address, contact email, registration number (if any) in listings, website footer and legal docs. **Status:** needs your business name, address, contact email and registration number; the legal-site build refuses to run without them.
+- [ ] 17. Age consent: adults only (18+), age confirmation at sign-up, not in the Kids category, not marketed to children. **Status:** sign-up requires the 18+ confirmation (recorded). Still to do in the consoles: set the age rating and Play target audience to adults, not Kids.
+- [x] 18. Unsubscribe link: one-click on every non-essential email; service emails explained; frequency settings. **Status:** no marketing or non-essential email exists; no email service is used yet (invites are shared as links). Re-open this when Resend is wired up.
+- [ ] 19. License stock images: owned or properly licensed assets only; log in `docs/LICENSES.md`, including the Thaana font. **Status:** `docs/LICENSES.md` created. App icon and splash are template placeholders to replace; Thaana font behaviour to verify on devices.
+- [ ] 20. Data deletion: in-app account deletion removing all data, contacts and cases; web deletion request page for Google Play. **Status:** in-app deletion done (7-day grace, nightly purge, tests prove nothing remains). Web request page drafted at `web/legal/pages/delete-account.html`; needs hosting and review for the Play Console.
