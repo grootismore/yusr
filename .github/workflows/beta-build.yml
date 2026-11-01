@@ -1,0 +1,142 @@
+name: Beta build (unsigned iOS IPA, installable Android APK)
+
+# Builds test versions of Yusr on GitHub's runners, with no Apple Developer account, no Expo
+# account and no store. Adapted from the prayermv sideload workflow.
+#   iOS      unsigned .ipa. Codesigning is skipped; SideStore or AltStore re-signs it with your own
+#            free Apple ID when you install. Expires every 7 days unless the store refreshes it.
+#   Android  .apk signed with the standard debug key (what Expo's generated project uses), so it
+#            installs directly. Fine for testers; not for the Play Store.
+#
+# Manual only. macOS minutes count 10x on a private repo, so the iOS job runs only when asked.
+#
+# Settings -> Secrets and variables -> Actions -> Variables (not secrets: these ship inside the app):
+#   EXPO_PUBLIC_SUPABASE_ANON_KEY   the publishable key (sb_publishable_...). NEVER the secret/service key.
+#   EXPO_PUBLIC_SUPABASE_URL        optional, defaults to yusr-dev
+#   EXPO_PUBLIC_INVITE_URL          optional, defaults to the invite page
+#   EXPO_PUBLIC_LEGAL_URL           optional, add once the legal site is hosted
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Which build to make
+        type: choice
+        options: [both, android, ios]
+        default: both
+
+concurrency:
+  group: beta-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || 'https://losgicmxujuxsvbtehwu.supabase.co' }}
+  EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+  EXPO_PUBLIC_INVITE_URL: ${{ vars.EXPO_PUBLIC_INVITE_URL || 'https://yusr-invite.netlify.app' }}
+  EXPO_PUBLIC_LEGAL_URL: ${{ vars.EXPO_PUBLIC_LEGAL_URL }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Refuse to build without a client-safe key
+        run: |
+          key="$EXPO_PUBLIC_SUPABASE_ANON_KEY"
+          if [ -z "$key" ]; then echo "::error::Set the EXPO_PUBLIC_SUPABASE_ANON_KEY repository variable (publishable key)."; exit 1; fi
+          case "$key" in sb_publishable_*) ;; *) echo "::error::That is not a publishable key (sb_publishable_...). Never ship a secret or service-role key."; exit 1;; esac
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --ci
+
+  android:
+    needs: checks
+    if: inputs.platform == 'both' || inputs.platform == 'android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - name: Generate native Android project
+        run: npx expo prebuild -p android --clean --no-install
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Collect APK
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/*.apk out/yusr-beta.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yusr-beta-apk
+          path: out/yusr-beta.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios:
+    needs: checks
+    if: inputs.platform == 'both' || inputs.platform == 'ios'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: npm ci
+      - name: Generate native iOS project
+        run: npx expo prebuild -p ios --clean --no-install
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+      - name: Archive (unsigned)
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          WORKSPACE=$(ls -d *.xcworkspace | head -n1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          mkdir -p build
+          xcodebuild archive \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -archivePath "$PWD/build/App.xcarchive" \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Package IPA
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          APP_PATH=$(find build/App.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -n1)
+          if [ -z "$APP_PATH" ]; then echo "No .app found in the archive; see the Archive step." >&2; exit 1; fi
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/
+          (cd build && zip -r -y -q yusr-beta-unsigned.ipa Payload)
+          echo "IPA_PATH=ios/build/yusr-beta-unsigned.ipa" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yusr-beta-unsigned-ipa
+          path: ${{ env.IPA_PATH }}
+          if-no-files-found: error
+          retention-days: 14
