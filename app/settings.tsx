@@ -2,6 +2,7 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
+import { usePendingChanges } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useColors } from '@/lib/theme';
 
@@ -10,6 +11,16 @@ export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const colors = useColors();
   const { signOut } = useAuth();
+  const pending = usePendingChanges();
+
+  function confirmSignOut() {
+    if (pending === 0) return void signOut();
+    // Queued offline writes are wiped on sign-out, so make that explicit.
+    Alert.alert(t('settings.pendingTitle'), t('settings.pendingBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('settings.signOut'), style: 'destructive', onPress: () => void signOut() },
+    ]);
+  }
 
   async function choose(language: Language) {
     if (language === i18n.language) return;
@@ -53,7 +64,7 @@ export default function SettingsScreen() {
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
           accessibilityRole="button"
-          onPress={signOut}
+          onPress={confirmSignOut}
           style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 }}
         >
           <Text style={{ fontSize: 17, color: '#C62828' }}>{t('settings.signOut')}</Text>

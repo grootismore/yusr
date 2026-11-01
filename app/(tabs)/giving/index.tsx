@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
-export default function TransactionsScreen() {
+// Phase 3.
+export default function GivingScreen() {
   return <View style={{ flex: 1 }} />;
 }

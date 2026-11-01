@@ -7,7 +7,9 @@
     "more": "More"
   },
   "more": {
-    "settings": "Settings"
+    "settings": "Settings",
+    "accounts": "Accounts",
+    "categories": "Categories"
   },
   "settings": {
     "title": "Settings",
@@ -15,7 +17,9 @@
     "restartTitle": "Restart to finish",
     "restartBody": "Close and reopen Yusr to apply the new layout direction.",
     "ok": "OK",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "pendingTitle": "Unsynced changes",
+    "pendingBody": "Some changes haven't reached the server yet. Signing out now will lose them. Sign out anyway?"
   },
   "auth": {
     "signIn": "Sign in",
@@ -42,5 +46,99 @@
     "unlock": "Unlock",
     "prompt": "Unlock Yusr",
     "failed": "Couldn't unlock. Try again."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "ok": "OK"
+  },
+  "home": {
+    "thisMonth": "This month",
+    "income": "Income",
+    "expenses": "Expenses",
+    "giving": "Giving",
+    "net": "Net",
+    "whereItWent": "Where it went",
+    "nothingYet": "Nothing recorded this month yet.",
+    "accounts": "Accounts",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "noAccountsTitle": "Add your first account",
+    "noAccountsBody": "Add an account to start recording income and expenses.",
+    "addAccount": "Add account"
+  },
+  "kind": {
+    "expense": "Expense",
+    "income": "Income",
+    "giving": "Giving"
+  },
+  "transactions": {
+    "add": "Add transaction",
+    "emptyTitle": "No transactions yet",
+    "emptyBody": "Tap + to record your first one.",
+    "newTitle": "New transaction",
+    "editTitle": "Edit transaction",
+    "amount": "Amount (MVR)",
+    "category": "Category",
+    "account": "Account",
+    "date": "Date",
+    "note": "Note (optional)",
+    "amountInvalid": "Enter an amount greater than zero.",
+    "pickCategory": "Choose a category.",
+    "pickAccount": "Choose an account.",
+    "needAccount": "Add an account first",
+    "deleteTitle": "Delete this transaction?",
+    "deleteBody": "It will be removed from your totals.",
+    "delete": "Delete transaction",
+    "syncPending": "Waiting to sync: {{count}}"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "new": "New account",
+    "edit": "Edit account",
+    "name": "Name",
+    "type": "Type",
+    "opening": "Opening balance (MVR)",
+    "nameRequired": "Enter a name.",
+    "openingInvalid": "Enter a valid amount, for example 1,250.00.",
+    "archive": "Archive account",
+    "archiveTitle": "Archive this account?",
+    "archiveBody": "It will be hidden from lists. Its transactions are kept.",
+    "empty": "No accounts yet",
+    "types": {
+      "cash": "Cash",
+      "bml": "Bank of Maldives",
+      "mcb": "MCB",
+      "sdfc": "SDFC",
+      "mib": "Maldives Islamic Bank",
+      "other": "Other"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "new": "New category",
+    "edit": "Edit category",
+    "name": "Name",
+    "kind": "Kind",
+    "builtIn": "Built in",
+    "nameRequired": "Enter a name.",
+    "archive": "Archive category",
+    "archiveTitle": "Archive this category?",
+    "archiveBody": "It will be hidden from lists. Existing transactions keep it."
+  },
+  "months": {
+    "m01": "January",
+    "m02": "February",
+    "m03": "March",
+    "m04": "April",
+    "m05": "May",
+    "m06": "June",
+    "m07": "July",
+    "m08": "August",
+    "m09": "September",
+    "m10": "October",
+    "m11": "November",
+    "m12": "December"
   }
 }

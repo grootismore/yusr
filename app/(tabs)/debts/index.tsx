@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
-export default function IndexScreen() {
+// Phase 3.
+export default function DebtsScreen() {
   return <View style={{ flex: 1 }} />;
 }

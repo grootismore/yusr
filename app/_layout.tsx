@@ -31,6 +31,7 @@ function Layout() {
     <Stack>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="transaction" options={{ presentation: 'modal' }} />
         <Stack.Screen name="settings" options={{ title: t('settings.title'), headerLargeTitle: true }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
