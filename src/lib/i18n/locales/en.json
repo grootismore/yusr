@@ -9,7 +9,8 @@
   "more": {
     "settings": "Settings",
     "accounts": "Accounts",
-    "categories": "Categories"
+    "categories": "Categories",
+    "recurring": "Bills & income"
   },
   "settings": {
     "title": "Settings",
@@ -26,7 +27,11 @@
     "hijriHint": "Move Hijri dates by a day to match your local moon sighting.",
     "hijriMinus": "−1 day",
     "hijriZero": "None",
-    "hijriPlus": "+1 day"
+    "hijriPlus": "+1 day",
+    "reminders": "Reminders",
+    "remindersHint": "Gentle reminders for payments, giving and bills. They never show amounts or names.",
+    "remindersOffTitle": "Notifications are off",
+    "remindersOffBody": "Allow notifications for Yusr in your phone's settings to get reminders."
   },
   "auth": {
     "signIn": "Sign in",
@@ -74,7 +79,19 @@
     "nextMonth": "Next month",
     "noAccountsTitle": "Add your first account",
     "noAccountsBody": "Add an account to start recording income and expenses.",
-    "addAccount": "Add account"
+    "addAccount": "Add account",
+    "safeToSpend": "Safe to spend",
+    "safeHint": "Income so far this month, minus what you have spent and what is still due this month. A guide, not a promise.",
+    "incomeSoFar": "Income so far",
+    "spentSoFar": "Spent so far",
+    "setAside": "Still to set aside",
+    "setAsideDebts": "Debt payments",
+    "setAsideGiving": "Giving",
+    "setAsideBills": "Bills",
+    "upcoming": "Coming up",
+    "upcomingEmpty": "Nothing due in the next 7 days.",
+    "overdue": "{{label}} · waiting since {{date}}",
+    "debtFree": "Debt-free by"
   },
   "kind": {
     "expense": "Expense",
@@ -274,5 +291,47 @@
       "m11": "Dhul Qiʿdah",
       "m12": "Dhul Hijjah"
     }
+  },
+  "reminders": {
+    "title": "Yusr",
+    "debt": "A payment is due today.",
+    "giving": "A reminder to give is due today.",
+    "bill": "A bill is due today."
+  },
+  "recurring": {
+    "title": "Bills & income",
+    "add": "Add bill or income",
+    "empty": "Nothing set up yet",
+    "emptyBody": "Add rent, utilities or your salary to be reminded and to see what is still due.",
+    "new": "New bill or income",
+    "edit": "Edit",
+    "name": "Name",
+    "amount": "Amount (MVR)",
+    "category": "Category",
+    "account": "Account",
+    "schedule": "How often",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "dayOfMonth": "Day of month",
+    "weekday": "Day of week",
+    "nextDue": "Next due",
+    "active": "Active",
+    "log": "Log it",
+    "dueOn": "Due {{date}}",
+    "nameRequired": "Enter a name.",
+    "pickCategory": "Choose a category.",
+    "pickAccount": "Choose an account.",
+    "archive": "Archive",
+    "archiveTitle": "Archive this?",
+    "archiveBody": "It will stop appearing and stop reminding you. Entries you logged are kept."
+  },
+  "weekdays": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
   }
 }

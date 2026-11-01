@@ -10,6 +10,7 @@ export default function MoreScreen() {
       <Group>
         <Row label={t('more.accounts')} chevron onPress={() => router.push('/more/accounts')} />
         <Row label={t('more.categories')} chevron onPress={() => router.push('/more/categories')} />
+        <Row label={t('more.recurring')} chevron onPress={() => router.push('/more/recurring')} />
       </Group>
       <Group>
         <Row label={t('more.settings')} chevron onPress={() => router.push('/settings')} />

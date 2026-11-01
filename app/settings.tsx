@@ -5,6 +5,8 @@ import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { Group, Row, Segmented } from '@/components/ui';
+import { requestReminderPermission } from '@/features/reminders/notifications';
+import { setRemindersEnabled, useRemindersEnabled } from '@/features/reminders/preference';
 import { useColors } from '@/lib/theme';
 
 // Placeholder settings screen: language switcher only (Phase 1).
@@ -15,6 +17,14 @@ export default function SettingsScreen() {
   const pending = usePendingChanges();
   const { privacyMode, hijriAdjustment } = useProfile();
   const updateProfile = useUpdateProfile();
+  const remindersOn = useRemindersEnabled();
+
+  async function toggleReminders(value: boolean) {
+    if (!value) return setRemindersEnabled(false);
+    // The system permission prompt appears only here, when the user asks for reminders.
+    if (await requestReminderPermission()) setRemindersEnabled(true);
+    else Alert.alert(t('settings.remindersOffTitle'), t('settings.remindersOffBody'));
+  }
 
   function confirmSignOut() {
     if (pending === 0) return void signOut();
@@ -64,6 +74,12 @@ export default function SettingsScreen() {
           );
         })}
       </View>
+      <Group footer={t('settings.remindersHint')}>
+        <Row
+          label={t('settings.reminders')}
+          right={<Switch accessibilityLabel={t('settings.reminders')} value={remindersOn} onValueChange={toggleReminders} />}
+        />
+      </Group>
       <Group footer={t('settings.privacyHint')}>
         <Row
           label={t('settings.privacy')}

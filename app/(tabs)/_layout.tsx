@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useReminderSync } from '@/features/reminders/useReminderSync';
 import { useColors } from '@/lib/theme';
 
 // PRD §6: five tabs. Each tab is its own native stack (large titles live there).
@@ -15,6 +16,7 @@ const TABS = [
 export default function TabsLayout() {
   const { t } = useTranslation();
   const colors = useColors();
+  useReminderSync(); // keeps scheduled reminders matching the data (only when the user turned them on)
   return (
     <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.tint }}>
       {TABS.map(({ name, title, icon }) => (

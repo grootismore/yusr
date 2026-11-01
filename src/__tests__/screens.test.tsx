@@ -1,9 +1,12 @@
+import { Alert } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
 import { currentOccurrence } from '@/features/giving/schedule';
-import type { Account, Category, Transaction } from '@/features/transactions/types';
+import type { Account, Category, RecurringItem, Transaction } from '@/features/transactions/types';
 import { i18n, initI18n } from '@/lib/i18n';
+import RecurringItemScreen from '../../app/(tabs)/more/recurring-item';
+import RecurringScreen from '../../app/(tabs)/more/recurring';
 import CommitmentScreen from '../../app/(tabs)/giving/commitment';
 import GivingScreen from '../../app/(tabs)/giving/index';
 import TransactionsScreen from '../../app/(tabs)/transactions/index';
@@ -30,6 +33,12 @@ jest.mock('expo-router', () => {
     },
   };
 });
+jest.mock('@/features/reminders/notifications', () => ({
+  requestReminderPermission: jest.fn(async () => true),
+  reminderPermissionGranted: jest.fn(async () => true),
+  cancelReminders: jest.fn(async () => undefined),
+  scheduleReminders: jest.fn(async () => undefined),
+}));
 jest.mock('@/lib/auth/AuthProvider', () => ({ useAuth: () => ({ signOut: jest.fn() }) }));
 jest.mock('expo-sqlite/kv-store', () => ({
   __esModule: true,
@@ -53,6 +62,7 @@ const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => exi
 const mockSaveSecrets = jest.fn();
 const mockSaveCommitment = jest.fn();
 const mockUpdateProfile = jest.fn();
+const mockSaveRecurring = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-recurring-id');
 const state = {
   accounts: [] as Account[],
   categories: [] as Category[],
@@ -60,6 +70,7 @@ const state = {
   debts: [] as Debt[],
   receivables: [] as Receivable[],
   commitments: [] as Commitment[],
+  recurring: [] as RecurringItem[],
   privacy: false,
   secrets: null as { reference_no: string; notes: string } | null,
   ready: true,
@@ -77,6 +88,8 @@ jest.mock('@/features/transactions/hooks', () => ({
   useReceivables: () => ({ all: state.receivables, active: state.receivables.filter((r) => r.deleted_at === null) }),
   useCommitments: () => ({ all: state.commitments, active: state.commitments.filter((c) => c.deleted_at === null) }),
   useSaveCommitment: () => mockSaveCommitment,
+  useRecurringItems: () => ({ all: state.recurring, active: state.recurring.filter((r) => r.deleted_at === null) }),
+  useSaveRecurring: () => mockSaveRecurring,
   useProfile: () => ({ privacyMode: state.privacy, hijriAdjustment: 0 }),
   useUpdateProfile: () => mockUpdateProfile,
   useSaveDebt: () => mockSaveDebt,
@@ -106,6 +119,7 @@ beforeEach(() => {
   state.debts = [];
   state.receivables = [];
   state.commitments = [];
+  state.recurring = [];
   state.privacy = false;
   state.secrets = null;
   state.ready = true;
@@ -244,7 +258,7 @@ describe('home', () => {
     await render(<HomeScreen />);
     expect(screen.getByText('MVR 5,000.00')).toBeTruthy(); // income
     expect(screen.getAllByText('MVR 1,250.50').length).toBeGreaterThan(0); // expense
-    expect(screen.getByText('MVR 3,749.50')).toBeTruthy(); // net
+    expect(screen.getAllByText('MVR 3,749.50').length).toBeGreaterThan(0); // net (and safe to spend, with nothing set aside)
     // Cash balance: 1,000.00 opening + 5,000.00 - 1,250.50
     expect(screen.getByText('MVR 4,749.50')).toBeTruthy();
     expect(screen.getByText('Groceries · 100%')).toBeTruthy();
@@ -572,5 +586,148 @@ describe('settings', () => {
     expect(mockUpdateProfile).toHaveBeenCalledWith({ privacy_mode: true });
     await fireEvent.press(screen.getByText('+1 day'));
     expect(mockUpdateProfile).toHaveBeenCalledWith({ hijri_adjustment: 1 });
+  });
+});
+
+
+const monthEnd = () => {
+  const n = new Date();
+  const last = new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+};
+const daysFromToday = (delta: number) => {
+  const n = new Date();
+  n.setDate(n.getDate() + delta);
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+const rent = (over: Partial<RecurringItem> = {}): RecurringItem => ({
+  id: 'r1', user_id: 'u', name: 'Rent', kind: 'expense', amount_laari: 30000, category_id: 'c-groc', account_id: 'a-bml',
+  schedule: 'monthly', day_of_month: 25, weekday: null, next_due_on: monthEnd(), active: true, ...stamp, ...over,
+});
+const income = (amount: number): Transaction => ({
+  id: `in-${amount}`, user_id: 'u', account_id: 'a-cash', category_id: 'c-sal', amount_laari: amount, kind: 'income',
+  occurred_on: today(), note: null, debt_id: null, commitment_id: null, ...stamp,
+});
+
+describe('home: safe to spend, coming up, debt-free', () => {
+  it('sets aside debt minimums, giving and bills, and shows the working', async () => {
+    state.transactions = [income(100000)];
+    state.debts = [debt({ min_payment_laari: 10000 })];
+    state.commitments = [friday({ schedule: 'monthly', day_of_month: 28, amount_laari: 2000 })];
+    state.recurring = [rent()];
+    await render(<HomeScreen />);
+    // 1,000.00 income - 100.00 debt - 20.00 giving - 300.00 bill
+    expect(screen.getByText('MVR 580.00')).toBeTruthy();
+    expect(screen.getByText('Debt payments')).toBeTruthy();
+    expect(screen.getAllByText('Giving')).toHaveLength(2); // this month's total, and what is still set aside
+    expect(screen.getByText('Bills')).toBeTruthy();
+    expect(screen.getByText(/A guide, not a promise/)).toBeTruthy();
+  });
+
+  it('hides the set-aside giving amount in private mode', async () => {
+    state.transactions = [income(100000)];
+    state.commitments = [friday({ schedule: 'monthly', day_of_month: 28, amount_laari: 2000 })];
+    state.privacy = true;
+    await render(<HomeScreen />);
+    expect(screen.queryByText('MVR 20.00')).toBeNull();
+  });
+
+  it('lists what is due soon and opens the right "log it" sheet when tapped', async () => {
+    state.recurring = [rent({ next_due_on: daysFromToday(2) })];
+    await render(<HomeScreen />);
+    await fireEvent.press(screen.getByText(/^Rent ·/));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/transaction', params: { recurringId: 'r1' } });
+  });
+
+  it('shows an unlogged bill whose date has passed as waiting, calmly', async () => {
+    state.recurring = [rent({ next_due_on: daysFromToday(-3) })];
+    await render(<HomeScreen />);
+    expect(screen.getByText(/waiting since/)).toBeTruthy();
+  });
+
+  it('says nothing is due when nothing is, and shows the debt-free month when there are debts', async () => {
+    await render(<HomeScreen />);
+    expect(screen.getByText('Nothing due in the next 7 days.')).toBeTruthy();
+    expect(screen.queryByText('Debt-free by')).toBeNull();
+  });
+  it('shows when the debts will be cleared', async () => {
+    state.debts = [debt({ balance_laari: 100000, min_payment_laari: 50000 })];
+    await render(<HomeScreen />);
+    expect(screen.getByText('Debt-free by')).toBeTruthy();
+  });
+});
+
+describe('bills & income', () => {
+  it('invites the user to add the first one', async () => {
+    await render(<RecurringScreen />);
+    expect(screen.getByText('Nothing set up yet')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add bill or income'));
+    expect(mockPush).toHaveBeenCalledWith('/more/recurring-item');
+  });
+  it('lists items with Log it, and flags a missed date without alarm wording', async () => {
+    state.recurring = [rent({ next_due_on: daysFromToday(-2) })];
+    await render(<RecurringScreen />);
+    expect(screen.getByText('Rent')).toBeTruthy();
+    expect(screen.getByText('MVR 300.00')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Log it'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/transaction', params: { recurringId: 'r1' } });
+  });
+
+  it('saves a monthly bill starting from its next date', async () => {
+    state.categories = [...state.categories, cat('c-rent', 'Rent', 'expense')];
+    await render(<RecurringItemScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Name'), ' Rent ');
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '7,000');
+    await fireEvent.press(screen.getByText('Rent', { exact: true, includeHiddenElements: false }));
+    await fireEvent.changeText(screen.getByLabelText('Day of month'), '1');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveRecurring).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Rent', kind: 'expense', amount_laari: 700000, schedule: 'monthly', day_of_month: 1, weekday: null, account_id: 'a-cash', category_id: 'c-rent' }),
+      undefined,
+    );
+    const saved = mockSaveRecurring.mock.calls[0][0] as { next_due_on: string };
+    expect(saved.next_due_on.endsWith('-01')).toBe(true);
+    expect(saved.next_due_on >= daysFromToday(0).slice(0, 8) + '01').toBe(true);
+  });
+
+  it('refuses to save without a name, amount or category', async () => {
+    await render(<RecurringItemScreen />);
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveRecurring).not.toHaveBeenCalled();
+    expect(screen.getByText('Enter a name.')).toBeTruthy();
+  });
+});
+
+describe('logging a recurring bill from the transaction sheet', () => {
+  it('prefills the bill and, once saved, moves it on to its next date', async () => {
+    state.recurring = [rent({ next_due_on: '2026-11-25', day_of_month: 25 })];
+    mockParams = { recurringId: 'r1' };
+    await render(<TransactionScreen />);
+    expect(screen.getByLabelText('Amount (MVR)').props.value).toBe('300.00');
+    expect(screen.getByLabelText('Note (optional)').props.value).toBe('Rent');
+    expect(screen.queryByText('Income')).toBeNull(); // kind is fixed by the bill
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'expense', category_id: 'c-groc', account_id: 'a-bml', amount_laari: 30000, note: 'Rent' }),
+      undefined,
+    );
+    expect(mockSaveRecurring).toHaveBeenCalledWith(expect.objectContaining({ next_due_on: '2026-12-25' }), expect.objectContaining({ id: 'r1' }));
+  });
+});
+
+describe('reminders switch', () => {
+  const notifications = jest.requireMock('@/features/reminders/notifications');
+  it('asks for permission only when turned on, and then stays on', async () => {
+    await render(<SettingsScreen />);
+    await fireEvent(screen.getByLabelText('Reminders'), 'valueChange', true);
+    expect(notifications.requestReminderPermission).toHaveBeenCalledTimes(1);
+  });
+  it('explains, without turning on, when the phone denies notifications', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    notifications.requestReminderPermission.mockResolvedValueOnce(false);
+    await render(<SettingsScreen />);
+    await fireEvent(screen.getByLabelText('Reminders'), 'valueChange', true);
+    expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('settings'));
+    alert.mockRestore();
   });
 });

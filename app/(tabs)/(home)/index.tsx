@@ -3,17 +3,23 @@ import { I18nManager, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
-import { useCategoryName, useMonthLabel } from '@/features/transactions/format';
-import { useAccounts, useCategories, useDataReady, useProfile, useTransactions } from '@/features/transactions/hooks';
+import { planInput } from '@/features/debts/logic';
+import { planDebts } from '@/features/debts/plan';
+import { usePlanSettings } from '@/features/debts/settings';
 import { useHijriMonthLabel } from '@/features/giving/format';
+import { safeToSpend, upcomingItems, type UpcomingItem } from '@/features/transactions/budget';
+import { useCategoryName, useFormatDate, useMonthLabel } from '@/features/transactions/format';
 import {
-  accountBalance,
-  categoryBreakdown,
-  monthOf,
-  monthSummary,
-  shiftMonth,
-  toISODate,
-} from '@/features/transactions/logic';
+  useAccounts,
+  useCategories,
+  useCommitments,
+  useDataReady,
+  useDebts,
+  useProfile,
+  useRecurringItems,
+  useTransactions,
+} from '@/features/transactions/hooks';
+import { accountBalance, categoryBreakdown, monthOf, monthSummary, shiftMonth, toISODate } from '@/features/transactions/logic';
 import { useColors } from '@/lib/theme';
 
 export default function HomeScreen() {
@@ -21,6 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const colors = useColors();
   const monthLabel = useMonthLabel();
+  const formatDate = useFormatDate();
   const categoryName = useCategoryName();
   const hijriMonth = useHijriMonthLabel();
   const { privacyMode, hijriAdjustment } = useProfile();
@@ -28,11 +35,28 @@ export default function HomeScreen() {
   const accounts = useAccounts();
   const categories = useCategories();
   const transactions = useTransactions();
-  const [month, setMonth] = useState(() => monthOf(toISODate(new Date())));
+  const debts = useDebts().active;
+  const commitments = useCommitments().active;
+  const recurring = useRecurringItems().active;
+  const [plan] = usePlanSettings();
+  const today = toISODate(new Date());
+  const [month, setMonth] = useState(() => monthOf(today));
 
   const summary = useMemo(() => monthSummary(transactions, month), [transactions, month]);
   const breakdown = useMemo(() => categoryBreakdown(transactions, month).slice(0, 5), [transactions, month]);
   const byId = useMemo(() => new Map(categories.all.map((c) => [c.id, c])), [categories.all]);
+  const safe = useMemo(
+    () => safeToSpend({ today, transactions, debts, commitments, recurring, hijriAdjustment }),
+    [today, transactions, debts, commitments, recurring, hijriAdjustment],
+  );
+  const upcoming = useMemo(
+    () => upcomingItems({ today, days: 7, transactions, debts, commitments, recurring, hijriAdjustment }),
+    [today, transactions, debts, commitments, recurring, hijriAdjustment],
+  );
+  const debtFree = useMemo(
+    () => planDebts(planInput(debts, transactions), plan.strategy, plan.monthlyLaari, monthOf(today)),
+    [debts, transactions, plan.strategy, plan.monthlyLaari, today],
+  );
 
   if (!ready) return <Screen>{null}</Screen>;
 
@@ -49,9 +73,22 @@ export default function HomeScreen() {
     );
   }
 
-  // In RTL the "previous" arrow sits on the right and points right.
-  const rtl = I18nManager.isRTL;
+  const rtl = I18nManager.isRTL; // in RTL the "previous" arrow sits on the right and points right
   const hasActivity = summary.income + summary.expense + summary.giving > 0;
+  const outgoing = Math.max(summary.income, summary.expense, 1);
+  const labelFor = (item: UpcomingItem) =>
+    item.kind === 'giving' ? t(`giving.types.${commitments.find((c) => c.id === item.id)?.type ?? 'sadaqah'}`) : item.label;
+  const open = (item: UpcomingItem) =>
+    router.push({
+      pathname: '/transaction',
+      params: item.kind === 'debt' ? { debtId: item.id } : item.kind === 'giving' ? { commitmentId: item.id } : { recurringId: item.id },
+    });
+  const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
+  const setAside = [
+    ['home.setAsideDebts', safe.reservedDebts, false],
+    ['home.setAsideGiving', safe.reservedGiving, true],
+    ['home.setAsideBills', safe.reservedBills, false],
+  ] as const;
 
   return (
     <Screen>
@@ -76,12 +113,56 @@ export default function HomeScreen() {
         />
       </View>
 
+      {month === monthOf(today) ? (
+        <>
+          <Group title={t('home.safeToSpend')}>
+            <Row label={t('home.safeToSpend')} right={<Money laari={safe.safeToSpend} bold />} />
+            {setAside
+              .filter(([, amount]) => amount > 0)
+              .map(([key, amount, isGiving]) => (
+                <Row key={key} label={t(key)} right={<Money laari={amount} hidden={privacyMode && isGiving} />} />
+              ))}
+          </Group>
+          <Text style={note}>{t('home.safeHint')}</Text>
+
+          <Group title={t('home.upcoming')}>
+            {upcoming.length === 0 ? (
+              <Row label={t('home.upcomingEmpty')} />
+            ) : (
+              upcoming.map((item) => (
+                <Row
+                  key={`${item.kind}-${item.id}-${item.dueOn}`}
+                  label={item.overdue ? t('home.overdue', { label: labelFor(item), date: formatDate(item.dueOn) }) : `${labelFor(item)} · ${formatDate(item.dueOn)}`}
+                  destructive={item.overdue}
+                  right={<Money laari={item.amount} hidden={privacyMode && item.kind === 'giving'} />}
+                  chevron
+                  onPress={() => open(item)}
+                />
+              ))
+            )}
+            {debtFree.debtFreeMonth ? <Row label={t('home.debtFree')} value={monthLabel(debtFree.debtFreeMonth)} /> : null}
+          </Group>
+        </>
+      ) : null}
+
       <Group title={t('home.thisMonth')}>
         <Row label={t('home.income')} right={<Money laari={summary.income} />} />
         <Row label={t('home.expenses')} right={<Money laari={summary.expense} />} />
         <Row label={t('home.giving')} right={<Money laari={summary.giving} hidden={privacyMode} />} />
         <Row label={t('home.net')} right={<Money laari={summary.net} bold />} />
       </Group>
+      {/* Income against expenses (giving left out, so private mode cannot be undone from the bar). */}
+      <View
+        accessible
+        accessibilityLabel={`${t('home.income')} ${summary.income / 100}, ${t('home.expenses')} ${summary.expense / 100}`}
+        style={{ gap: 6, paddingHorizontal: 16 }}
+      >
+        {([['home.income', summary.income, colors.tint], ['home.expenses', summary.expense, colors.secondaryText]] as const).map(([key, value, color]) => (
+          <View key={key} style={{ height: 8, borderRadius: 4, backgroundColor: colors.separator, overflow: 'hidden' }}>
+            <View style={{ height: 8, width: `${Math.round((value * 100) / outgoing)}%`, backgroundColor: color }} />
+          </View>
+        ))}
+      </View>
 
       <Group title={t('home.whereItWent')}>
         {hasActivity && breakdown.length > 0 ? (

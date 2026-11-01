@@ -10,17 +10,25 @@ import {
   useCategories,
   useCommitments,
   useDebts,
+  useRecurringItems,
+  useSaveRecurring,
   useSaveTransaction,
   useSoftDelete,
   useTransactions,
 } from '@/features/transactions/hooks';
 import { currentBalance } from '@/features/debts/logic';
+import { nextDueAfter } from '@/features/transactions/recurring';
 import { toISODate } from '@/features/transactions/logic';
 import { KINDS, type Kind } from '@/features/transactions/types';
 
 // Add / edit sheet. Built for speed: amount first, sensible defaults, one tap per choice.
 export default function TransactionScreen() {
-  const { id, debtId, commitmentId } = useLocalSearchParams<{ id?: string; debtId?: string; commitmentId?: string }>();
+  const { id, debtId, commitmentId, recurringId } = useLocalSearchParams<{
+    id?: string;
+    debtId?: string;
+    commitmentId?: string;
+    recurringId?: string;
+  }>();
   const { t } = useTranslation();
   const router = useRouter();
   const formatDate = useFormatDate();
@@ -33,21 +41,32 @@ export default function TransactionScreen() {
 
   const debts = useDebts();
   const commitments = useCommitments();
+  const recurringItems = useRecurringItems();
+  const saveRecurring = useSaveRecurring();
 
   const existing = id ? transactions.find((x) => x.id === id) : undefined;
   // Opened from a debt ("Log a payment") or a giving commitment ("Mark done"): prefill and link it.
   const paymentDebt = !id && debtId ? debts.all.find((d) => d.id === debtId) : undefined;
   const doneCommitment = !id && commitmentId ? commitments.all.find((c) => c.id === commitmentId) : undefined;
+  const dueItem = !id && recurringId ? recurringItems.all.find((r) => r.id === recurringId) : undefined;
   const defaultCategoryId = (nameEn: string) => categories.all.find((c) => c.is_default && c.name_en === nameEn)?.id ?? null;
-  const prefill = paymentDebt
+  const prefill: {
+    kind: Kind;
+    categoryId: string | null;
+    amount: number;
+    accountId?: string;
+    note?: string;
+  } | null = paymentDebt
     ? {
-        kind: 'expense' as const,
+        kind: 'expense',
         categoryId: defaultCategoryId('Debt payment'),
         amount: Math.min(paymentDebt.min_payment_laari, currentBalance(paymentDebt, transactions)),
       }
     : doneCommitment
-      ? { kind: 'giving' as const, categoryId: defaultCategoryId('Islamic giving'), amount: doneCommitment.amount_laari }
-      : null;
+      ? { kind: 'giving', categoryId: defaultCategoryId('Islamic giving'), amount: doneCommitment.amount_laari }
+      : dueItem
+        ? { kind: dueItem.kind, categoryId: dueItem.category_id, amount: dueItem.amount_laari, accountId: dueItem.account_id, note: dueItem.name }
+        : null;
   // A payment or a done-commitment has a fixed kind; letting the user change it would make the server reject it.
   const linkedKind: Kind | null = prefill
     ? prefill.kind
@@ -62,9 +81,9 @@ export default function TransactionScreen() {
     existing ? toInputText(existing.amount_laari) : prefill && prefill.amount > 0 ? toInputText(prefill.amount) : '',
   );
   const [categoryId, setCategoryId] = useState<string | null>(existing?.category_id ?? prefill?.categoryId ?? null);
-  const [accountId, setAccountId] = useState<string | null>(existing?.account_id ?? null);
+  const [accountId, setAccountId] = useState<string | null>(existing?.account_id ?? prefill?.accountId ?? null);
   const [date, setDate] = useState(existing?.occurred_on ?? toISODate(new Date()));
-  const [note, setNote] = useState(existing?.note ?? '');
+  const [note, setNote] = useState(existing?.note ?? prefill?.note ?? '');
   const [submitted, setSubmitted] = useState(false);
 
   // Default account: the one used most recently (if still active), else the first.
@@ -109,6 +128,17 @@ export default function TransactionScreen() {
       },
       existing,
     );
+    if (dueItem) {
+      // Logging it moves the bill on to its next date.
+      saveRecurring(
+        {
+          name: dueItem.name, kind: dueItem.kind, amount_laari: dueItem.amount_laari, category_id: dueItem.category_id,
+          account_id: dueItem.account_id, schedule: dueItem.schedule, day_of_month: dueItem.day_of_month,
+          weekday: dueItem.weekday, next_due_on: nextDueAfter(dueItem, dueItem.next_due_on), active: dueItem.active,
+        },
+        dueItem,
+      );
+    }
     router.back(); // saved on this device already; syncs in the background
   }
 
