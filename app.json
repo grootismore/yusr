@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Yusr",
+    "slug": "yusr",
+    "scheme": "yusr",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "mv.yusr.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Yusr uses Face ID to keep your financial information private."
+      }
+    },
+    "android": {
+      "package": "mv.yusr.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

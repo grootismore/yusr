@@ -15,3 +15,14 @@ cp .env.example .env   # fill in the dev Supabase project values
 ```
 
 Never commit `.env`, keys or service-role secrets.
+
+```bash
+npm ci
+npm run typecheck && npm run lint && npm test   # same checks as CI
+npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+npx supabase test db                            # RLS tests (needs Docker)
+npx expo start --dev-client                     # after installing a development build
+```
+
+EAS builds read `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` from EAS environment variables (publishable key only), per profile in `eas.json`:
+`eas env:set --name EXPO_PUBLIC_SUPABASE_URL --value <url> --environment development --visibility plaintext`

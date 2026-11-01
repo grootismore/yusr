@@ -1,0 +1,46 @@
+{
+  "tabs": {
+    "home": "Home",
+    "transactions": "Transactions",
+    "debts": "Debts",
+    "giving": "Giving",
+    "more": "More"
+  },
+  "more": {
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "restartTitle": "Restart to finish",
+    "restartBody": "Close and reopen Yusr to apply the new layout direction.",
+    "ok": "OK",
+    "signOut": "Sign out"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters",
+    "switchToSignUp": "New to Yusr? Create an account",
+    "switchToSignIn": "Already have an account? Sign in",
+    "checkEmail": "Check your email to confirm your account, then sign in.",
+    "loading": "Please wait",
+    "errors": {
+      "invalidEmail": "Enter a valid email address.",
+      "passwordShort": "Use at least 8 characters.",
+      "invalidCredentials": "Email or password is incorrect.",
+      "cannotCreate": "We couldn't create that account. Try signing in instead.",
+      "tooMany": "Too many attempts. Try again in a few minutes.",
+      "network": "Check your connection and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "lock": {
+    "title": "Yusr is locked",
+    "unlock": "Unlock",
+    "prompt": "Unlock Yusr",
+    "failed": "Couldn't unlock. Try again."
+  }
+}
