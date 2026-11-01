@@ -1,11 +1,26 @@
 import { MutationObserver, dehydrate, hydrate, onlineManager, timeoutManager, type QueryClient } from '@tanstack/react-query';
+import type { DebtSecrets } from './api';
 import { applySoftDelete, upsertById, type Table } from './cache';
-import { createQueryClient, isTransient, listKey, type SoftDeleteVars, type UpsertVars } from './client';
+import {
+  createQueryClient,
+  isTransient,
+  listKey,
+  profileKey,
+  secretsKey,
+  type DebtSecretsVars,
+  type ProfileVars,
+  type SoftDeleteVars,
+  type UpsertVars,
+} from './client';
 
 const fakeApi = () => ({
   fetchAll: jest.fn(async (_table: Table): Promise<Record<string, unknown>[]> => []),
   upsert: jest.fn(async (_table: Table, _row: Record<string, unknown>): Promise<void> => undefined),
   softDelete: jest.fn(async (_table: Table, _id: string, _at: string): Promise<void> => undefined),
+  getDebtSecrets: jest.fn(async (_debtId: string): Promise<DebtSecrets> => ({ reference_no: '', notes: '' })),
+  setDebtSecrets: jest.fn(async (_debtId: string, _secrets: DebtSecrets): Promise<void> => undefined),
+  fetchProfile: jest.fn(async (): Promise<Record<string, unknown> | null> => null),
+  updateProfile: jest.fn(async (_patch: Record<string, unknown>): Promise<void> => undefined),
 });
 
 const upsertObserver = (client: QueryClient) =>
@@ -111,6 +126,7 @@ describe('offline mutation queue', () => {
 
     const saved = JSON.parse(JSON.stringify(dehydrate(clientBefore))); // what the persister writes to disk
     expect(saved.mutations).toHaveLength(1);
+    expect(saved.mutations[0].scope).toEqual({ id: 'writes' }); // ordering survives a restart
 
     const after = fakeApi();
     const clientAfter = makeClient(after); // fresh process
@@ -139,6 +155,31 @@ describe('offline mutation queue', () => {
     expect(api.upsert.mock.calls.map((call) => call[1].id)).toEqual(['one', 'two', 'three']);
   });
 
+  it('sends queued writes one at a time, so a row never arrives before the row it depends on', async () => {
+    const api = fakeApi();
+    let releaseFirst: () => void = () => undefined;
+    const started: string[] = [];
+    api.upsert.mockImplementation(async (_table, row) => {
+      started.push(String(row.id));
+      if (row.id === 'account-1') await new Promise<void>((resolve) => (releaseFirst = resolve));
+    });
+    const client = makeClient(api);
+    onlineManager.setOnline(false);
+    // Created offline: an account, then a transaction that references it.
+    upsertObserver(client).mutate({ table: 'accounts', userId: 'u1', row: { ...row, id: 'account-1' } }).catch(() => undefined);
+    upsertObserver(client).mutate({ ...vars, row: { ...row, id: 'tx-on-account-1' } }).catch(() => undefined);
+    await tick();
+
+    onlineManager.setOnline(true);
+    const resumed = client.resumePausedMutations();
+    await tick();
+    expect(started).toEqual(['account-1']); // the transaction must wait for the account to finish
+    releaseFirst();
+    await resumed;
+    await tick();
+    expect(started).toEqual(['account-1', 'tx-on-account-1']);
+  });
+
   it('queues a delete offline and removes the transaction from the cache straight away', async () => {
     const api = fakeApi();
     const client = makeClient(api);
@@ -162,6 +203,36 @@ describe('offline mutation queue', () => {
     await expect(upsertObserver(client).mutate(vars)).rejects.toBeDefined();
     expect(api.upsert).toHaveBeenCalledTimes(1);
     expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+  });
+
+  it('queues encrypted debt fields and profile changes through the same ordered queue', async () => {
+    const api = fakeApi();
+    const client = makeClient(api);
+    onlineManager.setOnline(false);
+    const secrets = new MutationObserver<unknown, unknown, DebtSecretsVars>(client, { mutationKey: ['debtSecrets'] });
+    const profile = new MutationObserver<unknown, unknown, ProfileVars>(client, { mutationKey: ['profileUpdate'] });
+    secrets.mutate({ userId: 'u1', debtId: 'd1', secrets: { reference_no: 'REF-1', notes: 'n' } }).catch(() => undefined);
+    profile.mutate({ userId: 'u1', patch: { privacy_mode: true } }).catch(() => undefined);
+    await tick();
+    expect(client.getQueryData(secretsKey('u1', 'd1'))).toEqual({ reference_no: 'REF-1', notes: 'n' });
+    expect(client.getQueryData(profileKey('u1'))).toEqual({ privacy_mode: true });
+    expect(api.setDebtSecrets).not.toHaveBeenCalled();
+    onlineManager.setOnline(true);
+    await client.resumePausedMutations();
+    await tick();
+    expect(api.setDebtSecrets).toHaveBeenCalledWith('d1', { reference_no: 'REF-1', notes: 'n' });
+    expect(api.updateProfile).toHaveBeenCalledWith({ privacy_mode: true });
+  });
+
+  it('never sends the secret-id columns, which only the server may set', async () => {
+    const api = fakeApi();
+    const client = makeClient(api);
+    await upsertObserver(client).mutate({
+      table: 'debts',
+      userId: 'u1',
+      row: { id: 'd1', user_id: 'u1', lender: 'BML', reference_secret_id: 'x', notes_secret_id: 'y', created_at: 'c' },
+    });
+    expect(api.upsert).toHaveBeenCalledWith('debts', { id: 'd1', user_id: 'u1', lender: 'BML' });
   });
 
   it('keeps each user in a separate cache entry', () => {

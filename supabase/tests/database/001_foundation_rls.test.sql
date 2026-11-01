@@ -43,7 +43,7 @@ select is((select count(*) from public.accounts), 1::bigint, 'A sees only own ac
 select is((select count(*) from public.transactions where user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), 0::bigint, 'A cannot read B transactions');
 select is((select count(*) from public.transactions), 1::bigint, 'A sees only own transaction');
 select is((select count(*) from public.categories where user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), 0::bigint, 'A cannot read B custom categories');
-select is((select count(*) from public.categories where is_default), 12::bigint, 'A can read the 12 default categories');
+select is((select count(*) from public.categories where is_default), 13::bigint, 'A can read the 13 default categories');
 
 select throws_ok($$insert into public.accounts (user_id, name, type) values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'x', 'cash')$$,
   '42501', null, 'A cannot insert an account for B');

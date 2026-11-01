@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import type { Debt, Receivable } from '@/features/debts/types';
 import type { Account, Category, Transaction } from '@/features/transactions/types';
 import { i18n, initI18n } from '@/lib/i18n';
+import DebtFormScreen from '../../app/(tabs)/debts/debt';
+import DebtsScreen from '../../app/(tabs)/debts/index';
 import HomeScreen from '../../app/(tabs)/(home)/index';
 import TransactionScreen from '../../app/transaction';
 
@@ -21,6 +24,10 @@ jest.mock('expo-router', () => {
     },
   };
 });
+jest.mock('expo-sqlite/kv-store', () => ({
+  __esModule: true,
+  default: { getItemSync: jest.fn(() => null), setItemSync: jest.fn() },
+}));
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(async () => null),
   setItemAsync: jest.fn(async () => undefined),
@@ -35,10 +42,15 @@ jest.mock('@react-native-community/datetimepicker', () => ({
 
 const mockSave = jest.fn();
 const mockRemove = jest.fn();
+const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-debt-id');
+const mockSaveSecrets = jest.fn();
 const state = {
   accounts: [] as Account[],
   categories: [] as Category[],
   transactions: [] as Transaction[],
+  debts: [] as Debt[],
+  receivables: [] as Receivable[],
+  secrets: null as { reference_no: string; notes: string } | null,
   ready: true,
   pending: 0,
 };
@@ -50,6 +62,12 @@ jest.mock('@/features/transactions/hooks', () => ({
   usePendingChanges: () => state.pending,
   useSaveTransaction: () => mockSave,
   useSoftDelete: () => mockRemove,
+  useDebts: () => ({ all: state.debts, active: state.debts.filter((d) => d.deleted_at === null) }),
+  useReceivables: () => ({ all: state.receivables, active: state.receivables.filter((r) => r.deleted_at === null) }),
+  useCommitments: () => ({ all: [], active: [] }),
+  useSaveDebt: () => mockSaveDebt,
+  useSaveDebtSecrets: () => mockSaveSecrets,
+  useDebtSecrets: () => ({ data: state.secrets ?? undefined }),
 }));
 
 const stamp = { created_at: '2026-11-01T00:00:00Z', updated_at: '', deleted_at: null };
@@ -71,6 +89,9 @@ beforeEach(() => {
   state.accounts = [cash, bml];
   state.categories = [groceries, salary];
   state.transactions = [];
+  state.debts = [];
+  state.receivables = [];
+  state.secrets = null;
   state.ready = true;
   state.pending = 0;
   i18n.changeLanguage('en');
@@ -218,5 +239,151 @@ describe('home', () => {
     await render(<HomeScreen />);
     expect(screen.queryByText(/home\./)).toBeNull(); // no raw translation keys leaking
     expect(screen.getByText('އާމްދަނީ')).toBeTruthy();
+  });
+});
+
+
+const debt = (over: Partial<Debt> = {}): Debt => ({
+  id: 'd1', user_id: 'u', lender: 'BML loan', kind: 'bank', original_laari: 1000000, balance_laari: 600000,
+  min_payment_laari: 50000, due_day: 15, is_interest_bearing: false, interest_rate_bps: null,
+  reference_secret_id: null, notes_secret_id: null, ...stamp, ...({} as object), ...over,
+});
+const payment = (amount: number): Transaction => ({
+  id: `pay-${amount}`, user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: amount, kind: 'expense',
+  occurred_on: '2026-11-03', note: null, debt_id: 'd1', commitment_id: null, ...stamp,
+});
+
+describe('debts tab', () => {
+  it('invites the user to add a first debt when there is nothing yet', async () => {
+    await render(<DebtsScreen />);
+    expect(screen.getByText('No debts recorded')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add debt'));
+    expect(mockPush).toHaveBeenCalledWith('/debts/debt');
+  });
+
+  it('shows what is owed (net of payments) and when the debts clear', async () => {
+    state.debts = [debt()];
+    state.transactions = [payment(100000)]; // 6,000.00 - 1,000.00 = 5,000.00 still owed
+    await render(<DebtsScreen />);
+    expect(screen.getAllByText('MVR 5,000.00').length).toBeGreaterThan(0);
+    // 5,000.00 at 500.00 a month, from next month: ten payments.
+    expect(screen.getByText(/Debt-free by/)).toBeTruthy();
+    expect(screen.getByText(/Cleared by/)).toBeTruthy();
+  });
+
+  it('says so, instead of crashing, when interest outruns payments', async () => {
+    state.debts = [debt({ is_interest_bearing: true, interest_rate_bps: 100000, min_payment_laari: 100 })];
+    await render(<DebtsScreen />);
+    expect(screen.getByText(/won't clear/)).toBeTruthy();
+  });
+});
+
+describe('debt form', () => {
+  it('saves the debt with amounts in laari and a rate in basis points', async () => {
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), '  Ali  ');
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), '2,500.50');
+    await fireEvent.changeText(screen.getByLabelText('Minimum payment (MVR)'), '300');
+    await fireEvent.changeText(screen.getByLabelText('Due day of month (optional)'), '31');
+    await fireEvent(screen.getByLabelText('Charges interest'), 'valueChange', true);
+    await fireEvent.changeText(screen.getByLabelText('Annual interest rate % (optional)'), '12.5');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveDebt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lender: 'Ali',
+        kind: 'bank',
+        balance_laari: 250050,
+        original_laari: 250050, // defaults to the current balance when left empty
+        min_payment_laari: 30000,
+        due_day: 31,
+        is_interest_bearing: true,
+        interest_rate_bps: 1250,
+      }),
+      undefined,
+    );
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockSaveSecrets).not.toHaveBeenCalled(); // nothing typed in the encrypted fields
+  });
+
+  it.each([
+    ['', '100', '', 'Enter who the debt is owed to.'],
+    ['Ali', '', '', 'Enter a valid amount, for example 1,250.00.'],
+    ['Ali', 'abc', '', 'Enter a valid amount, for example 1,250.00.'],
+    ['Ali', '100', '40', 'Enter a day from 1 to 31.'],
+  ])('refuses lender %j balance %j day %j', async (lender, balance, day, message) => {
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), lender);
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), balance);
+    await fireEvent.changeText(screen.getByLabelText('Due day of month (optional)'), day);
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveDebt).not.toHaveBeenCalled();
+    expect(screen.getByText(message)).toBeTruthy();
+  });
+
+  it('stores the encrypted fields only when the user edits them', async () => {
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), 'Ali');
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), '100');
+    await fireEvent.changeText(screen.getByLabelText('Reference or account number'), 'ACC-77');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveSecrets).toHaveBeenCalledWith('new-debt-id', { reference_no: 'ACC-77', notes: '' });
+  });
+
+  it('keeps the stored notes when only the reference is changed', async () => {
+    state.debts = [debt()];
+    state.secrets = { reference_no: 'OLD-REF', notes: 'call Ali first' };
+    mockParams = { id: 'd1' };
+    await render(<DebtFormScreen />);
+    expect(screen.getByLabelText('Notes').props.value).toBe('call Ali first');
+    await fireEvent.changeText(screen.getByLabelText('Reference or account number'), 'NEW-REF');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveSecrets).toHaveBeenCalledWith('d1', { reference_no: 'NEW-REF', notes: 'call Ali first' });
+  });
+
+  it('does not touch stored secrets when the user changes nothing about them', async () => {
+    state.debts = [debt()];
+    state.secrets = { reference_no: 'OLD-REF', notes: 'call Ali first' };
+    mockParams = { id: 'd1' };
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), 'BML loan (renamed)');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveDebt).toHaveBeenCalled();
+    expect(mockSaveSecrets).not.toHaveBeenCalled();
+  });
+
+  it('corrects the starting balance so the derived balance equals what the user typed', async () => {
+    state.debts = [debt()]; // started at 6,000.00
+    state.transactions = [payment(100000)]; // 1,000.00 paid, so the screen shows 5,000.00
+    mockParams = { id: 'd1' };
+    await render(<DebtFormScreen />);
+    expect(screen.getByLabelText('Current balance (MVR)').props.value).toBe('5,000.00');
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), '4,500');
+    await fireEvent.press(screen.getByText('Save'));
+    // stored starting balance = 4,500.00 owed now + 1,000.00 already paid
+    expect(mockSaveDebt).toHaveBeenCalledWith(expect.objectContaining({ balance_laari: 550000 }), expect.objectContaining({ id: 'd1' }));
+  });
+});
+
+describe('logging a debt payment from the transaction sheet', () => {
+  it('prefills an expense in the Debt payment category, links the debt and hides the kind switch', async () => {
+    state.categories = [...state.categories, cat('c-debt', 'Debt payment', 'expense')];
+    state.debts = [debt()];
+    mockParams = { debtId: 'd1' };
+    await render(<TransactionScreen />);
+    expect(screen.getByLabelText('Amount (MVR)').props.value).toBe('500.00'); // the minimum payment
+    expect(screen.queryByText('Income')).toBeNull(); // kind is locked
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'expense', category_id: 'c-debt', amount_laari: 50000, debt_id: 'd1' }),
+      undefined,
+    );
+  });
+
+  it('caps the prefilled payment at what is still owed', async () => {
+    state.categories = [...state.categories, cat('c-debt', 'Debt payment', 'expense')];
+    state.debts = [debt({ balance_laari: 30000 })];
+    mockParams = { debtId: 'd1' };
+    await render(<TransactionScreen />);
+    expect(screen.getByLabelText('Amount (MVR)').props.value).toBe('300.00');
   });
 });
