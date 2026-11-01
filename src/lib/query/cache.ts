@@ -1,5 +1,12 @@
 export type Row = { id: string; deleted_at?: string | null };
-export type Table = 'accounts' | 'categories' | 'transactions';
+export type Table =
+  | 'accounts'
+  | 'categories'
+  | 'transactions'
+  | 'debts'
+  | 'receivables'
+  | 'commitments'
+  | 'recurring_items';
 
 /** Insert or replace by id, keeping list order stable for existing rows. */
 export function upsertById<T extends Row>(list: readonly T[], row: T): T[] {
@@ -9,7 +16,7 @@ export function upsertById<T extends Row>(list: readonly T[], row: T): T[] {
 }
 
 /**
- * Soft delete in the cached list. Accounts and categories are kept (marked
+ * Soft delete in the cached list. Everything except transactions is kept (marked
  * deleted) so old transactions can still show their names; transactions are
  * dropped because the server query never returns deleted ones.
  */

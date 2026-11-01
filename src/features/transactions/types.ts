@@ -42,3 +42,20 @@ export interface Transaction extends Timestamps {
   debt_id: string | null;
   commitment_id: string | null;
 }
+
+export interface RecurringItem extends Timestamps {
+  id: string;
+  user_id: string;
+  name: string;
+  kind: 'income' | 'expense';
+  amount_laari: number;
+  category_id: string;
+  account_id: string;
+  schedule: 'weekly' | 'monthly';
+  /** 1-31, for monthly items. */
+  day_of_month: number | null;
+  /** 0 (Sunday) - 6 (Saturday), for weekly items. */
+  weekday: number | null;
+  next_due_on: string;
+  active: boolean;
+}

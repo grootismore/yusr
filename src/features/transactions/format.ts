@@ -41,3 +41,29 @@ export function parsePositiveAmount(text: string): number | null {
     return null;
   }
 }
+
+/** Zero or more laari from user text, or null if invalid. Empty text counts as zero. */
+export function parseNonNegativeAmount(text: string): number | null {
+  if (text.trim() === '') return 0;
+  try {
+    const value = parseMVR(text);
+    return value >= 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * "12.5" -> 1250 basis points (12.5%). At most two decimals, 0-1000%, integer maths only.
+ * Returns null when invalid; empty text is not valid here (callers treat empty as "no rate").
+ */
+export function parsePercentToBps(text: string): number | null {
+  const match = /^(\d{1,4})(?:\.(\d{1,2}))?$/.exec(text.trim());
+  if (!match) return null;
+  const bps = Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+  return bps <= 100000 ? bps : null;
+}
+
+/** 1250 -> "12.5", 600 -> "6", 1205 -> "12.05". */
+export const bpsToPercentText = (bps: number): string =>
+  `${Math.floor(bps / 100)}${bps % 100 === 0 ? '' : `.${String(bps % 100).padStart(2, '0').replace(/0$/, '')}`}`;

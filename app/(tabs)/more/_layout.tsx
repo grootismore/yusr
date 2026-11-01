@@ -24,6 +24,14 @@ export default function MoreLayout() {
         }}
       />
       <Stack.Screen name="category" options={{ title: t('categories.new') }} />
+      <Stack.Screen
+        name="recurring"
+        options={{
+          title: t('recurring.title'),
+          headerRight: () => <HeaderIconButton icon="add" label={t('recurring.add')} onPress={() => router.push('/more/recurring-item')} />,
+        }}
+      />
+      <Stack.Screen name="recurring-item" options={{ title: t('recurring.new') }} />
     </Stack>
   );
 }
