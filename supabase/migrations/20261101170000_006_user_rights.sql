@@ -108,29 +108,8 @@ begin
 end;
 $$;
 
--- Runs from pg_cron only (never callable by a client).
-create function public.purge_due_account_deletions()
-returns integer
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare
-  removed integer;
-begin
-  with due as (
-    delete from auth.users
-    where id in (select user_id from public.deletion_requests where scheduled_for <= now())
-    returning 1
-  )
-  select count(*) into removed from due;
-  return removed;
-end;
-$$;
-
 revoke all on function public.request_account_deletion() from public, anon, authenticated;
 revoke all on function public.cancel_account_deletion() from public, anon, authenticated;
-revoke all on function public.purge_due_account_deletions() from public, anon, authenticated;
 grant execute on function public.request_account_deletion() to authenticated;
 grant execute on function public.cancel_account_deletion() to authenticated;
 
