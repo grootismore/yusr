@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
+import { clearLocalData } from '@/lib/query/runtime';
 import { getSupabase } from '@/lib/supabase/client';
 import { authErrorKey, type AuthErrorKey } from './authErrors';
 
@@ -36,7 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    const { data: listener } = supabase.auth.onAuthStateChange((event, next) => {
+      setSession(next);
+      if (event === 'SIGNED_OUT') void clearLocalData(); // never leave one user's data for the next
+    });
     // Only refresh tokens while the app is in the foreground.
     const appState = AppState.addEventListener('change', (state) => {
       if (state === 'active') supabase.auth.startAutoRefresh();
@@ -65,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         await getSupabase().auth.signOut();
+        await clearLocalData();
       },
     }),
     [session, loading],
