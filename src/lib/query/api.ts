@@ -1,4 +1,4 @@
-import { getSupabase } from '@/lib/supabase/client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Table } from './cache';
 
 /** The only thing the offline queue needs from the server. Swapped for a fake in tests. */
@@ -11,11 +11,11 @@ export interface RowApi {
 const PAGE = 1000;
 
 // ponytail: fetches every row, 1000 at a time. Add date-range windows if a user's history gets large.
-export const supabaseApi: RowApi = {
+export const createRowApi = (getClient: () => SupabaseClient): RowApi => ({
   async fetchAll(table) {
     const rows: Record<string, unknown>[] = [];
     for (let from = 0; ; from += PAGE) {
-      const base = getSupabase().from(table).select('*');
+      const base = getClient().from(table).select('*');
       const filtered = table === 'transactions' ? base.is('deleted_at', null) : base;
       const { data, error } = await filtered.order('created_at').order('id').range(from, from + PAGE - 1);
       if (error) throw error;
@@ -24,11 +24,11 @@ export const supabaseApi: RowApi = {
     }
   },
   async upsert(table, row) {
-    const { error } = await getSupabase().from(table).upsert(row, { onConflict: 'id' });
+    const { error } = await getClient().from(table).upsert(row, { onConflict: 'id' });
     if (error) throw error;
   },
   async softDelete(table, id, at) {
-    const { error } = await getSupabase().from(table).update({ deleted_at: at }).eq('id', id);
+    const { error } = await getClient().from(table).update({ deleted_at: at }).eq('id', id);
     if (error) throw error;
   },
-};
+});

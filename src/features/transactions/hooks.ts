@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useIsMutating, useMutation, useQuery } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { supabaseApi } from '@/lib/query/api';
+import { supabaseApi } from '@/lib/query/supabaseApi';
 import type { Row, Table } from '@/lib/query/cache';
 import { listKey, type SoftDeleteVars, type UpsertVars } from '@/lib/query/client';
 import type { Account, AccountType, Category, Kind, Transaction } from './types';

@@ -3,7 +3,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { focusManager, onlineManager } from '@tanstack/react-query';
 import Storage from 'expo-sqlite/kv-store';
 import { AppState } from 'react-native';
-import { supabaseApi } from './api';
+import { supabaseApi } from './supabaseApi';
 import { createQueryClient } from './client';
 
 export const queryClient = createQueryClient(supabaseApi);
