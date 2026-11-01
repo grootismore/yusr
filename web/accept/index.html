@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <!-- Replaced at deploy time with the invite function's URL, e.g. https://<ref>.supabase.co/functions/v1/accept-invite -->
+  <meta name="yusr-function-url" content="__FUNCTION_URL__">
+  <title>Yusr</title>
+  <style>
+    :root {
+      --bg: #f2f2f7; --surface: #ffffff; --text: #1c1c1e; --muted: #5c5c61; --tint: #2e7d5b; --on-tint: #ffffff; --line: #c6c6c8; --danger: #b3261e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #000000; --surface: #1c1c1e; --text: #ffffff; --muted: #aeaeb2; --tint: #5cc49a; --on-tint: #000000; --line: #38383a; --danger: #ff8a80; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thaana", "MV Boli", sans-serif; }
+    main { max-width: 36rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .brand { font-weight: 700; font-size: 1.25rem; }
+    .card { background: var(--surface); border-radius: 12px; padding: 1.25rem; }
+    h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 .75rem; }
+    p { margin: 0 0 .9rem; }
+    .muted { color: var(--muted); font-size: .9375rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem; }
+    button { font: inherit; min-height: 44px; min-width: 44px; padding: .5rem 1.25rem; border-radius: 12px; border: 1px solid var(--tint); cursor: pointer; background: transparent; color: var(--tint); font-weight: 600; }
+    button.primary { background: var(--tint); color: var(--on-tint); }
+    button.link { border: 0; padding: .5rem .75rem; font-weight: 500; }
+    button:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+    button[disabled] { opacity: .5; cursor: not-allowed; }
+    .error { color: var(--danger); }
+    [hidden] { display: none !important; }
+    @media (prefers-reduced-motion: no-preference) { button { transition: opacity .15s; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="bar">
+      <span class="brand">Yusr</span>
+      <button class="link" id="lang" type="button" lang="dv">ދިވެހި</button>
+    </div>
+
+    <section class="card" aria-live="polite" aria-busy="true" id="card">
+      <h1 id="title" tabindex="-1"></h1>
+      <div id="body"></div>
+      <div class="actions" id="actions" hidden>
+        <button class="primary" id="accept" type="button"></button>
+        <button id="decline" type="button"></button>
+      </div>
+      <div class="actions" id="retry-box" hidden>
+        <button id="retry" type="button"></button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+    // No cookies, no storage, no analytics. The only network request is to the invite function.
+    var TEXT = {
+      en: {
+        loading: 'One moment',
+        invitedTitle: 'You have been invited',
+        invitedBy: '{name} has invited you to be a trusted contact on Yusr.',
+        invitedBySomeone: 'Someone has invited you to be a trusted contact on Yusr.',
+        what: 'A trusted contact is a person someone chooses to help their family settle their debts and obligations if they pass away.',
+        nothing: 'Accepting does not give you access to anything. You will not see their records now. In the future you may be asked to confirm how they are, and only after that process could a read-only list be shown to you.',
+        stored: 'Your name and email were entered by the person who invited you. Accepting records your answer and the time. You can say no, and nothing is shared either way.',
+        accept: 'Accept', decline: 'Decline', retry: 'Try again',
+        acceptedTitle: 'Thank you', accepted: 'You are now a trusted contact. You do not need to do anything else.',
+        declinedTitle: 'Declined', declined: 'You declined. The person will see your answer in their activity.',
+        invalidTitle: 'This link is no longer valid', invalid: 'It may have expired or already been used. Ask the person to send you a new invitation.',
+        limitTitle: 'Too many attempts', limit: 'Please try again later.',
+        errorTitle: 'Something went wrong', error: 'We could not reach the server. Check your connection and try again.',
+        missingTitle: 'This link is incomplete', missing: 'Open the full link the person sent you.',
+        switchTo: 'ދިވެހި'
+      },
+      dv: {
+        loading: 'ކުޑަކޮށް މަޑުކުރައްވާ',
+        invitedTitle: 'ތިޔަބޭފުޅާއަށް ދައުވަތު ދީފި',
+        invitedBy: '{name} ތިޔަބޭފުޅާއަށް ޔުސްރުގައި ހަމަޖެހިފައިވާ ފަރާތެއް ކަމުގައި ވުމަށް ގޮވާލައްވައިފި.',
+        invitedBySomeone: 'މީހަކު ތިޔަބޭފުޅާއަށް ޔުސްރުގައި ހަމަޖެހިފައިވާ ފަރާތެއް ކަމުގައި ވުމަށް ގޮވާލައްވައިފި.',
+        what: 'ހަމަޖެހިފައިވާ ފަރާތެއް ކަމަކީ، މީހަކު ނިޔާވެއްޖެނަމަ އޭނާގެ ޢާއިލާއަށް ދަރަނި އަދި އަމާނާތްތައް ފިލުވުމަށް އެހީތެރިވުމަށް އޭނާ ހޮވާ މީހެއް.',
+        nothing: 'ގަބޫލުކުރުމުން ތިޔަބޭފުޅާއަށް އެއްވެސް އެއްޗެއް ފެންނާކަށް ނެތް. މިހާރު އެމީހެއްގެ ރެކޯޑުތައް ނުފެނޭ. ކުރިއަށް ދާއިރު، އެމީހާ ކިހިނެއްތޯ ކަށަވަރުކުރުމަށް ތިޔަބޭފުޅާގާ އެދިދާނެ، އެ ކުރިއަރުން ނިމުނު ފަހުން ހަމައެކަނި ކިޔަން ލިބޭ ލިސްޓެއް ދެއްކިދާނެ.',
+        stored: 'ތިޔަބޭފުޅުންގެ ނަމާއި އީމެއިލް ލިޔުއްވީ ދައުވަތު ދެއްވި މީހާ. ގަބޫލުކުރުމުން ތިޔަބޭފުޅުންގެ ޖަވާބާއި ވަގުތު ރެކޯޑް ކުރެވޭ. ނޫނެކޭ ބުނެވޭނެ، ދެފަރާތުގެ ގޮތުންވެސް އެއްވެސް އެއްޗެއް ޝެއަރ ނުކުރެވޭ.',
+        accept: 'ގަބޫލުކުރަން', decline: 'ދެކޮޅު ހަދަން', retry: 'އަލުން މަސައްކަތް ކުރައްވާ',
+        acceptedTitle: 'ޝުކުރިއްޔާ', accepted: 'ތިޔަބޭފުޅާ މިހާރު ހަމަޖެހިފައިވާ ފަރާތެކެވެ. އިތުރަށް އެއްވެސް ކަމެއް ކުރަންނުޖެހޭ.',
+        declinedTitle: 'ދެކޮޅު ހަދައިފި', declined: 'ތިޔަބޭފުޅުން ދެކޮޅު ހެދިއެވެ. އެމީހާއަށް އެމީހެއްގެ ހިނގި ކަންތައްތަކުގައި ތިޔަބޭފުޅުންގެ ޖަވާބު ފެންނާނެ.',
+        invalidTitle: 'މި ލިންކް މިހާރު ބޭނުންކުރެވޭކަށް ނެތް', invalid: 'ހަމަވެފައި ނުވަތަ ކުރިން ބޭނުންކުރެވިފައި ވެދާނެ. އެމީހާއާ ގުޅި އާ ދައުވަތެއް ފޮނުއްވުމަށް އެދިވަޑައިގަންނަވާ.',
+        limitTitle: 'މަސައްކަތް ގިނަ ފަހަރު ކުރެވިއްޖެ', limit: 'ފަހުން އަލުން މަސައްކަތް ކުރައްވާ.',
+        errorTitle: 'މައްސަލައެއް ދިމާވެއްޖެ', error: 'ސާވަރާ ގުޅެން ނުކުޅުދާނެ. ކަނެކްޝަން ބަލައި އަލުން މަސައްކަތް ކުރައްވާ.',
+        missingTitle: 'މި ލިންކް ނުފުރިހަމަ', missing: 'އެމީހާ ފޮނުއްވި ފުރިހަމަ ލިންކް ހުޅުވާލައްވާ.',
+        switchTo: 'English'
+      }
+    };
+
+    var lang = (navigator.language || '').toLowerCase().indexOf('dv') === 0 ? 'dv' : 'en';
+    var token = (location.hash || '').replace(/^#/, '');
+    var inviter = null;
+    var el = function (id) { return document.getElementById(id); };
+    var fnUrl = (document.querySelector('meta[name="yusr-function-url"]') || {}).content || '';
+
+    function t(key) { return TEXT[lang][key]; }
+    function paragraph(text, cls) { var p = document.createElement('p'); p.textContent = text; if (cls) p.className = cls; return p; }
+
+    function render(titleKey, paragraphs, opts) {
+      opts = opts || {};
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'dv' ? 'rtl' : 'ltr';
+      el('lang').textContent = t('switchTo');
+      el('lang').lang = lang === 'dv' ? 'en' : 'dv';
+      el('title').textContent = t(titleKey);
+      var body = el('body');
+      body.textContent = '';
+      paragraphs.forEach(function (p) { body.appendChild(paragraph(p.text, p.cls)); });
+      el('accept').textContent = t('accept');
+      el('decline').textContent = t('decline');
+      el('retry').textContent = t('retry');
+      el('actions').hidden = !opts.choice;
+      el('retry-box').hidden = !opts.retry;
+      el('card').setAttribute('aria-busy', opts.busy ? 'true' : 'false');
+      document.title = 'Yusr';
+    }
+
+    var lastView = function () { render('loading', [], { busy: true }); };
+
+    function showInvite() {
+      lastView = showInvite;
+      var intro = inviter ? t('invitedBy').replace('{name}', inviter) : t('invitedBySomeone');
+      render('invitedTitle', [{ text: intro }, { text: t('what') }, { text: t('nothing') }, { text: t('stored'), cls: 'muted' }], { choice: true });
+    }
+    function showMessage(titleKey, bodyKey, retry) {
+      lastView = function () { showMessage(titleKey, bodyKey, retry); };
+      render(titleKey, [{ text: t(bodyKey), cls: retry ? 'error' : '' }], { retry: !!retry });
+      el('title').focus();
+    }
+
+    function call(action) {
+      return fetch(fnUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, action: action }),
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer',
+        cache: 'no-store'
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (json) { return { status: res.status, json: json }; });
+      });
+    }
+
+    function failure(result) {
+      if (result.status === 429) return showMessage('limitTitle', 'limit', true);
+      // 400 is a mangled link (wrong length or characters): as unusable as an expired one, and retrying cannot help.
+      if (result.status === 400 || result.status === 404 || result.status === 410) return showMessage('invalidTitle', 'invalid', false);
+      return showMessage('errorTitle', 'error', true);
+    }
+
+    function check() {
+      lastView = check;
+      render('loading', [], { busy: true });
+      call('check').then(function (r) {
+        if (r.status === 200 && r.json.ok) { inviter = r.json.inviter_name || null; showInvite(); } else { failure(r); }
+      }, function () { showMessage('errorTitle', 'error', true); });
+    }
+
+    function answer(action) {
+      el('accept').disabled = true; el('decline').disabled = true;
+      call(action).then(function (r) {
+        el('accept').disabled = false; el('decline').disabled = false;
+        if (r.status === 200 && r.json.ok) {
+          if (action === 'accept') showMessage('acceptedTitle', 'accepted', false); else showMessage('declinedTitle', 'declined', false);
+        } else { failure(r); }
+      }, function () {
+        el('accept').disabled = false; el('decline').disabled = false;
+        showMessage('errorTitle', 'error', true);
+      });
+    }
+
+    el('accept').addEventListener('click', function () { answer('accept'); });
+    el('decline').addEventListener('click', function () { answer('decline'); });
+    el('retry').addEventListener('click', function () { if (token) check(); });
+    el('lang').addEventListener('click', function () { lang = lang === 'en' ? 'dv' : 'en'; lastView(); });
+
+    if (!token) { showMessage('missingTitle', 'missing', false); } else { check(); }
+  </script>
+</body>
+</html>

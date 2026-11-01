@@ -1,10 +1,17 @@
-import { Alert } from 'react-native';
+import { Alert, Share } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
+import type { AuditEntry, TrustedContact } from '@/features/transactions/hooks';
 import { currentOccurrence } from '@/features/giving/schedule';
 import type { Account, Category, RecurringItem, Transaction } from '@/features/transactions/types';
 import { i18n, initI18n } from '@/lib/i18n';
+import AuditLogScreen from '../../app/(tabs)/more/audit-log';
+import ContactInviteScreen from '../../app/(tabs)/more/contact-invite';
+import ContactsScreen from '../../app/(tabs)/more/contacts';
+import WasiyyahNoteScreen from '../../app/(tabs)/more/wasiyyah-note';
+import WasiyyahShareScreen from '../../app/(tabs)/more/wasiyyah-share';
+import WasiyyahScreen from '../../app/(tabs)/more/wasiyyah';
 import RecurringItemScreen from '../../app/(tabs)/more/recurring-item';
 import RecurringScreen from '../../app/(tabs)/more/recurring';
 import CommitmentScreen from '../../app/(tabs)/giving/commitment';
@@ -33,6 +40,13 @@ jest.mock('expo-router', () => {
     },
   };
 });
+jest.mock('expo-screen-capture', () => ({ usePreventScreenCapture: jest.fn() }));
+jest.mock('expo-crypto', () => ({
+  getRandomBytes: (n: number) => new Uint8Array(n).fill(7),
+  digestStringAsync: async (_a: string, text: string) => `hash-of-${text}`,
+  CryptoDigestAlgorithm: { SHA256: 'SHA-256' },
+  randomUUID: () => 'uuid',
+}));
 jest.mock('@/features/reminders/notifications', () => ({
   requestReminderPermission: jest.fn(async () => true),
   reminderPermissionGranted: jest.fn(async () => true),
@@ -62,6 +76,10 @@ const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => exi
 const mockSaveSecrets = jest.fn();
 const mockSaveCommitment = jest.fn();
 const mockUpdateProfile = jest.fn();
+const mockInvite = jest.fn(async (_input: unknown) => 'TOKEN-FROM-SERVER');
+const mockRevoke = jest.fn(async (_id: string) => undefined);
+const mockSaveNote = jest.fn();
+const mockLogShared = jest.fn(async (_sections: string[]) => undefined);
 const mockSaveRecurring = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-recurring-id');
 const state = {
   accounts: [] as Account[],
@@ -71,6 +89,10 @@ const state = {
   receivables: [] as Receivable[],
   commitments: [] as Commitment[],
   recurring: [] as RecurringItem[],
+  contacts: [] as TrustedContact[],
+  audit: [] as AuditEntry[],
+  note: null as string | null,
+  secretsList: [] as [string, { reference_no: string; notes: string }][],
   privacy: false,
   secrets: null as { reference_no: string; notes: string } | null,
   ready: true,
@@ -90,6 +112,14 @@ jest.mock('@/features/transactions/hooks', () => ({
   useSaveCommitment: () => mockSaveCommitment,
   useRecurringItems: () => ({ all: state.recurring, active: state.recurring.filter((r) => r.deleted_at === null) }),
   useSaveRecurring: () => mockSaveRecurring,
+  useContacts: () => ({ all: state.contacts, current: state.contacts.filter((c) => c.status !== 'revoked') }),
+  useInviteContact: () => ({ invite: mockInvite, pending: false }),
+  useRevokeContact: () => ({ revoke: mockRevoke }),
+  useWasiyyahNote: () => state.note ?? undefined,
+  useSaveWasiyyahNote: () => mockSaveNote,
+  useAuditLog: () => state.audit,
+  useLogRegisterShared: () => mockLogShared,
+  useDebtSecretsMap: () => new Map(state.secretsList),
   useProfile: () => ({ privacyMode: state.privacy, hijriAdjustment: 0 }),
   useUpdateProfile: () => mockUpdateProfile,
   useSaveDebt: () => mockSaveDebt,
@@ -120,6 +150,11 @@ beforeEach(() => {
   state.receivables = [];
   state.commitments = [];
   state.recurring = [];
+  state.contacts = [];
+  state.audit = [];
+  state.note = null;
+  state.secretsList = [];
+  process.env.EXPO_PUBLIC_INVITE_URL = 'https://invite.example/accept';
   state.privacy = false;
   state.secrets = null;
   state.ready = true;
@@ -729,5 +764,253 @@ describe('reminders switch', () => {
     await fireEvent(screen.getByLabelText('Reminders'), 'valueChange', true);
     expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('settings'));
     alert.mockRestore();
+  });
+});
+
+
+const contact = (over: Partial<TrustedContact> = {}): TrustedContact => ({
+  id: 'k1', user_id: 'u', name: 'Cee', inviter_name: 'Aisha', email: 'cee@example.test', phone: null, status: 'invited',
+  invite_expires_at: '2026-11-20T00:00:00Z', accepted_at: null, created_at: '2026-11-01T00:00:00Z', ...over,
+});
+
+describe('Wasiyyah hub', () => {
+  it('is plain about what exists: nothing is released automatically yet, and no rulings are given', async () => {
+    await render(<WasiyyahScreen />);
+    expect(screen.getByText(/Nothing is released to your trusted contacts automatically yet/)).toBeTruthy();
+    expect(screen.getByText(/does not give rulings or work out inheritance shares/)).toBeTruthy();
+  });
+
+  it('shows the readiness checklist and opens each step', async () => {
+    state.debts = [debt()];
+    await render(<WasiyyahScreen />);
+    expect(screen.getByText(/1 of 3 done/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Invite a trusted contact'));
+    expect(mockPush).toHaveBeenCalledWith('/more/contacts');
+    await fireEvent.press(screen.getByText('Write a note for your family'));
+    expect(mockPush).toHaveBeenCalledWith('/more/wasiyyah-note');
+  });
+  it('counts a contact and a written note as done, and revoked contacts as not', async () => {
+    state.debts = [debt()];
+    state.contacts = [contact({ status: 'accepted' }), contact({ id: 'k2', status: 'revoked' })];
+    state.note = 'Call my brother';
+    await render(<WasiyyahScreen />);
+    expect(screen.getByText(/3 of 3 done/)).toBeTruthy();
+    expect(screen.getByText('1/3')).toBeTruthy(); // one current contact, the revoked one does not count
+  });
+  it('does not count a debt that has been paid off', async () => {
+    state.debts = [debt({ balance_laari: 100000 })];
+    state.transactions = [payment(100000)];
+    await render(<WasiyyahScreen />);
+    expect(screen.getByText(/0 of 3 done/)).toBeTruthy();
+  });
+  it('hides the pending-giving amount in private mode', async () => {
+    state.commitments = [friday({ amount_laari: 7700 })];
+    await render(<WasiyyahScreen />);
+    expect(screen.getByText('MVR 77.00')).toBeTruthy();
+    state.privacy = true;
+    await render(<WasiyyahScreen />);
+    expect(screen.getAllByText('••••').length).toBeGreaterThan(0);
+  });
+});
+
+describe('Wasiyyah note', () => {
+  it('shows the stored note and saves an edit', async () => {
+    state.note = 'Call Ali first.';
+    await render(<WasiyyahNoteScreen />);
+    expect(screen.getByLabelText('Note for your family').props.value).toBe('Call Ali first.');
+    await fireEvent.changeText(screen.getByLabelText('Note for your family'), 'Call Ali first. Then Hassan.');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveNote).toHaveBeenCalledWith('Call Ali first. Then Hassan.');
+    expect(mockBack).toHaveBeenCalled();
+  });
+  it('never overwrites a stored note when the user did not edit it', async () => {
+    state.note = 'Call Ali first.';
+    await render(<WasiyyahNoteScreen />);
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveNote).not.toHaveBeenCalled();
+  });
+  it('lets the user clear the note on purpose', async () => {
+    state.note = 'Old';
+    await render(<WasiyyahNoteScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Note for your family'), '');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveNote).toHaveBeenCalledWith('');
+  });
+});
+
+describe('trusted contacts', () => {
+  it('invites the user to add the first one', async () => {
+    await render(<ContactsScreen />);
+    expect(screen.getByText('No trusted contacts yet')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Invite a contact'));
+    expect(mockPush).toHaveBeenCalledWith('/more/contact-invite');
+  });
+  it('lists contacts with their status and removes one only after confirming', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    state.contacts = [contact(), contact({ id: 'k2', name: 'Dee', status: 'accepted' }), contact({ id: 'k3', name: 'Gone', status: 'revoked' })];
+    await render(<ContactsScreen />);
+    expect(screen.getByText('Cee')).toBeTruthy();
+    expect(screen.getByText('Accepted')).toBeTruthy();
+    expect(screen.queryByText('Gone')).toBeNull();
+    await fireEvent.press(screen.getByText('Cee'));
+    expect(mockRevoke).not.toHaveBeenCalled(); // asks first
+    const buttons = alert.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    buttons.find((b) => b.text === 'Remove contact')?.onPress?.();
+    expect(mockRevoke).toHaveBeenCalledWith('k1');
+    alert.mockRestore();
+  });
+  it('stops offering invites at three contacts', async () => {
+    state.contacts = [contact({ id: 'a' }), contact({ id: 'b', name: 'B' }), contact({ id: 'c', name: 'C' })];
+    await render(<ContactsScreen />);
+    expect(screen.queryByText('Invite a contact')).toBeNull();
+  });
+});
+
+describe('invite a trusted contact', () => {
+  const fill = async () => {
+    await fireEvent.changeText(screen.getByLabelText('Their name'), ' Cee ');
+    await fireEvent.changeText(screen.getByLabelText('Their email'), 'cee@example.test');
+    await fireEvent.changeText(screen.getByLabelText('Your name on the invite (optional)'), 'Aisha');
+  };
+  const consentLabel = 'I have their permission to store their name and email in Yusr so they can be a trusted contact.';
+
+  it('starts with consent unticked and will not create an invite without it', async () => {
+    await render(<ContactInviteScreen />);
+    expect(screen.getByLabelText(consentLabel).props.value).toBe(false);
+    await fill();
+    await fireEvent.press(screen.getByText('Create invite link'));
+    expect(mockInvite).not.toHaveBeenCalled();
+    expect(screen.getByText('Please confirm you have their permission.')).toBeTruthy();
+  });
+  it.each([
+    ['', 'cee@example.test', 'Enter their name.'],
+    ['Cee', 'not-an-email', 'Enter a valid email address.'],
+    ['Cee', '', 'Enter a valid email address.'],
+  ])('refuses name %j email %j', async (name, email, message) => {
+    await render(<ContactInviteScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Their name'), name);
+    await fireEvent.changeText(screen.getByLabelText('Their email'), email);
+    await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Create invite link'));
+    expect(mockInvite).not.toHaveBeenCalled();
+    expect(screen.getByText(message)).toBeTruthy();
+  });
+  it('creates the invite and shows a link with the token after "#", shared once', async () => {
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+    await render(<ContactInviteScreen />);
+    await fill();
+    await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Create invite link'));
+    expect(mockInvite).toHaveBeenCalledWith({ name: 'Cee', inviterName: 'Aisha', email: 'cee@example.test', phone: '' });
+    expect(await screen.findByText('https://invite.example/accept/#TOKEN-FROM-SERVER')).toBeTruthy();
+    expect(screen.getByText(/shown only once/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Send the link'));
+    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('Aisha has invited you') });
+    expect((share.mock.calls[0][0] as { message: string }).message).toContain('https://invite.example/accept/#TOKEN-FROM-SERVER');
+    share.mockRestore();
+  });
+  it.each([
+    ['23505', 'That email is already invited.'],
+    ['23514', 'You can have at most three trusted contacts.'],
+    [undefined, 'You need to be online to do this.'],
+  ])('explains failure code %s in plain words', async (code, message) => {
+    mockInvite.mockRejectedValueOnce(Object.assign(new Error('x'), { code }));
+    await render(<ContactInviteScreen />);
+    await fill();
+    await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Create invite link'));
+    expect(await screen.findByText(message)).toBeTruthy();
+  });
+  it('says so, and cannot create a dead link, when the invite page is not set up', async () => {
+    process.env.EXPO_PUBLIC_INVITE_URL = '';
+    await render(<ContactInviteScreen />);
+    expect(screen.getByText('Invite links are not set up yet in this version of the app.')).toBeTruthy();
+    await fill();
+    await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Create invite link'));
+    expect(mockInvite).not.toHaveBeenCalled();
+  });
+});
+
+describe('share the register', () => {
+  const setup = () => {
+    state.debts = [debt()];
+    state.transactions = [payment(100000)]; // 6,000.00 - 1,000.00 = 5,000.00 still owed
+    state.receivables = [{ id: 'r1', user_id: 'u', debtor: 'Hassan', amount_laari: 25000, due_on: null, notes: null, ...stamp }];
+    state.commitments = [friday({ type: 'zakat', schedule: 'ramadan', amount_laari: 90000, recipient_note: 'Aminath' })];
+    state.secretsList = [['d1', { reference_no: 'ACC-777', notes: 'call Ali first' }]];
+    state.note = 'Please call my brother.';
+  };
+
+  it('previews exactly what will be sent, including the decrypted reference number', async () => {
+    setup();
+    await render(<WasiyyahShareScreen />);
+    expect(screen.getByText(/BML loan: MVR 5,000.00/)).toBeTruthy();
+    expect(screen.getByText(/Reference: ACC-777/)).toBeTruthy();
+    expect(screen.getByText(/Contact first: call Ali first/)).toBeTruthy();
+    expect(screen.getByText(/Please call my brother\./)).toBeTruthy();
+    expect(screen.queryByText(/Aminath/)).toBeNull(); // the private recipient note never leaves
+  });
+  it('removes a section from the preview when it is switched off', async () => {
+    setup();
+    await render(<WasiyyahShareScreen />);
+    await fireEvent(screen.getByLabelText('Debts'), 'valueChange', false);
+    expect(screen.queryByText(/ACC-777/)).toBeNull();
+    expect(screen.getByText(/Hassan/)).toBeTruthy();
+  });
+  it('records the share first, then opens the share sheet with that exact text', async () => {
+    setup();
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+    await render(<WasiyyahShareScreen />);
+    await fireEvent(screen.getByLabelText('Note'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Share'));
+    expect(mockLogShared).toHaveBeenCalledWith(['debts', 'receivables', 'giving']);
+    expect(mockLogShared.mock.invocationCallOrder[0]).toBeLessThan(share.mock.invocationCallOrder[0]);
+    const sent = (share.mock.calls[0][0] as { message: string }).message;
+    expect(sent).toContain('ACC-777');
+    expect(sent).not.toContain('Please call my brother');
+    share.mockRestore();
+  });
+  it('shares nothing, and says why, if the share cannot be recorded', async () => {
+    setup();
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    mockLogShared.mockRejectedValueOnce(new Error('offline'));
+    await render(<WasiyyahShareScreen />);
+    await fireEvent.press(screen.getByText('Share'));
+    expect(share).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalledWith('Could not record this share. Connect to the internet and try again.');
+    share.mockRestore();
+    alert.mockRestore();
+  });
+  it('cannot be sent with nothing chosen', async () => {
+    setup();
+    await render(<WasiyyahShareScreen />);
+    for (const section of ['Debts', 'Owed to you', 'Pending giving', 'Note']) await fireEvent(screen.getByLabelText(section), 'valueChange', false);
+    expect(screen.getByText('Choose at least one section to share.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Share'));
+    expect(mockLogShared).not.toHaveBeenCalled();
+  });
+});
+
+describe('activity log', () => {
+  it('says what happened, naming contacts, and cannot be edited', async () => {
+    state.contacts = [contact({ name: 'Cee' })];
+    state.audit = [
+      { id: 'e1', actor: 'contact', event: 'contact_accepted', meta: { contact_id: 'k1' }, created_at: '2026-11-02T10:30:00Z' },
+      { id: 'e2', actor: 'user', event: 'register_shared', meta: { sections: ['debts', 'note'] }, created_at: '2026-11-03T08:05:00Z' },
+      { id: 'e3', actor: 'user', event: 'note_changed', meta: {}, created_at: '2026-11-04T09:00:00Z' },
+      { id: 'e4', actor: 'contact', event: 'register_viewed', meta: {}, created_at: '2026-11-05T09:00:00Z' },
+    ];
+    await render(<AuditLogScreen />);
+    expect(screen.getByText('Cee accepted')).toBeTruthy();
+    expect(screen.getByText('You shared your register (Debts, Note)')).toBeTruthy();
+    expect(screen.getByText('You changed your note')).toBeTruthy();
+    expect(screen.getByText('A trusted contact viewed your register')).toBeTruthy();
+    expect(screen.getByText(/cannot be edited/)).toBeTruthy();
+  });
+  it('shows a calm empty state', async () => {
+    await render(<AuditLogScreen />);
+    expect(screen.getByText('Nothing yet')).toBeTruthy();
   });
 });

@@ -22,7 +22,6 @@ const fakeApi = () => ({
   fetchContacts: jest.fn(async (): Promise<Record<string, unknown>[]> => []),
   createContact: jest.fn(async (_row: Record<string, unknown>): Promise<void> => undefined),
   revokeContact: jest.fn(async (_id: string): Promise<void> => undefined),
-  hasWasiyyahNote: jest.fn(async (): Promise<boolean> => false),
   getWasiyyahNote: jest.fn(async (): Promise<string> => ''),
   setWasiyyahNote: jest.fn(async (_note: string): Promise<void> => undefined),
   fetchAuditLog: jest.fn(async (): Promise<Record<string, unknown>[]> => []),

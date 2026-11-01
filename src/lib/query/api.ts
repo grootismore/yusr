@@ -13,7 +13,6 @@ export interface RowApi {
   fetchContacts(): Promise<Record<string, unknown>[]>;
   createContact(row: Record<string, unknown>): Promise<void>;
   revokeContact(id: string): Promise<void>;
-  hasWasiyyahNote(): Promise<boolean>;
   getWasiyyahNote(): Promise<string>;
   setWasiyyahNote(note: string): Promise<void>;
   fetchAuditLog(): Promise<Record<string, unknown>[]>;
@@ -78,11 +77,6 @@ export const createRowApi = (getClient: () => SupabaseClient): RowApi => ({
   async revokeContact(id) {
     const { error } = await getClient().from('trusted_contacts').update({ status: 'revoked' }).eq('id', id);
     if (error) throw error;
-  },
-  async hasWasiyyahNote() {
-    const { data, error } = await getClient().from('wasiyyah_notes').select('note_secret_id').maybeSingle();
-    if (error) throw error;
-    return data?.note_secret_id != null;
   },
   async getWasiyyahNote() {
     const { data, error } = await getClient().rpc('get_wasiyyah_note');

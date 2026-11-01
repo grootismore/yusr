@@ -32,6 +32,12 @@ export default function MoreLayout() {
         }}
       />
       <Stack.Screen name="recurring-item" options={{ title: t('recurring.new') }} />
+      <Stack.Screen name="wasiyyah" options={{ title: t('wasiyyah.title') }} />
+      <Stack.Screen name="wasiyyah-note" options={{ title: t('wasiyyah.noteTitle') }} />
+      <Stack.Screen name="wasiyyah-share" options={{ title: t('wasiyyah.shareTitle') }} />
+      <Stack.Screen name="contacts" options={{ title: t('wasiyyah.contactsTitle') }} />
+      <Stack.Screen name="contact-invite" options={{ title: t('wasiyyah.inviteTitle') }} />
+      <Stack.Screen name="audit-log" options={{ title: t('wasiyyah.activityTitle') }} />
     </Stack>
   );
 }

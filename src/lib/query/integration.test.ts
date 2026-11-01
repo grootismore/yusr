@@ -232,14 +232,12 @@ describe('RowApi against local Supabase', () => {
     const randomIp = () => `198.51.100.${Math.floor(Math.random() * 250)}-${crypto.randomUUID()}`;
 
     it('keeps the instruction note encrypted: write, read, replace, clear, and nobody else sees it', async () => {
-      expect(await a.api.hasWasiyyahNote()).toBe(false);
+      expect(await a.api.getWasiyyahNote()).toBe('');
       await a.api.setWasiyyahNote('Call my brother Ali first.');
-      expect(await a.api.hasWasiyyahNote()).toBe(true);
       expect(await a.api.getWasiyyahNote()).toBe('Call my brother Ali first.');
       expect(await b.api.getWasiyyahNote()).toBe(''); // B has no note and cannot see A's
-      expect(await b.api.hasWasiyyahNote()).toBe(false);
       await a.api.setWasiyyahNote('');
-      expect(await a.api.hasWasiyyahNote()).toBe(false);
+      expect(await a.api.getWasiyyahNote()).toBe('');
       await a.api.setWasiyyahNote('Final note.');
     });
 

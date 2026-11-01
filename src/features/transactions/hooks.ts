@@ -1,11 +1,13 @@
 import { useCallback, useMemo } from 'react';
-import { useIsMutating, useMutation, useQuery } from '@tanstack/react-query';
+import { useIsMutating, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { supabaseApi } from '@/lib/query/supabaseApi';
 import type { Row, Table } from '@/lib/query/cache';
 import {
   listKey,
+  noteKey,
+  type NoteVars,
   profileKey,
   secretsKey,
   type DebtSecretsVars,
@@ -14,6 +16,7 @@ import {
   type UpsertVars,
 } from '@/lib/query/client';
 import type { DebtSecrets } from '@/lib/query/api';
+import { generateInviteToken, hashInviteToken, inviteExpiry } from '@/features/wasiyyah/invite';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
 import type { Account, AccountType, Category, Kind, RecurringItem, Transaction } from './types';
@@ -268,4 +271,123 @@ export function useUpdateProfile() {
   const userId = useUserId();
   const { mutate } = useMutation<unknown, unknown, ProfileVars>({ mutationKey: ['profileUpdate'] });
   return useCallback((patch: Partial<{ privacy_mode: boolean; hijri_adjustment: number }>) => mutate({ userId, patch }), [mutate, userId]);
+}
+
+// ---------------------------------------------------------------- Phase 4: Wasiyyah register
+
+export interface TrustedContact {
+  id: string;
+  user_id: string;
+  name: string;
+  inviter_name: string | null;
+  email: string;
+  phone: string | null;
+  status: 'invited' | 'accepted' | 'revoked';
+  invite_expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  actor: 'user' | 'contact' | 'system';
+  event: string;
+  meta: { contact_id?: string; sections?: string[] };
+  created_at: string;
+}
+
+const contactsKey = (userId: string) => ['contacts', userId] as const;
+const auditKey = (userId: string) => ['audit-log', userId] as const;
+
+export function useContacts() {
+  const userId = useUserId();
+  const { data } = useQuery({ queryKey: contactsKey(userId), queryFn: async () => (await supabaseApi.fetchContacts()) as unknown as TrustedContact[] });
+  const all = data ?? (EMPTY as TrustedContact[]);
+  return useMemo(() => ({ all, current: all.filter((c) => c.status !== 'revoked') }), [all]);
+}
+
+export function useAuditLog() {
+  const userId = useUserId();
+  const { data } = useQuery({ queryKey: auditKey(userId), queryFn: async () => (await supabaseApi.fetchAuditLog()) as unknown as AuditEntry[] });
+  return data ?? (EMPTY as AuditEntry[]);
+}
+
+/**
+ * Contact and share changes need the server (an invite link is useless until the row exists, and
+ * a share must be recorded), so they run online-only and fail straight away when offline.
+ */
+function useOnlineAction<V, R>(action: (vars: V) => Promise<R>, refresh: (userId: string) => readonly (readonly unknown[])[]) {
+  const userId = useUserId();
+  const client = useQueryClient();
+  return useMutation<R, unknown, V>({
+    networkMode: 'always',
+    mutationFn: action,
+    onSettled: () => {
+      for (const key of refresh(userId)) client.invalidateQueries({ queryKey: key });
+    },
+  });
+}
+
+export interface InviteInput {
+  name: string;
+  inviterName: string;
+  email: string;
+  phone: string;
+}
+
+/** Creates the contact and resolves with the raw invite token (the one and only time it exists). */
+export function useInviteContact() {
+  const userId = useUserId();
+  const mutation = useOnlineAction<InviteInput, string>(
+    async (input) => {
+      const token = generateInviteToken();
+      await supabaseApi.createContact({
+        id: Crypto.randomUUID(),
+        user_id: userId,
+        name: input.name,
+        inviter_name: input.inviterName === '' ? null : input.inviterName,
+        email: input.email,
+        phone: input.phone === '' ? null : input.phone,
+        invite_token_hash: await hashInviteToken(token),
+        invite_expires_at: inviteExpiry(),
+        consented_at: new Date().toISOString(),
+      });
+      return token;
+    },
+    (id) => [contactsKey(id), auditKey(id)],
+  );
+  return { invite: mutation.mutateAsync, pending: mutation.isPending };
+}
+
+export function useRevokeContact() {
+  const mutation = useOnlineAction<string, void>((id) => supabaseApi.revokeContact(id), (id) => [contactsKey(id), auditKey(id)]);
+  return { revoke: mutation.mutateAsync, pending: mutation.isPending };
+}
+
+/** Records that the owner is sharing these sections. Rejects when offline so nothing is shared unrecorded. */
+export function useLogRegisterShared() {
+  return useOnlineAction<string[], void>((sections) => supabaseApi.logRegisterShared(sections), (id) => [auditKey(id)]).mutateAsync;
+}
+
+/** The instruction note (decrypted for its owner). Writes are queued offline like everything else. */
+export function useWasiyyahNote() {
+  const userId = useUserId();
+  const { data } = useQuery({ queryKey: noteKey(userId), queryFn: () => supabaseApi.getWasiyyahNote() });
+  return data;
+}
+
+export function useSaveWasiyyahNote() {
+  const userId = useUserId();
+  const { mutate } = useMutation<unknown, unknown, NoteVars>({ mutationKey: ['wasiyyahNote'] });
+  return useCallback((note: string) => mutate({ userId, note }), [mutate, userId]);
+}
+
+/** Decrypted reference numbers and notes for several debts, by debt id, as they load. */
+export function useDebtSecretsMap(debtIds: readonly string[]) {
+  const userId = useUserId();
+  const results = useQueries({
+    queries: debtIds.map((id) => ({ queryKey: secretsKey(userId, id), queryFn: () => supabaseApi.getDebtSecrets(id) })),
+  });
+  // Rebuilt each render (a handful of entries); callers use it for display, not as an effect dependency.
+  return new Map(debtIds.flatMap((id, i) => (results[i]?.data ? [[id, results[i].data as DebtSecrets] as const] : [])));
 }
