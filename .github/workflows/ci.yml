@@ -40,7 +40,14 @@ jobs:
         run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: RLS tests (SQL)
         run: npx supabase test db
-      - name: Sync API integration tests (real HTTP, RLS, idempotent upserts)
+      - name: Serve the invite function
+        run: |
+          npx supabase functions serve accept-invite --no-verify-jwt > functions.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf -X OPTIONS http://127.0.0.1:54321/functions/v1/accept-invite && break; sleep 2; done
+      - name: Integration tests (real HTTP, RLS, idempotent upserts, invite function)
         run: |
           eval "$(npx supabase status -o env | sed 's/^/export /')"
-          LOCAL_SUPABASE_URL="$API_URL" LOCAL_SUPABASE_KEY="$ANON_KEY" npm run test:integration
+          LOCAL_SUPABASE_URL="$API_URL" LOCAL_SUPABASE_KEY="$ANON_KEY" LOCAL_FUNCTIONS_URL="$API_URL/functions/v1" npm run test:integration
+      - name: Function log (on failure)
+        if: failure()
+        run: cat functions.log || true

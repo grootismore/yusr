@@ -9,11 +9,16 @@ export const listKey = (table: Table, userId: string) => [table, userId] as cons
 
 export const secretsKey = (userId: string, debtId: string) => ['debt-secrets', userId, debtId] as const;
 export const profileKey = (userId: string) => ['profile', userId] as const;
+export const noteKey = (userId: string) => ['wasiyyah-note', userId] as const;
 
 export interface DebtSecretsVars {
   userId: string;
   debtId: string;
   secrets: DebtSecrets;
+}
+export interface NoteVars {
+  userId: string;
+  note: string;
 }
 export interface ProfileVars {
   userId: string;
@@ -130,6 +135,25 @@ export function createQueryClient(api: RowApi): QueryClient {
     onSettled: (_data: unknown, _error: unknown, vars: unknown) => {
       const { userId, debtId } = vars as DebtSecretsVars;
       if (client.isMutating() === 1) client.invalidateQueries({ queryKey: secretsKey(userId, debtId) });
+    },
+  });
+
+  // The instruction note rides the same ordered offline queue as everything else.
+  client.setMutationDefaults(['wasiyyahNote'], {
+    scope,
+    mutationFn: async (vars: unknown) => {
+      await api.setWasiyyahNote((vars as NoteVars).note);
+    },
+    onMutate: async (vars: unknown) => {
+      const { userId, note } = vars as NoteVars;
+      await client.cancelQueries({ queryKey: noteKey(userId) });
+      client.setQueryData(noteKey(userId), note);
+    },
+    onError: (_error: unknown, vars: unknown) => {
+      client.invalidateQueries({ queryKey: noteKey((vars as NoteVars).userId) });
+    },
+    onSettled: (_data: unknown, _error: unknown, vars: unknown) => {
+      if (client.isMutating() === 1) client.invalidateQueries({ queryKey: noteKey((vars as NoteVars).userId) });
     },
   });
 

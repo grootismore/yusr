@@ -19,6 +19,13 @@ const fakeApi = () => ({
   softDelete: jest.fn(async (_table: Table, _id: string, _at: string): Promise<void> => undefined),
   getDebtSecrets: jest.fn(async (_debtId: string): Promise<DebtSecrets> => ({ reference_no: '', notes: '' })),
   setDebtSecrets: jest.fn(async (_debtId: string, _secrets: DebtSecrets): Promise<void> => undefined),
+  fetchContacts: jest.fn(async (): Promise<Record<string, unknown>[]> => []),
+  createContact: jest.fn(async (_row: Record<string, unknown>): Promise<void> => undefined),
+  revokeContact: jest.fn(async (_id: string): Promise<void> => undefined),
+  getWasiyyahNote: jest.fn(async (): Promise<string> => ''),
+  setWasiyyahNote: jest.fn(async (_note: string): Promise<void> => undefined),
+  fetchAuditLog: jest.fn(async (): Promise<Record<string, unknown>[]> => []),
+  logRegisterShared: jest.fn(async (_sections: string[]): Promise<void> => undefined),
   fetchProfile: jest.fn(async (): Promise<Record<string, unknown> | null> => null),
   updateProfile: jest.fn(async (_patch: Record<string, unknown>): Promise<void> => undefined),
 });

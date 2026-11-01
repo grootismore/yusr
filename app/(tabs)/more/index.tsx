@@ -8,6 +8,9 @@ export default function MoreScreen() {
   return (
     <Screen>
       <Group>
+        <Row label={t('more.wasiyyah')} chevron onPress={() => router.push('/more/wasiyyah')} />
+      </Group>
+      <Group>
         <Row label={t('more.accounts')} chevron onPress={() => router.push('/more/accounts')} />
         <Row label={t('more.categories')} chevron onPress={() => router.push('/more/categories')} />
         <Row label={t('more.recurring')} chevron onPress={() => router.push('/more/recurring')} />

@@ -22,3 +22,7 @@ GoogleService-Info.plist
 # supabase local
 supabase/.branches/
 supabase/.temp/
+
+# built accept page
+web/accept/dist/
+.netlify

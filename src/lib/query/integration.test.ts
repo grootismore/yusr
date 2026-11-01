@@ -3,6 +3,7 @@
  * Run with `npm run test:integration` (plain Node config: the Expo preset replaces fetch).
  * Needs LOCAL_SUPABASE_URL and LOCAL_SUPABASE_KEY; CI sets them in the rls job.
  */
+import { createHash, randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { createRowApi } from './api';
 import { isTransient } from './client';
@@ -10,14 +11,17 @@ import { isTransient } from './client';
 const url = process.env.LOCAL_SUPABASE_URL;
 const key = process.env.LOCAL_SUPABASE_KEY;
 
-async function newUser() {
+const functionsUrl = process.env.LOCAL_FUNCTIONS_URL; // e.g. http://127.0.0.1:54321/functions/v1
+const itFunction = functionsUrl ? it : it.skip;
+
+async function newUser(email = `it-${crypto.randomUUID()}@example.test`) {
   const client = createClient(url as string, key as string, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error } = await client.auth.signUp({
-    email: `it-${crypto.randomUUID()}@example.test`,
+    email,
     password: 'correct-horse-9',
   });
   if (error || !data.session || !data.user) throw error ?? new Error('sign-up returned no session');
-  return { id: data.user.id, api: createRowApi(() => client) };
+  return { id: data.user.id, client, email, api: createRowApi(() => client) };
 }
 
 type User = Awaited<ReturnType<typeof newUser>>;
@@ -203,6 +207,149 @@ describe('RowApi against local Supabase', () => {
       const error = await b.api.updateProfile({ last_active_at: new Date().toISOString() }).catch((e) => e);
       expect(error).toMatchObject({ code: '42501' });
       expect(await b.api.updateProfile({ hijri_adjustment: 5 }).catch((e) => e)).toMatchObject({ code: '23514' });
+    });
+  });
+
+  describe('Wasiyyah register, trusted contacts and the invite endpoint', () => {
+    const newToken = () => randomBytes(32).toString('base64url');
+    const hashOf = (token: string) => createHash('sha256').update(token).digest('hex');
+    const invite = (user: User, over: Record<string, unknown> = {}) => {
+      const token = newToken();
+      return {
+        token,
+        row: {
+          id: crypto.randomUUID(), user_id: user.id, name: 'Cee', inviter_name: 'Aisha',
+          email: `contact-${crypto.randomUUID()}@example.test`, phone: null, invite_token_hash: hashOf(token),
+          invite_expires_at: new Date(Date.now() + 7 * 864e5).toISOString(), consented_at: new Date().toISOString(), ...over,
+        },
+      };
+    };
+    const call = async (body: unknown, ip: string, method = 'POST') =>
+      fetch(`${functionsUrl}/accept-invite`, {
+        method, headers: { 'content-type': 'application/json', 'cf-connecting-ip': ip },
+        body: method === 'POST' ? JSON.stringify(body) : undefined,
+      });
+    const randomIp = () => `198.51.100.${Math.floor(Math.random() * 250)}-${crypto.randomUUID()}`;
+
+    it('keeps the instruction note encrypted: write, read, replace, clear, and nobody else sees it', async () => {
+      expect(await a.api.getWasiyyahNote()).toBe('');
+      await a.api.setWasiyyahNote('Call my brother Ali first.');
+      expect(await a.api.getWasiyyahNote()).toBe('Call my brother Ali first.');
+      expect(await b.api.getWasiyyahNote()).toBe(''); // B has no note and cannot see A's
+      await a.api.setWasiyyahNote('');
+      expect(await a.api.getWasiyyahNote()).toBe('');
+      await a.api.setWasiyyahNote('Final note.');
+    });
+
+    it('records note changes and register shares in an audit log nobody else can read or write', async () => {
+      await a.api.logRegisterShared(['debts', 'note']);
+      const log = await a.api.fetchAuditLog();
+      expect(log.map((e) => e.event)).toEqual(expect.arrayContaining(['note_changed', 'register_shared']));
+      expect(log.every((e) => e.actor === 'user')).toBe(true);
+      expect(JSON.stringify(log)).not.toContain('Final note');
+      expect(await b.api.fetchAuditLog()).toEqual([]);
+      await expect(a.api.logRegisterShared(['passwords'])).rejects.toMatchObject({ code: '22023' });
+      const forged = await a.client.from('audit_log').insert({ user_id: a.id, actor: 'user', event: 'note_changed' });
+      expect(forged.error?.code).toBe('42501');
+      const wiped = await a.client.from('audit_log').delete().eq('user_id', a.id);
+      expect(wiped.error?.code).toBe('42501');
+    });
+
+    it('invites up to three contacts, needs consent, and lets the owner revoke but not edit', async () => {
+      const first = invite(a);
+      await a.api.createContact(first.row);
+      const [created] = (await a.api.fetchContacts()).filter((c) => c.id === first.row.id);
+      expect(created).toMatchObject({ status: 'invited', name: 'Cee' });
+      expect(await b.api.fetchContacts()).toEqual([]);
+      await a.api.createContact(invite(a).row);
+      await a.api.createContact(invite(a).row);
+      await expect(a.api.createContact(invite(a).row)).rejects.toMatchObject({ code: '23514' }); // a fourth
+      await expect(b.api.createContact(invite(a, { user_id: a.id }).row)).rejects.toMatchObject({ code: '42501' });
+      await expect(a.api.createContact(invite(a, { consented_at: null }).row)).rejects.toMatchObject({ code: '23514' });
+      const rename = await a.client.from('trusted_contacts').update({ name: 'Renamed' }).eq('id', first.row.id);
+      expect(rename.error?.code).toBe('42501');
+      const accept = await a.client.from('trusted_contacts').update({ status: 'accepted' }).eq('id', first.row.id);
+      expect(accept.error?.code).toBe('42501');
+      await a.api.revokeContact(first.row.id as string);
+      expect((await a.api.fetchContacts()).find((c) => c.id === first.row.id)).toMatchObject({ status: 'revoked' });
+      await a.api.createContact(invite(a).row); // a revoked contact frees a slot
+    });
+
+    itFunction('accepts an invite through the real function, once, and logs it as the contact acting', async () => {
+      const user = await newUser();
+      const { token, row } = invite(user);
+      await user.api.createContact(row);
+      const ip = randomIp();
+
+      const checked = await (await call({ token, action: 'check' }, ip)).json();
+      expect(checked).toEqual({ ok: true, inviter_name: 'Aisha' });
+      expect((await user.api.fetchContacts())[0]).toMatchObject({ status: 'invited' });
+
+      const accepted = await call({ token, action: 'accept' }, ip);
+      expect(accepted.status).toBe(200);
+      expect(await accepted.json()).toEqual({ ok: true, state: 'accepted' });
+      const [contact] = await user.api.fetchContacts();
+      expect(contact).toMatchObject({ status: 'accepted', invite_token_hash: null });
+      expect(contact.accepted_at).toBeTruthy();
+
+      // Accepting spends the token by erasing its hash, so a second visit finds nothing: a used link
+      // is indistinguishable from one that never existed.
+      const again = await call({ token, action: 'accept' }, ip);
+      expect(again.status).toBe(404);
+      expect((await again.json()).error).toBe('invalid');
+
+      const log = await user.api.fetchAuditLog();
+      expect(log.find((e) => e.event === 'contact_accepted')).toMatchObject({ actor: 'contact' });
+      expect(log.filter((e) => e.event === 'contact_invited')).toHaveLength(1);
+    });
+
+    itFunction('lets a contact decline, and an owner who revoked first makes the link useless', async () => {
+      const user = await newUser();
+      const declined = invite(user);
+      await user.api.createContact(declined.row);
+      expect((await call({ token: declined.token, action: 'decline' }, randomIp())).status).toBe(200);
+      expect((await user.api.fetchContacts())[0]).toMatchObject({ status: 'revoked' });
+      expect((await user.api.fetchAuditLog()).some((e) => e.event === 'contact_declined' && e.actor === 'contact')).toBe(true);
+
+      const revoked = invite(user);
+      await user.api.createContact(revoked.row);
+      await user.api.revokeContact(revoked.row.id as string);
+      const res = await call({ token: revoked.token, action: 'accept' }, randomIp());
+      expect(res.status).toBe(404); // revoking also spends the token
+      expect((await user.api.fetchContacts()).find((c) => c.id === revoked.row.id)).toMatchObject({ status: 'revoked' });
+    });
+
+    itFunction('refuses unknown tokens, malformed requests and the wrong method, and answers CORS preflight', async () => {
+      const ip = randomIp();
+      expect((await call({ token: newToken(), action: 'accept' }, ip)).status).toBe(404);
+      expect((await call({ token: 'short', action: 'accept' }, ip)).status).toBe(400);
+      expect((await call({ token: newToken(), action: 'wipe' }, ip)).status).toBe(400);
+      expect((await call(null, ip, 'GET')).status).toBe(405);
+      const preflight = await call(null, ip, 'OPTIONS');
+      expect(preflight.status).toBe(204);
+      expect(preflight.headers.get('access-control-allow-methods')).toContain('POST');
+    });
+
+    itFunction('throttles one address after 20 attempts in an hour, without affecting others', async () => {
+      const ip = randomIp();
+      const statuses: number[] = [];
+      for (let i = 0; i < 22; i++) statuses.push((await call({ token: newToken(), action: 'check' }, ip)).status);
+      expect(statuses.slice(0, 20).every((s) => s === 404)).toBe(true);
+      expect(statuses.slice(20)).toEqual([429, 429]);
+      expect((await call({ token: newToken(), action: 'check' }, randomIp())).status).toBe(404); // someone else is fine
+    });
+
+    it('keeps the register closed to an accepted contact until the case is released', async () => {
+      const contact = await newUser();
+      const { row } = invite(a, { email: contact.email });
+      await a.api.revokeContact((await a.api.fetchContacts()).find((c) => c.status === 'invited')?.id as string);
+      await a.api.createContact(row);
+      // (accepting needs the server; the database tests cover the accepted + released path in full)
+      const result = await contact.client.rpc('get_register_for_contact', { p_owner: a.id });
+      expect(result.error?.code).toBe('42501');
+      const anon = createClient(url as string, key as string, { auth: { persistSession: false } });
+      expect((await anon.rpc('get_register_for_contact', { p_owner: a.id })).error?.code).toBe('42501');
+      expect((await contact.client.from('debts').select('*')).data).toEqual([]); // and the tables stay closed
     });
   });
 });
