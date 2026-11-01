@@ -9,6 +9,15 @@ export interface RowApi {
   /** Encrypted debt fields (Vault, via security-definer functions). */
   getDebtSecrets(debtId: string): Promise<DebtSecrets>;
   setDebtSecrets(debtId: string, secrets: DebtSecrets): Promise<void>;
+  /** Wasiyyah register: trusted contacts (online-only writes), encrypted note, audit log. */
+  fetchContacts(): Promise<Record<string, unknown>[]>;
+  createContact(row: Record<string, unknown>): Promise<void>;
+  revokeContact(id: string): Promise<void>;
+  hasWasiyyahNote(): Promise<boolean>;
+  getWasiyyahNote(): Promise<string>;
+  setWasiyyahNote(note: string): Promise<void>;
+  fetchAuditLog(): Promise<Record<string, unknown>[]>;
+  logRegisterShared(sections: string[]): Promise<void>;
   /** The caller's own profile row. */
   fetchProfile(): Promise<Record<string, unknown> | null>;
   updateProfile(patch: Record<string, unknown>): Promise<void>;
@@ -55,6 +64,42 @@ export const createRowApi = (getClient: () => SupabaseClient): RowApi => ({
       p_reference_no: secrets.reference_no,
       p_notes: secrets.notes,
     });
+    if (error) throw error;
+  },
+  async fetchContacts() {
+    const { data, error } = await getClient().from('trusted_contacts').select('*').order('created_at');
+    if (error) throw error;
+    return data;
+  },
+  async createContact(row) {
+    const { error } = await getClient().from('trusted_contacts').insert(row);
+    if (error) throw error;
+  },
+  async revokeContact(id) {
+    const { error } = await getClient().from('trusted_contacts').update({ status: 'revoked' }).eq('id', id);
+    if (error) throw error;
+  },
+  async hasWasiyyahNote() {
+    const { data, error } = await getClient().from('wasiyyah_notes').select('note_secret_id').maybeSingle();
+    if (error) throw error;
+    return data?.note_secret_id != null;
+  },
+  async getWasiyyahNote() {
+    const { data, error } = await getClient().rpc('get_wasiyyah_note');
+    if (error) throw error;
+    return (data as string | null) ?? '';
+  },
+  async setWasiyyahNote(note) {
+    const { error } = await getClient().rpc('set_wasiyyah_note', { p_note: note });
+    if (error) throw error;
+  },
+  async fetchAuditLog() {
+    const { data, error } = await getClient().from('audit_log').select('*').order('created_at', { ascending: false }).limit(100);
+    if (error) throw error;
+    return data;
+  },
+  async logRegisterShared(sections) {
+    const { error } = await getClient().rpc('log_register_shared', { p_sections: sections });
     if (error) throw error;
   },
   async fetchProfile() {
