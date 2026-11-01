@@ -19,8 +19,10 @@ Never commit `.env`, keys or service-role secrets.
 ```bash
 npm ci
 npm run typecheck && npm run lint && npm test   # same checks as CI
-npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 npx supabase test db                            # RLS tests (needs Docker)
+eval "$(npx supabase status -o env | sed 's/^/export /')"
+LOCAL_SUPABASE_URL=$API_URL LOCAL_SUPABASE_KEY=$ANON_KEY npm run test:integration   # real API + RLS
 npx expo start --dev-client                     # after installing a development build
 ```
 

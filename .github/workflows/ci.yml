@@ -23,7 +23,8 @@ jobs:
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high
 
-  # Proves user A cannot read or write user B's data (pgTAP, local Supabase in Docker).
+  # Proves user A cannot read or write user B's data: pgTAP plus the real client API against
+  # a local Supabase running in Docker.
   rls:
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +34,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Start local Supabase (database + auth only)
-        run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
-      - name: RLS tests
+      - name: Start local Supabase (database, auth and REST API only)
+        run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: RLS tests (SQL)
         run: npx supabase test db
+      - name: Sync API integration tests (real HTTP, RLS, idempotent upserts)
+        run: |
+          eval "$(npx supabase status -o env | sed 's/^/export /')"
+          LOCAL_SUPABASE_URL="$API_URL" LOCAL_SUPABASE_KEY="$ANON_KEY" npm run test:integration

@@ -3,9 +3,9 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColors } from '@/lib/theme';
 
-// PRD §6: five tabs.
+// PRD §6: five tabs. Each tab is its own native stack (large titles live there).
 const TABS = [
-  { name: 'index', title: 'tabs.home', icon: 'home' },
+  { name: '(home)', title: 'tabs.home', icon: 'home' },
   { name: 'transactions', title: 'tabs.transactions', icon: 'swap-horizontal' },
   { name: 'debts', title: 'tabs.debts', icon: 'receipt' },
   { name: 'giving', title: 'tabs.giving', icon: 'heart' },
@@ -16,7 +16,7 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const colors = useColors();
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: colors.tint }}>
+    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.tint }}>
       {TABS.map(({ name, title, icon }) => (
         <Tabs.Screen
           key={name}

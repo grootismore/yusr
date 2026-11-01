@@ -1,0 +1,87 @@
+import { useState } from 'react';
+import { Alert } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { Button, Chips, ErrorText, Field, Group, HeaderTextButton, Screen } from '@/components/ui';
+import { toInputText } from '@/features/transactions/format';
+import { useAccounts, useSaveAccount, useSoftDelete } from '@/features/transactions/hooks';
+import { ACCOUNT_TYPES, type AccountType } from '@/features/transactions/types';
+import { parseMVR } from '@/lib/money';
+
+export default function AccountScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { all } = useAccounts();
+  const existing = id ? all.find((a) => a.id === id) : undefined;
+  const save = useSaveAccount();
+  const archive = useSoftDelete('accounts');
+
+  const [name, setName] = useState(existing?.name ?? '');
+  const [type, setType] = useState<AccountType>(existing?.type ?? 'cash');
+  const [opening, setOpening] = useState(existing ? toInputText(existing.opening_balance_laari) : '0');
+  const [submitted, setSubmitted] = useState(false);
+
+  if (id && !existing) return null;
+
+  let openingLaari: number | null = null;
+  try {
+    openingLaari = opening.trim() === '' ? 0 : parseMVR(opening);
+  } catch {
+    openingLaari = null;
+  }
+  const nameOk = name.trim().length > 0 && name.trim().length <= 100;
+  const error = !nameOk ? t('accounts.nameRequired') : openingLaari === null ? t('accounts.openingInvalid') : null;
+
+  function onSave() {
+    setSubmitted(true);
+    if (error || openingLaari === null) return;
+    save({ name: name.trim(), type, opening_balance_laari: openingLaari }, existing);
+    router.back();
+  }
+
+  function onArchive() {
+    if (!existing) return;
+    Alert.alert(t('accounts.archiveTitle'), t('accounts.archiveBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('accounts.archive'),
+        style: 'destructive',
+        onPress: () => {
+          archive(existing.id);
+          router.back();
+        },
+      },
+    ]);
+  }
+
+  return (
+    <Screen>
+      <Stack.Screen
+        options={{
+          title: existing ? t('accounts.edit') : t('accounts.new'),
+          headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
+        }}
+      />
+      <Group>
+        <Field label={t('accounts.name')} value={name} onChangeText={setName} maxLength={100} autoFocus={!existing} returnKeyType="done" />
+        <Field
+          label={t('accounts.opening')}
+          latin
+          value={opening}
+          onChangeText={setOpening}
+          keyboardType="numbers-and-punctuation"
+        />
+      </Group>
+      <Group title={t('accounts.type')}>
+        <Chips
+          options={ACCOUNT_TYPES.map((value) => ({ value, label: t(`accounts.types.${value}`) }))}
+          value={type}
+          onChange={setType}
+        />
+      </Group>
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
+      {existing ? <Button variant="destructive" title={t('accounts.archive')} onPress={onArchive} /> : null}
+    </Screen>
+  );
+}
