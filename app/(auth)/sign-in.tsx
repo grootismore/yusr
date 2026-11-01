@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';
 import { isValidEmail, MIN_PASSWORD_LENGTH } from '@/lib/auth/authErrors';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useColors } from '@/lib/theme';
@@ -15,21 +16,25 @@ export default function SignInScreen() {
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Unticked by default, one per document (launch checklist 6).
+  const [agreed, setAgreed] = useState<Record<string, boolean>>({});
 
   async function submit() {
     setNotice(null);
     if (!isValidEmail(email)) return setErrorKey('auth.errors.invalidEmail');
     if (mode === 'signUp' && password.length < MIN_PASSWORD_LENGTH) return setErrorKey('auth.errors.passwordShort');
     if (mode === 'signIn' && password.length === 0) return setErrorKey('auth.errors.invalidCredentials');
+    if (mode === 'signUp' && !CONSENT_KINDS.every((kind) => agreed[kind])) return setErrorKey('auth.errors.consentNeeded');
     setErrorKey(null);
     setBusy(true);
-    const result = await (mode === 'signIn' ? signIn : signUp)(email, password);
+    const result = await (mode === 'signIn' ? signIn(email, password) : signUp(email, password, signUpConsentMetadata()));
     setBusy(false);
     if (result.error) setErrorKey(result.error);
     else if (result.needsEmailConfirmation) {
       setNotice('auth.checkEmail');
       setMode('signIn');
       setPassword('');
+      setAgreed({});
     }
   }
 
@@ -83,7 +88,41 @@ export default function SignInScreen() {
       </View>
 
       {mode === 'signUp' ? (
-        <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('auth.passwordHint')}</Text>
+        <>
+          <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('auth.passwordHint')}</Text>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
+            {CONSENT_KINDS.map((kind, index) => {
+              const url = kind === 'age_18' ? null : legalUrl(kind);
+              return (
+                <View
+                  key={kind}
+                  style={{
+                    minHeight: 44,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderTopWidth: index === 0 ? 0 : 0.5,
+                    borderTopColor: colors.separator,
+                  }}
+                >
+                  <Text style={{ flex: 1, fontSize: 15, color: colors.text }}>{t(`auth.consent.${kind}`)}</Text>
+                  {url ? (
+                    <Pressable accessibilityRole="link" accessibilityLabel={t(`auth.consent.${kind}Read`)} onPress={() => void Linking.openURL(url)} style={{ minHeight: 44, justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 15, color: colors.tint }}>{t('auth.consent.read')}</Text>
+                    </Pressable>
+                  ) : null}
+                  <Switch
+                    accessibilityLabel={t(`auth.consent.${kind}`)}
+                    value={agreed[kind] === true}
+                    onValueChange={(value) => setAgreed({ ...agreed, [kind]: value })}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        </>
       ) : null}
       {errorKey ? (
         <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: '#C62828', paddingHorizontal: 16 }}>
