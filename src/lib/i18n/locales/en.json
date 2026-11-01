@@ -1,0 +1,19 @@
+{
+  "tabs": {
+    "home": "Home",
+    "transactions": "Transactions",
+    "debts": "Debts",
+    "giving": "Giving",
+    "more": "More"
+  },
+  "more": {
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "restartTitle": "Restart to finish",
+    "restartBody": "Close and reopen Yusr to apply the new layout direction.",
+    "ok": "OK"
+  }
+}
