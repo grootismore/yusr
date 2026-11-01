@@ -48,7 +48,7 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.agents/",
-      "/supabase/"
+      "<rootDir>/supabase/"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
