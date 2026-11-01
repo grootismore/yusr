@@ -32,7 +32,13 @@
     "reminders": "Reminders",
     "remindersHint": "Gentle reminders for payments, giving and bills. They never show amounts or names.",
     "remindersOffTitle": "Notifications are off",
-    "remindersOffBody": "Allow notifications for Yusr in your phone's settings to get reminders."
+    "remindersOffBody": "Allow notifications for Yusr in your phone's settings to get reminders.",
+    "yourData": "Your data",
+    "export": "Export my data",
+    "exportHint": "Shares a JSON copy of everything in your account, including encrypted notes, with the app you choose.",
+    "exportFailedTitle": "Couldn't export",
+    "exportFailedBody": "Check your connection and try again.",
+    "deleteAccount": "Delete account"
   },
   "auth": {
     "signIn": "Sign in",
@@ -51,7 +57,16 @@
       "cannotCreate": "We couldn't create that account. Try signing in instead.",
       "tooMany": "Too many attempts. Try again in a few minutes.",
       "network": "Check your connection and try again.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "consentNeeded": "Please confirm all three to create your account."
+    },
+    "consent": {
+      "terms": "I accept the Terms of Service",
+      "privacy": "I accept the Privacy Policy",
+      "age_18": "I am 18 or older",
+      "read": "Read",
+      "termsRead": "Read the Terms of Service",
+      "privacyRead": "Read the Privacy Policy"
     }
   },
   "lock": {
@@ -425,5 +440,27 @@
     "aContact": "A contact",
     "someone": "Someone",
     "duplicate": "That email is already invited."
+  },
+  "deleteAccount": {
+    "intro": "Deleting your account removes your data from Yusr. You have 7 days to change your mind.",
+    "whatTitle": "What will be deleted",
+    "items": {
+      "accounts": "Accounts, transactions, categories and budgets",
+      "debts": "Debts and what is owed to you, including encrypted reference numbers and notes",
+      "giving": "Giving commitments and recurring items",
+      "register": "Your Wasiyyah note and register",
+      "contacts": "Trusted contacts and any invitations",
+      "audit": "The audit log and your consent records",
+      "login": "Your sign-in and profile"
+    },
+    "graceNote": "Everything is erased 7 days after you confirm. Until then you can keep your account from Home or Settings. Anything you already shared outside Yusr stays with the people you sent it to.",
+    "confirmTitle": "Type {{email}} to confirm",
+    "confirmLabel": "Type your email to confirm",
+    "submit": "Delete my account",
+    "pendingTitle": "Account scheduled for deletion",
+    "pendingBody": "Your account and data will be erased on {{date}}.",
+    "keep": "Keep my account",
+    "failedTitle": "Couldn't update",
+    "failedBody": "Check your connection and try again."
   }
 }

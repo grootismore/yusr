@@ -15,7 +15,7 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signIn(email: string, password: string): Promise<AuthResult>;
-  signUp(email: string, password: string): Promise<AuthResult>;
+  signUp(email: string, password: string, metadata?: Record<string, unknown>): Promise<AuthResult>;
   signOut(): Promise<void>;
 }
 
@@ -62,8 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await getSupabase().auth.signInWithPassword({ email: email.trim(), password });
         return error ? { error: authErrorKey(error) } : {};
       },
-      async signUp(email, password) {
-        const { data, error } = await getSupabase().auth.signUp({ email: email.trim(), password });
+      async signUp(email, password, metadata) {
+        const { data, error } = await getSupabase().auth.signUp({ email: email.trim(), password, options: { data: metadata } });
         if (error) return { error: authErrorKey(error) };
         return data.session ? {} : { needsEmailConfirmation: true };
       },

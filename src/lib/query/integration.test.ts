@@ -352,4 +352,41 @@ describe('RowApi against local Supabase', () => {
       expect((await contact.client.from('debts').select('*')).data).toEqual([]); // and the tables stay closed
     });
   });
+  describe('user rights', () => {
+    it('records the sign-up confirmations server-side and lets the owner read them', async () => {
+      const client = createClient(url as string, key as string, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await client.auth.signUp({
+        email: `it-${crypto.randomUUID()}@example.test`,
+        password: 'correct-horse-9',
+        options: { data: { consents: { terms: '2026-11-01', privacy: '2026-11-01', age_18: '2026-11-01' } } },
+      });
+      expect(error).toBeNull();
+      expect(data.session).not.toBeNull();
+      const consents = await client.from('consents').select('kind, version, accepted_at');
+      expect(consents.data?.map((c) => c.kind).sort()).toEqual(['age_18', 'privacy', 'terms']);
+      expect(Date.now() - new Date(consents.data?.[0].accepted_at as string).getTime()).toBeLessThan(60_000);
+      expect((await b.client.from('consents').select('*')).data).toEqual([]); // B sees none of them
+    });
+
+    it('exports only the caller’s own data, with their encrypted fields decrypted', async () => {
+      const debtId = crypto.randomUUID();
+      await a.api.upsert('debts', { id: debtId, user_id: a.id, lender: 'Export bank', kind: 'bank', original_laari: 5000, balance_laari: 5000 });
+      await a.api.setDebtSecrets(debtId, { reference_no: 'REF-9', notes: 'for export' });
+      const mine = await a.api.exportMyData();
+      expect((mine.debts as Record<string, unknown>[]).find((d) => d.id === debtId)).toMatchObject({ reference_no: 'REF-9', notes: 'for export' });
+      expect(JSON.stringify(await b.api.exportMyData())).not.toContain('Export bank');
+    });
+
+    it('schedules deletion 7 days out, can be cancelled, and clients cannot run the purge', async () => {
+      const user = await newUser();
+      expect(await user.api.fetchDeletionDate()).toBeNull();
+      const due = new Date(await user.api.requestAccountDeletion()).getTime();
+      expect(due - Date.now()).toBeGreaterThan(6.9 * 86_400_000);
+      expect(due - Date.now()).toBeLessThan(7.1 * 86_400_000);
+      expect(await user.api.fetchDeletionDate()).not.toBeNull();
+      expect((await user.client.rpc('purge_due_account_deletions')).error?.code).toBe('42501');
+      await user.api.cancelAccountDeletion();
+      expect(await user.api.fetchDeletionDate()).toBeNull();
+    });
+  });
 });

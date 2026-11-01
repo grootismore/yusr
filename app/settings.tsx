@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { useRouter } from 'expo-router';
+import { DeletionBanner } from '@/features/account/DeletionBanner';
+import { shareMyData } from '@/features/account/hooks';
 import { Group, Row, Segmented } from '@/components/ui';
 import { requestReminderPermission } from '@/features/reminders/notifications';
 import { setRemindersEnabled, useRemindersEnabled } from '@/features/reminders/preference';
@@ -14,6 +17,7 @@ export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const colors = useColors();
   const { signOut } = useAuth();
+  const router = useRouter();
   const pending = usePendingChanges();
   const { privacyMode, hijriAdjustment } = useProfile();
   const updateProfile = useUpdateProfile();
@@ -43,8 +47,13 @@ export default function SettingsScreen() {
     }
   }
 
+  function exportData() {
+    shareMyData().catch(() => Alert.alert(t('settings.exportFailedTitle'), t('settings.exportFailedBody')));
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, padding: 16, gap: 8 }}>
+      <DeletionBanner />
       <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>
         {t('settings.language')}
       </Text>
@@ -96,6 +105,10 @@ export default function SettingsScreen() {
           value={String(hijriAdjustment)}
           onChange={(value) => updateProfile({ hijri_adjustment: Number(value) })}
         />
+      </Group>
+      <Group title={t('settings.yourData')} footer={t('settings.exportHint')}>
+        <Row label={t('settings.export')} chevron onPress={exportData} />
+        <Row label={t('settings.deleteAccount')} destructive chevron onPress={() => router.push('/delete-account')} />
       </Group>
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
