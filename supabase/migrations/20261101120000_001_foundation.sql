@@ -238,3 +238,10 @@ insert into public.categories (user_id, name_en, name_dv, kind, is_default) valu
   (null, 'Family support',        'ޢާއިލާއަށް އެހީތެރިވުން',    'expense', true),
   (null, 'Medical',               'ބޭސްފަރުވާ',                'expense', true),
   (null, 'Islamic giving',        'އިސްލާމީ ދިނުން',            'giving',  true);
+
+-- ---------------------------------------------------------------- backfill
+-- Users who signed up before this migration was applied (e.g. on a dev project)
+-- get a profile too. A no-op on a fresh database.
+insert into public.profiles (user_id)
+select id from auth.users
+on conflict (user_id) do nothing;
