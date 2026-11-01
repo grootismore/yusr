@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Money } from '@/components/ui';
 import { useCategoryName, useFormatDate } from '@/features/transactions/format';
-import { useAccounts, useCategories, usePendingChanges, useTransactions } from '@/features/transactions/hooks';
+import { useAccounts, useCategories, usePendingChanges, useProfile, useTransactions } from '@/features/transactions/hooks';
+import { useFormatHijri } from '@/features/giving/format';
 import { groupByDay, signedAmount } from '@/features/transactions/logic';
 import { useColors } from '@/lib/theme';
 
@@ -14,6 +15,8 @@ export default function TransactionsScreen() {
   const colors = useColors();
   const formatDate = useFormatDate();
   const categoryName = useCategoryName();
+  const formatHijri = useFormatHijri();
+  const { privacyMode, hijriAdjustment } = useProfile();
   const pending = usePendingChanges();
   const accounts = useAccounts();
   const categories = useCategories();
@@ -46,10 +49,10 @@ export default function TransactionsScreen() {
       }
       renderSectionHeader={({ section }) => (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 }}>
-          <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText }}>
-            {formatDate(section.date)}
+          <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText, flexShrink: 1 }}>
+            {`${formatDate(section.date)} · ${formatHijri(section.date, hijriAdjustment)}`}
           </Text>
-          <Money laari={section.net} />
+          <Money laari={section.net} hidden={privacyMode && section.data.some((x) => x.kind === 'giving')} />
         </View>
       )}
       renderItem={({ item, index, section }) => (
@@ -75,10 +78,10 @@ export default function TransactionsScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 17, color: colors.text }}>{categoryName(categoryById.get(item.category_id))}</Text>
             <Text numberOfLines={1} style={{ fontSize: 13, color: colors.secondaryText }}>
-              {[accountNames.get(item.account_id), item.note].filter(Boolean).join(' · ')}
+              {[accountNames.get(item.account_id), privacyMode && item.kind === 'giving' ? null : item.note].filter(Boolean).join(' · ')}
             </Text>
           </View>
-          <Money laari={signedAmount(item)} color={item.kind === 'income' ? colors.tint : undefined} />
+          <Money laari={signedAmount(item)} color={item.kind === 'income' ? colors.tint : undefined} hidden={privacyMode && item.kind === 'giving'} />
         </Pressable>
       )}
     />

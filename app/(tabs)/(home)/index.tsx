@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
 import { useCategoryName, useMonthLabel } from '@/features/transactions/format';
-import { useAccounts, useCategories, useDataReady, useTransactions } from '@/features/transactions/hooks';
+import { useAccounts, useCategories, useDataReady, useProfile, useTransactions } from '@/features/transactions/hooks';
+import { useHijriMonthLabel } from '@/features/giving/format';
 import {
   accountBalance,
   categoryBreakdown,
@@ -21,6 +22,8 @@ export default function HomeScreen() {
   const colors = useColors();
   const monthLabel = useMonthLabel();
   const categoryName = useCategoryName();
+  const hijriMonth = useHijriMonthLabel();
+  const { privacyMode, hijriAdjustment } = useProfile();
   const ready = useDataReady();
   const accounts = useAccounts();
   const categories = useCategories();
@@ -58,9 +61,14 @@ export default function HomeScreen() {
           label={t('home.prevMonth')}
           onPress={() => setMonth(shiftMonth(month, -1))}
         />
-        <Text accessibilityRole="header" style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>
-          {monthLabel(month)}
-        </Text>
+        <View style={{ alignItems: 'center' }}>
+          <Text accessibilityRole="header" style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>
+            {monthLabel(month)}
+          </Text>
+          <Text style={{ fontSize: 13, color: colors.secondaryText }}>
+            {[...new Set([hijriMonth(`${month}-01`, hijriAdjustment), hijriMonth(`${month}-28`, hijriAdjustment)])].join(' – ')}
+          </Text>
+        </View>
         <HeaderIconButton
           icon={rtl ? 'chevron-back' : 'chevron-forward'}
           label={t('home.nextMonth')}
@@ -71,7 +79,7 @@ export default function HomeScreen() {
       <Group title={t('home.thisMonth')}>
         <Row label={t('home.income')} right={<Money laari={summary.income} />} />
         <Row label={t('home.expenses')} right={<Money laari={summary.expense} />} />
-        <Row label={t('home.giving')} right={<Money laari={summary.giving} />} />
+        <Row label={t('home.giving')} right={<Money laari={summary.giving} hidden={privacyMode} />} />
         <Row label={t('home.net')} right={<Money laari={summary.net} bold />} />
       </Group>
 
@@ -81,7 +89,7 @@ export default function HomeScreen() {
             <Row
               key={item.categoryId}
               label={`${categoryName(byId.get(item.categoryId))} · ${item.percent}%`}
-              right={<Money laari={item.total} />}
+              right={<Money laari={item.total} hidden={privacyMode && byId.get(item.categoryId)?.kind === 'giving'} />}
             />
           ))
         ) : (

@@ -130,7 +130,13 @@ export default function TransactionScreen() {
   const header = (
     <Stack.Screen
       options={{
-        title: existing ? t('transactions.editTitle') : paymentDebt ? t('debts.logPayment') : t('transactions.newTitle'),
+        title: existing
+          ? t('transactions.editTitle')
+          : paymentDebt
+            ? t('debts.logPayment')
+            : doneCommitment
+              ? t('giving.markDone')
+              : t('transactions.newTitle'),
         headerLeft: () => <HeaderTextButton label={t('common.cancel')} onPress={() => router.back()} />,
         headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
       }}

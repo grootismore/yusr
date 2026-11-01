@@ -11,6 +11,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { formatMVR } from '@/lib/money';
 import { useColors } from '@/lib/theme';
 
@@ -102,10 +103,13 @@ export function Row({ label, value, right, onPress, chevron, destructive, access
 }
 
 /** Money always renders left-to-right with aligned digits, even in an RTL layout. */
-export function Money({ laari, color, bold }: { laari: number; color?: string; bold?: boolean }) {
+export function Money({ laari, color, bold, hidden }: { laari: number; color?: string; bold?: boolean; hidden?: boolean }) {
   const colors = useColors();
+  const { t } = useTranslation();
   return (
     <Text
+      // Private mode: masked on screen and read out as "Hidden", never as the amount.
+      accessibilityLabel={hidden ? t('common.hidden') : undefined}
       style={{
         writingDirection: 'ltr',
         fontVariant: ['tabular-nums'],
@@ -114,7 +118,7 @@ export function Money({ laari, color, bold }: { laari: number; color?: string; b
         color: color ?? colors.text,
       }}
     >
-      {formatMVR(laari)}
+      {hidden ? '••••' : formatMVR(laari)}
     </Text>
   );
 }

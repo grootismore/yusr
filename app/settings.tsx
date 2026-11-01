@@ -1,9 +1,10 @@
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
-import { usePendingChanges } from '@/features/transactions/hooks';
+import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { Group, Row, Segmented } from '@/components/ui';
 import { useColors } from '@/lib/theme';
 
 // Placeholder settings screen: language switcher only (Phase 1).
@@ -12,6 +13,8 @@ export default function SettingsScreen() {
   const colors = useColors();
   const { signOut } = useAuth();
   const pending = usePendingChanges();
+  const { privacyMode, hijriAdjustment } = useProfile();
+  const updateProfile = useUpdateProfile();
 
   function confirmSignOut() {
     if (pending === 0) return void signOut();
@@ -61,6 +64,23 @@ export default function SettingsScreen() {
           );
         })}
       </View>
+      <Group footer={t('settings.privacyHint')}>
+        <Row
+          label={t('settings.privacy')}
+          right={<Switch accessibilityLabel={t('settings.privacy')} value={privacyMode} onValueChange={(value) => updateProfile({ privacy_mode: value })} />}
+        />
+      </Group>
+      <Group title={t('settings.hijriAdjust')} footer={t('settings.hijriHint')}>
+        <Segmented
+          options={[
+            { value: '-1', label: t('settings.hijriMinus') },
+            { value: '0', label: t('settings.hijriZero') },
+            { value: '1', label: t('settings.hijriPlus') },
+          ]}
+          value={String(hijriAdjustment)}
+          onChange={(value) => updateProfile({ hijri_adjustment: Number(value) })}
+        />
+      </Group>
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
           accessibilityRole="button"

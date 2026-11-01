@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
+import type { Commitment } from '@/features/giving/types';
+import { currentOccurrence } from '@/features/giving/schedule';
 import type { Account, Category, Transaction } from '@/features/transactions/types';
 import { i18n, initI18n } from '@/lib/i18n';
+import CommitmentScreen from '../../app/(tabs)/giving/commitment';
+import GivingScreen from '../../app/(tabs)/giving/index';
+import TransactionsScreen from '../../app/(tabs)/transactions/index';
+import SettingsScreen from '../../app/settings';
 import DebtFormScreen from '../../app/(tabs)/debts/debt';
 import DebtsScreen from '../../app/(tabs)/debts/index';
 import HomeScreen from '../../app/(tabs)/(home)/index';
@@ -24,6 +30,7 @@ jest.mock('expo-router', () => {
     },
   };
 });
+jest.mock('@/lib/auth/AuthProvider', () => ({ useAuth: () => ({ signOut: jest.fn() }) }));
 jest.mock('expo-sqlite/kv-store', () => ({
   __esModule: true,
   default: { getItemSync: jest.fn(() => null), setItemSync: jest.fn() },
@@ -44,12 +51,16 @@ const mockSave = jest.fn();
 const mockRemove = jest.fn();
 const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-debt-id');
 const mockSaveSecrets = jest.fn();
+const mockSaveCommitment = jest.fn();
+const mockUpdateProfile = jest.fn();
 const state = {
   accounts: [] as Account[],
   categories: [] as Category[],
   transactions: [] as Transaction[],
   debts: [] as Debt[],
   receivables: [] as Receivable[],
+  commitments: [] as Commitment[],
+  privacy: false,
   secrets: null as { reference_no: string; notes: string } | null,
   ready: true,
   pending: 0,
@@ -64,7 +75,10 @@ jest.mock('@/features/transactions/hooks', () => ({
   useSoftDelete: () => mockRemove,
   useDebts: () => ({ all: state.debts, active: state.debts.filter((d) => d.deleted_at === null) }),
   useReceivables: () => ({ all: state.receivables, active: state.receivables.filter((r) => r.deleted_at === null) }),
-  useCommitments: () => ({ all: [], active: [] }),
+  useCommitments: () => ({ all: state.commitments, active: state.commitments.filter((c) => c.deleted_at === null) }),
+  useSaveCommitment: () => mockSaveCommitment,
+  useProfile: () => ({ privacyMode: state.privacy, hijriAdjustment: 0 }),
+  useUpdateProfile: () => mockUpdateProfile,
   useSaveDebt: () => mockSaveDebt,
   useSaveDebtSecrets: () => mockSaveSecrets,
   useDebtSecrets: () => ({ data: state.secrets ?? undefined }),
@@ -91,6 +105,8 @@ beforeEach(() => {
   state.transactions = [];
   state.debts = [];
   state.receivables = [];
+  state.commitments = [];
+  state.privacy = false;
   state.secrets = null;
   state.ready = true;
   state.pending = 0;
@@ -385,5 +401,176 @@ describe('logging a debt payment from the transaction sheet', () => {
     mockParams = { debtId: 'd1' };
     await render(<TransactionScreen />);
     expect(screen.getByLabelText('Amount (MVR)').props.value).toBe('300.00');
+  });
+});
+
+
+const friday = (over: Partial<Commitment> = {}): Commitment => ({
+  id: 'g1', user_id: 'u', type: 'sadaqah', amount_laari: 5000, schedule: 'weekly_friday', due_on: null, day_of_month: null,
+  recipient_note: 'Mosque fund', reminder_enabled: true, active: true, ...stamp, ...over,
+});
+const today = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+const gave = (on: string, over: Partial<Transaction> = {}): Transaction => ({
+  id: `give-${on}`, user_id: 'u', account_id: 'a-cash', category_id: 'c-give', amount_laari: 5000, kind: 'giving',
+  occurred_on: on, note: null, debt_id: null, commitment_id: 'g1', ...stamp, ...over,
+});
+
+describe('giving tab', () => {
+  it('invites the user to plan their first giving', async () => {
+    await render(<GivingScreen />);
+    expect(screen.getByText('No giving set up')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add giving'));
+    expect(mockPush).toHaveBeenCalledWith('/giving/commitment');
+  });
+
+  it('lists a commitment with its amount, recipient and a Mark done action', async () => {
+    state.commitments = [friday()];
+    await render(<GivingScreen />);
+    expect(screen.getByText('Sadaqah')).toBeTruthy();
+    expect(screen.getByText('MVR 50.00')).toBeTruthy();
+    expect(screen.getByText('Mosque fund')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Mark done'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/transaction', params: { commitmentId: 'g1' } });
+  });
+
+  it('shows Done instead of Mark done once this Friday is logged', async () => {
+    const c = friday();
+    const occurrence = currentOccurrence(c, today());
+    state.commitments = [c];
+    state.transactions = [gave(occurrence?.end ?? today())];
+    await render(<GivingScreen />);
+    expect(screen.getByText('Done')).toBeTruthy();
+    expect(screen.queryByText('Mark done')).toBeNull();
+  });
+
+  it('private mode hides the amount and the recipient, and speaks "Hidden"', async () => {
+    state.commitments = [friday()];
+    state.privacy = true;
+    await render(<GivingScreen />);
+    expect(screen.queryByText('MVR 50.00')).toBeNull();
+    expect(screen.queryByText('Mosque fund')).toBeNull();
+    expect(screen.getByText('••••')).toBeTruthy();
+    expect(screen.getByLabelText('Hidden')).toBeTruthy();
+  });
+
+  it('does not list a paused (inactive) commitment', async () => {
+    state.commitments = [friday({ active: false })];
+    await render(<GivingScreen />);
+    expect(screen.getByText('No giving set up')).toBeTruthy();
+  });
+});
+
+describe('commitment form', () => {
+  it('saves a weekly commitment: amount in laari, no date or day', async () => {
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '25.50');
+    await fireEvent.changeText(screen.getByLabelText('Recipient note (optional)'), ' Mosque ');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'sadaqah', amount_laari: 2550, schedule: 'weekly_friday', due_on: null, day_of_month: null,
+        recipient_note: 'Mosque', reminder_enabled: true, active: true,
+      }),
+      undefined,
+    );
+    expect(mockBack).toHaveBeenCalled();
+  });
+
+  it('needs a day for a monthly commitment and stores it', async () => {
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '100');
+    await fireEvent.press(screen.getByText('Monthly'));
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).not.toHaveBeenCalled();
+    expect(screen.getByText('Enter a day from 1 to 31.')).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Day of month'), '27');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).toHaveBeenCalledWith(expect.objectContaining({ schedule: 'monthly', day_of_month: 27, due_on: null }), undefined);
+  });
+
+  it('stores a one-off with its date and clears fields that do not apply', async () => {
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '100');
+    await fireEvent.press(screen.getByText('One time'));
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).toHaveBeenCalledWith(expect.objectContaining({ schedule: 'once', due_on: today(), day_of_month: null }), undefined);
+  });
+
+  it('refuses a missing or zero amount', async () => {
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '0');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).not.toHaveBeenCalled();
+    expect(screen.getByText('Enter a valid amount, for example 1,250.00.')).toBeTruthy();
+  });
+});
+
+describe('marking a commitment done from the transaction sheet', () => {
+  it('prefills a giving transaction in Islamic giving, links the commitment and locks the kind', async () => {
+    state.categories = [...state.categories, cat('c-give', 'Islamic giving', 'giving')];
+    state.commitments = [friday()];
+    mockParams = { commitmentId: 'g1' };
+    await render(<TransactionScreen />);
+    expect(screen.getByLabelText('Amount (MVR)').props.value).toBe('50.00');
+    expect(screen.queryByText('Income')).toBeNull();
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'giving', category_id: 'c-give', amount_laari: 5000, commitment_id: 'g1' }),
+      undefined,
+    );
+  });
+});
+
+describe('private mode on other screens', () => {
+  const givingTx = gave(today(), { id: 'tx-give', commitment_id: null, note: 'to Aminath' });
+
+  it('masks giving amounts and notes in the transactions list, but not other spending', async () => {
+    state.categories = [...state.categories, cat('c-give', 'Islamic giving', 'giving')];
+    state.transactions = [
+      givingTx,
+      { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense',
+        occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp },
+    ];
+    state.privacy = true;
+    await render(<TransactionsScreen />);
+    expect(screen.queryByText(/to Aminath/)).toBeNull();
+    expect(screen.queryByText('-MVR 50.00')).toBeNull();
+    expect(screen.getByText(/weekly shop/)).toBeTruthy();
+    expect(screen.getByText('-MVR 125.00')).toBeTruthy();
+  });
+
+  it('shows everything when private mode is off', async () => {
+    state.categories = [...state.categories, cat('c-give', 'Islamic giving', 'giving')];
+    state.transactions = [givingTx];
+    await render(<TransactionsScreen />);
+    expect(screen.getByText(/to Aminath/)).toBeTruthy();
+    expect(screen.getAllByText('-MVR 50.00')).toHaveLength(2); // the transaction and the day's total
+  });
+
+  it('masks the giving figure on Home but leaves income and expenses', async () => {
+    state.categories = [...state.categories, cat('c-give', 'Islamic giving', 'giving')];
+    state.transactions = [
+      givingTx,
+      { id: 'tx-in', user_id: 'u', account_id: 'a-cash', category_id: 'c-sal', amount_laari: 500000, kind: 'income',
+        occurred_on: today(), note: null, debt_id: null, commitment_id: null, ...stamp },
+    ];
+    state.privacy = true;
+    await render(<HomeScreen />);
+    expect(screen.getByText('MVR 5,000.00')).toBeTruthy(); // income still shown
+    expect(screen.queryByText('MVR 50.00')).toBeNull(); // giving hidden
+    expect(screen.getAllByText('••••').length).toBeGreaterThan(0);
+  });
+});
+
+describe('settings', () => {
+  it('turns private mode on and sets the Hijri adjustment through the profile', async () => {
+    await render(<SettingsScreen />);
+    await fireEvent(screen.getByLabelText('Private mode'), 'valueChange', true);
+    expect(mockUpdateProfile).toHaveBeenCalledWith({ privacy_mode: true });
+    await fireEvent.press(screen.getByText('+1 day'));
+    expect(mockUpdateProfile).toHaveBeenCalledWith({ hijri_adjustment: 1 });
   });
 });

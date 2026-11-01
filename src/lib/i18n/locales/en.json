@@ -19,7 +19,14 @@
     "ok": "OK",
     "signOut": "Sign out",
     "pendingTitle": "Unsynced changes",
-    "pendingBody": "Some changes haven't reached the server yet. Signing out now will lose them. Sign out anyway?"
+    "pendingBody": "Some changes haven't reached the server yet. Signing out now will lose them. Sign out anyway?",
+    "privacy": "Private mode",
+    "privacyHint": "Hides giving amounts and recipients on screen. Totals such as net still include giving.",
+    "hijriAdjust": "Hijri date adjustment",
+    "hijriHint": "Move Hijri dates by a day to match your local moon sighting.",
+    "hijriMinus": "−1 day",
+    "hijriZero": "None",
+    "hijriPlus": "+1 day"
   },
   "auth": {
     "signIn": "Sign in",
@@ -51,7 +58,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "ok": "OK"
+    "ok": "OK",
+    "hidden": "Hidden"
   },
   "home": {
     "thisMonth": "This month",
@@ -209,5 +217,62 @@
     "receivedTitle": "Mark as received?",
     "receivedBody": "It will be removed from the list.",
     "debtorRequired": "Enter who owes you."
+  },
+  "giving": {
+    "emptyTitle": "No giving set up",
+    "emptyBody": "Plan your sadaqah or zakat and be reminded gently.",
+    "add": "Add giving",
+    "newTitle": "New giving",
+    "editTitle": "Edit giving",
+    "types": {
+      "sadaqah": "Sadaqah",
+      "zakat": "Zakat",
+      "fitr": "Zakat al-Fitr",
+      "fidya": "Fidya",
+      "kaffarah": "Kaffarah",
+      "jariyah": "Sadaqah jariyah"
+    },
+    "schedules": {
+      "once": "One time",
+      "weekly_friday": "Every Friday",
+      "monthly": "Monthly",
+      "ramadan": "Ramadan",
+      "dhul_hijjah": "Dhul Hijjah"
+    },
+    "type": "Type",
+    "amount": "Amount (MVR)",
+    "schedule": "How often",
+    "date": "Date",
+    "dayOfMonth": "Day of month",
+    "recipient": "Recipient note (optional)",
+    "reminder": "Remind me",
+    "active": "Active",
+    "markDone": "Mark done",
+    "done": "Done",
+    "due": "Due {{date}}",
+    "during": "During {{month}}",
+    "overdue": "Waiting since {{date}}",
+    "hidden": "Hidden",
+    "dateRequired": "Choose a date.",
+    "archive": "Archive giving",
+    "archiveTitle": "Archive this giving?",
+    "archiveBody": "It will be hidden from lists. What you already gave is kept.",
+    "guidance": "A planning aid, not a religious ruling. For zakat amounts, ask a scholar."
+  },
+  "hijri": {
+    "months": {
+      "m01": "Muharram",
+      "m02": "Safar",
+      "m03": "Rabiʿ al-Awwal",
+      "m04": "Rabiʿ al-Thani",
+      "m05": "Jumada al-Ula",
+      "m06": "Jumada al-Thani",
+      "m07": "Rajab",
+      "m08": "Shaʿban",
+      "m09": "Ramadan",
+      "m10": "Shawwal",
+      "m11": "Dhul Qiʿdah",
+      "m12": "Dhul Hijjah"
+    }
   }
 }
