@@ -1,4 +1,4 @@
-import { MutationObserver, dehydrate, hydrate, onlineManager, type QueryClient } from '@tanstack/react-query';
+import { MutationObserver, dehydrate, hydrate, onlineManager, timeoutManager, type QueryClient } from '@tanstack/react-query';
 import { applySoftDelete, upsertById, type Table } from './cache';
 import { createQueryClient, isTransient, listKey, type SoftDeleteVars, type UpsertVars } from './client';
 
@@ -26,7 +26,31 @@ const vars: UpsertVars = { table: 'transactions', userId: 'u1', row };
 const key = listKey('transactions', 'u1');
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-afterEach(() => onlineManager.setOnline(true));
+// TanStack keeps multi-day garbage-collection timers for queries and for mutations that are
+// still pending (the paused-offline tests leave some on purpose). Unref them so they never
+// hold the Jest process open; a hung `npm test` once ran for hours on CI.
+const unref = <T>(id: T): T => {
+  (id as unknown as { unref?: () => void }).unref?.();
+  return id;
+};
+timeoutManager.setTimeoutProvider({
+  setTimeout: (callback, delay) => unref(setTimeout(callback, delay)),
+  clearTimeout: (id) => clearTimeout(id as number | undefined),
+  setInterval: (callback, delay) => unref(setInterval(callback, delay)),
+  clearInterval: (id) => clearInterval(id as number | undefined),
+});
+
+const clients: QueryClient[] = [];
+const makeClient = (api: ReturnType<typeof fakeApi>) => {
+  const client = createQueryClient(api);
+  clients.push(client);
+  return client;
+};
+
+afterEach(() => {
+  onlineManager.setOnline(true);
+  clients.splice(0).forEach((client) => client.clear());
+});
 
 describe('cache helpers', () => {
   it('upsertById appends new rows and replaces existing ones in place', () => {
@@ -53,7 +77,7 @@ describe('isTransient', () => {
 describe('offline mutation queue', () => {
   it('applies a write optimistically, holds it while offline, and sends it once on reconnect', async () => {
     const api = fakeApi();
-    const client = createQueryClient(api);
+    const client = makeClient(api);
     onlineManager.setOnline(false);
 
     upsertObserver(client).mutate(vars).catch(() => undefined);
@@ -80,7 +104,7 @@ describe('offline mutation queue', () => {
 
   it('survives an app restart: a paused write is saved, restored and replayed exactly once', async () => {
     const before = fakeApi();
-    const clientBefore = createQueryClient(before);
+    const clientBefore = makeClient(before);
     onlineManager.setOnline(false);
     upsertObserver(clientBefore).mutate(vars).catch(() => undefined);
     await tick();
@@ -89,7 +113,7 @@ describe('offline mutation queue', () => {
     expect(saved.mutations).toHaveLength(1);
 
     const after = fakeApi();
-    const clientAfter = createQueryClient(after); // fresh process
+    const clientAfter = makeClient(after); // fresh process
     hydrate(clientAfter, saved);
     expect(clientAfter.getQueryData(key)).toEqual([row]); // optimistic row restored with the cache
 
@@ -102,7 +126,7 @@ describe('offline mutation queue', () => {
 
   it('replays queued writes in the order they were made', async () => {
     const api = fakeApi();
-    const client = createQueryClient(api);
+    const client = makeClient(api);
     onlineManager.setOnline(false);
     for (const id of ['one', 'two', 'three']) {
       upsertObserver(client)
@@ -117,7 +141,7 @@ describe('offline mutation queue', () => {
 
   it('queues a delete offline and removes the transaction from the cache straight away', async () => {
     const api = fakeApi();
-    const client = createQueryClient(api);
+    const client = makeClient(api);
     client.setQueryData(key, [row]);
     onlineManager.setOnline(false);
     const del: SoftDeleteVars = { table: 'transactions', userId: 'u1', id: 'tx-1', at: 'now' };
@@ -133,7 +157,7 @@ describe('offline mutation queue', () => {
   it('rolls back to server truth when the server rejects a write (no retry for rule violations)', async () => {
     const api = fakeApi();
     api.upsert.mockRejectedValue({ code: '42501', message: 'row-level security' });
-    const client = createQueryClient(api);
+    const client = makeClient(api);
     client.setQueryData(key, []);
     await expect(upsertObserver(client).mutate(vars)).rejects.toBeDefined();
     expect(api.upsert).toHaveBeenCalledTimes(1);
