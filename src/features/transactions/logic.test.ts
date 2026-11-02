@@ -1,6 +1,7 @@
 import {
   accountBalance,
   categoryBreakdown,
+  filterTransactions,
   fromISODate,
   groupByDay,
   monthOf,
@@ -136,5 +137,49 @@ describe('dates', () => {
     expect(shiftMonth('2026-12', 1)).toBe('2027-01');
     expect(shiftMonth('2026-11', 0)).toBe('2026-11');
     expect(monthOf('2026-11-30')).toBe('2026-11');
+  });
+});
+
+describe('filterTransactions (search)', () => {
+  const rows = [
+    tx({ id: 'g', amount_laari: 4500, note: 'Weekly shop', category_id: 'groceries' }),
+    tx({ id: 'f', amount_laari: 45000, note: 'Ferry ticket', category_id: 'transport' }),
+    tx({ id: 'z', amount_laari: 90000, kind: 'giving', note: 'Hassan family', category_id: 'zakat' }),
+  ];
+  const names: Record<string, string> = { groceries: 'Groceries', transport: 'Transport', zakat: 'Zakat' };
+  const lookups = (hide = false) => ({
+    categoryName: (t: Transaction) => names[t.category_id],
+    accountName: () => 'Cash',
+    hidden: (t: Transaction) => hide && t.kind === 'giving',
+  });
+  const ids = (q: string, hide = false) => filterTransactions(rows, q, lookups(hide)).map((t) => t.id);
+
+  it('returns everything for an empty or blank query', () => {
+    expect(ids('')).toEqual(['g', 'f', 'z']);
+    expect(ids('   ')).toEqual(['g', 'f', 'z']);
+  });
+  it('matches category, account and note without regard to case', () => {
+    expect(ids('GROC')).toEqual(['g']);
+    expect(ids('cash')).toEqual(['g', 'f', 'z']);
+    expect(ids('ferry')).toEqual(['f']);
+  });
+  it('matches the amount as shown: 45 finds 45.00 and 450.00', () => {
+    expect(ids('45')).toEqual(['g', 'f']);
+    expect(ids('450.00')).toEqual(['f']);
+    expect(ids('900')).toEqual(['z']);
+  });
+  it('finds nothing for an unknown term', () => {
+    expect(ids('submarine')).toEqual([]);
+  });
+  it('does not let search reveal what private mode hides', () => {
+    expect(ids('hassan', true)).toEqual([]); // the note is hidden
+    expect(ids('900', true)).toEqual([]); // the amount is hidden
+    expect(ids('zakat', true)).toEqual(['z']); // the category name is shown
+    expect(ids('hassan', false)).toEqual(['z']);
+  });
+  it('does not change the input', () => {
+    const before = [...rows];
+    filterTransactions(rows, 'ferry', lookups());
+    expect(rows).toEqual(before);
   });
 });

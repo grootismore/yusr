@@ -38,7 +38,9 @@
     "exportHint": "Shares a JSON copy of everything in your account, including encrypted notes, with the app you choose.",
     "exportFailedTitle": "Couldn't export",
     "exportFailedBody": "Check your connection and try again.",
-    "deleteAccount": "Delete account"
+    "deleteAccount": "Delete account",
+    "haptics": "Haptic feedback",
+    "hapticsHint": "A light tap when you change a choice, save, or confirm something."
   },
   "auth": {
     "signIn": "Sign in",
@@ -132,7 +134,10 @@
     "deleteTitle": "Delete this transaction?",
     "deleteBody": "It will be removed from your totals.",
     "delete": "Delete transaction",
-    "syncPending": "Waiting to sync: {{count}}"
+    "syncPending": "Waiting to sync: {{count}}",
+    "search": "Search transactions",
+    "noMatchesTitle": "No matches",
+    "noMatchesBody": "Try a category, account, note or amount."
   },
   "accounts": {
     "title": "Accounts",

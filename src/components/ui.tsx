@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   I18nManager,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,20 +11,17 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { AppIcon, type IconName } from './AppIcon';
 import { formatMVR } from '@/lib/money';
+import { selectionHaptic } from '@/lib/haptics';
 import { useColors } from '@/lib/theme';
 
-/** Red is reserved for destructive or overdue things (PRD §6). */
-export const DANGER = '#C62828';
-
-type IconName = ComponentProps<typeof Ionicons>['name'];
-
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, refresh }: { children: ReactNode; refresh?: { refreshing: boolean; onRefresh: () => void } }) {
   const colors = useColors();
   return (
     <ScrollView
+      refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ padding: 16, gap: 20 }}
       contentInsetAdjustmentBehavior="automatic"
@@ -76,11 +74,11 @@ export function Row({ label, value, right, onPress, chevron, destructive, access
   const colors = useColors();
   const content = (
     <View style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 12 }}>
-      <Text style={{ flex: 1, fontSize: 17, color: destructive ? DANGER : colors.text }}>{label}</Text>
+      <Text style={{ flex: 1, fontSize: 17, color: destructive ? colors.danger : colors.text }}>{label}</Text>
       {value ? <Text style={{ fontSize: 17, color: colors.secondaryText, flexShrink: 1 }}>{value}</Text> : null}
       {right}
       {chevron ? (
-        <Ionicons
+        <AppIcon
           accessible={false}
           name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'}
           size={18}
@@ -137,7 +135,7 @@ export function Button({
   variant?: 'primary' | 'destructive';
 }) {
   const colors = useColors();
-  const background = variant === 'destructive' ? DANGER : colors.tint;
+  const background = variant === 'destructive' ? colors.danger : colors.tint;
   return (
     <Pressable
       accessibilityRole="button"
@@ -182,7 +180,10 @@ export function Segmented<T extends string>({
             key={option.value}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (!selected) selectionHaptic();
+              onChange(option.value);
+            }}
             style={{
               flex: 1,
               minHeight: 44,
@@ -221,7 +222,10 @@ export function Chips<T extends string>({
             key={option.value}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (!selected) selectionHaptic();
+              onChange(option.value);
+            }}
             style={{
               minHeight: 44,
               justifyContent: 'center',
@@ -258,9 +262,10 @@ export function Field({ label, latin, ...input }: { label: string; latin?: boole
 }
 
 export function ErrorText({ children }: { children?: string | null }) {
+  const colors = useColors();
   if (!children) return null;
   return (
-    <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: DANGER, paddingHorizontal: 16 }}>
+    <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: colors.danger, paddingHorizontal: 16 }}>
       {children}
     </Text>
   );
@@ -282,7 +287,7 @@ export function EmptyState({
   const colors = useColors();
   return (
     <View style={{ alignItems: 'center', gap: 12, padding: 32 }}>
-      <Ionicons accessible={false} name={icon} size={40} color={colors.secondaryText} />
+      <AppIcon accessible={false} name={icon} size={40} color={colors.secondaryText} />
       <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center' }}>
         {title}
       </Text>
@@ -302,7 +307,7 @@ export function HeaderIconButton({ icon, label, onPress }: { icon: IconName; lab
       onPress={onPress}
       style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
     >
-      <Ionicons name={icon} size={26} color={colors.tint} />
+      <AppIcon name={icon} size={26} color={colors.tint} />
     </Pressable>
   );
 }

@@ -1,5 +1,4 @@
 import { Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { PreventCapture } from '@/components/PreventCapture';
@@ -17,6 +16,7 @@ import {
 import { readiness } from '@/features/wasiyyah/register';
 import { sum } from '@/lib/money';
 import { useColors } from '@/lib/theme';
+import { AppIcon } from '@/components/AppIcon';
 
 export default function WasiyyahScreen() {
   const { t } = useTranslation();
@@ -40,7 +40,7 @@ export default function WasiyyahScreen() {
     <Row
       label={label}
       value={done ? t('wasiyyah.done') : t('wasiyyah.notDone')}
-      right={<Ionicons accessible={false} name={done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={done ? colors.tint : colors.secondaryText} />}
+      right={<AppIcon accessible={false} name={done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={done ? colors.tint : colors.secondaryText} />}
       onPress={onPress}
     />
   );

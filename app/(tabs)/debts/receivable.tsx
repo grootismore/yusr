@@ -7,6 +7,7 @@ import { Button, ErrorText, Field, Group, HeaderTextButton, Row, Screen } from '
 import { parsePositiveAmount, toInputText, useFormatDate } from '@/features/transactions/format';
 import { useReceivables, useSaveReceivable, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
+import { confirmAction } from '@/lib/confirm';
 
 export default function ReceivableScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -42,16 +43,17 @@ export default function ReceivableScreen() {
 
   function onReceived() {
     if (!existing) return;
-    Alert.alert(t('debts.receivedTitle'), t('debts.receivedBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('debts.markReceived'),
-        onPress: () => {
+    confirmAction({
+      title: t('debts.receivedTitle'),
+      message: t('debts.receivedBody'),
+      confirmLabel: t('debts.markReceived'),
+      cancelLabel: t('common.cancel'),
+      destructive: false,
+      onConfirm: () => {
           archive(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   return (

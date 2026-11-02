@@ -6,6 +6,7 @@ import { EmptyState, Group, Row, Screen } from '@/components/ui';
 import { useFormatDate } from '@/features/transactions/format';
 import { useContacts, useRevokeContact, type TrustedContact } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
+import { confirmAction } from '@/lib/confirm';
 
 export default function ContactsScreen() {
   const { t } = useTranslation();
@@ -15,14 +16,13 @@ export default function ContactsScreen() {
   const { revoke } = useRevokeContact();
 
   function confirmRevoke(contact: TrustedContact) {
-    Alert.alert(t('wasiyyah.revokeTitle'), t('wasiyyah.revokeBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('wasiyyah.revoke'),
-        style: 'destructive',
-        onPress: () => revoke(contact.id).catch(() => Alert.alert(t('wasiyyah.needOnline'))),
-      },
-    ]);
+    confirmAction({
+      title: t('wasiyyah.revokeTitle'),
+      message: t('wasiyyah.revokeBody'),
+      confirmLabel: t('wasiyyah.revoke'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => revoke(contact.id).catch(() => Alert.alert(t('wasiyyah.needOnline'))),
+    });
   }
 
   if (contacts.length === 0) {

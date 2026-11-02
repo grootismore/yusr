@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { useIsMutating, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
+import { onlineManager, useIsMutating, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { supabaseApi } from '@/lib/query/supabaseApi';
@@ -390,4 +390,31 @@ export function useDebtSecretsMap(debtIds: readonly string[]) {
   });
   // Rebuilt each render (a handful of entries); callers use it for display, not as an effect dependency.
   return new Map(debtIds.flatMap((id, i) => (results[i]?.data ? [[id, results[i].data as DebtSecrets] as const] : [])));
+}
+
+/**
+ * Pull to refresh: re-fetches what is on screen from the server. Offline there is nothing to fetch
+ * (the device copy is already what is shown), so it finishes at once instead of spinning forever.
+ */
+export function useRefresh() {
+  const client = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      if (onlineManager.isOnline()) {
+        const timeout = new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, 8000);
+        });
+        await Promise.race([client.refetchQueries({ type: 'active' }), timeout]);
+      }
+    } catch {
+      // The screen keeps showing the device copy; a failed refresh is not an error to report.
+    } finally {
+      clearTimeout(timer);
+      setRefreshing(false);
+    }
+  }, [client]);
+  return { refreshing, onRefresh };
 }

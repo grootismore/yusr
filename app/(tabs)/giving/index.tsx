@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Group, Money, Row, Screen } from '@/components/ui';
 import { useFormatDate } from '@/features/transactions/format';
-import { useCommitments, useProfile, useTransactions } from '@/features/transactions/hooks';
+import { useCommitments, useProfile, useRefresh, useTransactions } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { useFormatHijri, useHijriMonthLabel } from '@/features/giving/format';
 import { commitmentStatus } from '@/features/giving/schedule';
@@ -19,6 +19,7 @@ export default function GivingScreen() {
   const hijriMonth = useHijriMonthLabel();
   const { active } = useCommitments();
   const transactions = useTransactions();
+  const refresh = useRefresh();
   const { privacyMode, hijriAdjustment } = useProfile();
   const today = toISODate(new Date());
 
@@ -33,14 +34,14 @@ export default function GivingScreen() {
 
   if (rows.length === 0) {
     return (
-      <Screen>
+      <Screen refresh={refresh}>
         <EmptyState icon="heart-outline" title={t('giving.emptyTitle')} body={t('giving.emptyBody')} actionLabel={t('giving.add')} onAction={() => router.push('/giving/commitment')} />
       </Screen>
     );
   }
 
   return (
-    <Screen>
+    <Screen refresh={refresh}>
       {rows.map(({ commitment: c, status }) => {
         const o = status.occurrence;
         const seasonal = c.schedule === 'ramadan' || c.schedule === 'dhul_hijjah';

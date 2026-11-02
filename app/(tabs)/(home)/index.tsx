@@ -18,6 +18,7 @@ import {
   useDebts,
   useProfile,
   useRecurringItems,
+  useRefresh,
   useTransactions,
 } from '@/features/transactions/hooks';
 import { accountBalance, categoryBreakdown, monthOf, monthSummary, shiftMonth, toISODate } from '@/features/transactions/logic';
@@ -33,6 +34,7 @@ export default function HomeScreen() {
   const hijriMonth = useHijriMonthLabel();
   const { privacyMode, hijriAdjustment } = useProfile();
   const ready = useDataReady();
+  const refresh = useRefresh();
   const accounts = useAccounts();
   const categories = useCategories();
   const transactions = useTransactions();
@@ -63,7 +65,7 @@ export default function HomeScreen() {
 
   if (accounts.active.length === 0) {
     return (
-      <Screen>
+      <Screen refresh={refresh}>
         <DeletionBanner />
         <EmptyState
           title={t('home.noAccountsTitle')}
@@ -93,7 +95,7 @@ export default function HomeScreen() {
   ] as const;
 
   return (
-    <Screen>
+    <Screen refresh={refresh}>
       <DeletionBanner />
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <HeaderIconButton

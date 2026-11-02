@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Field, Group, Money, Row, Screen, Segmented } from '@/components/ui';
 import { parseNonNegativeAmount, toInputText, useMonthLabel } from '@/features/transactions/format';
-import { useDebts, useReceivables, useTransactions } from '@/features/transactions/hooks';
+import { useDebts, useReceivables, useRefresh, useTransactions } from '@/features/transactions/hooks';
 import { currentBalance, planInput, totalOwed, totalReceivable } from '@/features/debts/logic';
 import { planDebts, STRATEGIES } from '@/features/debts/plan';
 import { usePlanSettings } from '@/features/debts/settings';
@@ -19,6 +19,7 @@ export default function DebtsScreen() {
   const debts = useDebts().active;
   const receivables = useReceivables().active;
   const transactions = useTransactions();
+  const refresh = useRefresh();
   const [settings, update] = usePlanSettings();
   const [monthlyText, setMonthlyText] = useState(settings.monthlyLaari > 0 ? toInputText(settings.monthlyLaari) : '');
 
@@ -30,7 +31,7 @@ export default function DebtsScreen() {
 
   if (debts.length === 0 && receivables.length === 0) {
     return (
-      <Screen>
+      <Screen refresh={refresh}>
         <EmptyState
           icon="receipt-outline"
           title={t('debts.emptyTitle')}
@@ -46,7 +47,7 @@ export default function DebtsScreen() {
   const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
 
   return (
-    <Screen>
+    <Screen refresh={refresh}>
       {debts.length > 0 ? (
         <>
           <Group>

@@ -104,3 +104,29 @@ export function categoryName(category: Category | undefined, language: string): 
   if (!category) return '';
   return language === 'dv' && category.name_dv ? category.name_dv : category.name_en;
 }
+
+interface SearchLookups {
+  categoryName: (t: Transaction) => string;
+  accountName: (t: Transaction) => string;
+  /** Private mode hides giving amounts and notes on screen, so search must not reveal them either. */
+  hidden: (t: Transaction) => boolean;
+}
+
+/**
+ * Search by category, account, note or amount ("45" finds MVR 45.00 and 450.00). Case-insensitive;
+ * an empty query returns everything. Anything the screen hides in private mode is not searchable.
+ */
+export function filterTransactions(transactions: readonly Transaction[], query: string, lookups: SearchLookups): Transaction[] {
+  const needle = query.trim().toLowerCase();
+  if (needle === '') return [...transactions];
+  return transactions.filter((t) => {
+    const fields = [lookups.categoryName(t), lookups.accountName(t)];
+    if (!lookups.hidden(t)) fields.push(t.note ?? '', formatAmountDigits(t.amount_laari));
+    return fields.some((field) => field.toLowerCase().includes(needle));
+  });
+}
+
+/** 12550 -> "125.50", so a person can type the amount the way it is shown (without "MVR" or commas). */
+function formatAmountDigits(laari: number): string {
+  return `${Math.floor(laari / 100)}.${String(laari % 100).padStart(2, '0')}`;
+}

@@ -1,5 +1,5 @@
-import { Alert, Share } from 'react-native';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { ActionSheetIOS, Alert, Share } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
 import type { AuditEntry, TrustedContact } from '@/features/transactions/hooks';
@@ -28,6 +28,8 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 let mockParams: Record<string, string> = {};
 
+// The native search bar's callbacks, captured from the header options so a test can type into it.
+const mockSearchBar: { current?: { placeholder: string; onChangeText: (e: { nativeEvent: { text: string } }) => void } } = {};
 jest.mock('expo-router', () => {
   const React = jest.requireActual('react');
   return {
@@ -35,8 +37,10 @@ jest.mock('expo-router', () => {
     useLocalSearchParams: () => mockParams,
     // Render the header buttons so tests can press Save / Cancel like a user would.
     Stack: {
-      Screen: ({ options }: { options?: { headerLeft?: () => unknown; headerRight?: () => unknown } }) =>
-        React.createElement(React.Fragment, null, options?.headerLeft?.(), options?.headerRight?.()),
+      Screen: ({ options }: { options?: { headerLeft?: () => unknown; headerRight?: () => unknown; headerSearchBarOptions?: unknown } }) => {
+        mockSearchBar.current = options?.headerSearchBarOptions as typeof mockSearchBar.current;
+        return React.createElement(React.Fragment, null, options?.headerLeft?.(), options?.headerRight?.());
+      },
     },
   };
 });
@@ -64,6 +68,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 jest.mock('expo-localization', () => ({ getLocales: () => [] }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('@react-native-community/datetimepicker', () => ({
   __esModule: true,
   default: () => null,
@@ -100,6 +105,7 @@ const state = {
 };
 jest.mock('@/features/account/DeletionBanner', () => ({ DeletionBanner: () => null }));
 jest.mock('@/features/transactions/hooks', () => ({
+  useRefresh: () => ({ refreshing: false, onRefresh: () => undefined }),
   useAccounts: () => ({ all: state.accounts, active: state.accounts.filter((a) => a.deleted_at === null) }),
   useCategories: () => ({ all: state.categories, active: state.categories.filter((c) => c.deleted_at === null) }),
   useTransactions: () => state.transactions,
@@ -592,6 +598,28 @@ describe('private mode on other screens', () => {
     expect(screen.getByText('-MVR 125.00')).toBeTruthy();
   });
 
+  it('searches the list from the native search bar, and says so when nothing matches', async () => {
+    state.transactions = [
+      { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense',
+        occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp },
+      { id: 'tx-pay', user_id: 'u', account_id: 'a-cash', category_id: 'c-sal', amount_laari: 500000, kind: 'income',
+        occurred_on: today(), note: 'October pay', debt_id: null, commitment_id: null, ...stamp },
+    ];
+    await render(<TransactionsScreen />);
+    expect(mockSearchBar.current?.placeholder).toBe('Search transactions');
+    const type = async (text: string) => {
+      const bar = mockSearchBar.current;
+      await act(async () => bar?.onChangeText({ nativeEvent: { text } }));
+    };
+    await type('weekly');
+    expect(screen.getByText(/weekly shop/)).toBeTruthy();
+    expect(screen.queryByText(/October pay/)).toBeNull();
+    await type('submarine');
+    expect(screen.getByText('No matches')).toBeTruthy();
+    await type('');
+    expect(screen.getByText(/October pay/)).toBeTruthy();
+  });
+
   it('shows everything when private mode is off', async () => {
     state.categories = [...state.categories, cat('c-give', 'Islamic giving', 'giving')];
     state.transactions = [givingTx];
@@ -847,7 +875,7 @@ describe('trusted contacts', () => {
     expect(mockPush).toHaveBeenCalledWith('/more/contact-invite');
   });
   it('lists contacts with their status and removes one only after confirming', async () => {
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
     state.contacts = [contact(), contact({ id: 'k2', name: 'Dee', status: 'accepted' }), contact({ id: 'k3', name: 'Gone', status: 'revoked' })];
     await render(<ContactsScreen />);
     expect(screen.getByText('Cee')).toBeTruthy();
@@ -855,10 +883,14 @@ describe('trusted contacts', () => {
     expect(screen.queryByText('Gone')).toBeNull();
     await fireEvent.press(screen.getByText('Cee'));
     expect(mockRevoke).not.toHaveBeenCalled(); // asks first
-    const buttons = alert.mock.calls[0][2] as { text: string; onPress?: () => void }[];
-    buttons.find((b) => b.text === 'Remove contact')?.onPress?.();
+    // iOS asks with an action sheet: the destructive choice first, Cancel last.
+    const [options, choose] = sheet.mock.calls[0];
+    expect(options).toMatchObject({ options: ['Remove contact', 'Cancel'], destructiveButtonIndex: 0, cancelButtonIndex: 1 });
+    choose(1);
+    expect(mockRevoke).not.toHaveBeenCalled(); // cancelling does nothing
+    choose(0);
     expect(mockRevoke).toHaveBeenCalledWith('k1');
-    alert.mockRestore();
+    sheet.mockRestore();
   });
   it('stops offering invites at three contacts', async () => {
     state.contacts = [contact({ id: 'a' }), contact({ id: 'b', name: 'B' }), contact({ id: 'c', name: 'C' })];

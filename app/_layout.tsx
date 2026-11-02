@@ -31,7 +31,11 @@ function Layout() {
     <Stack>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="transaction" options={{ presentation: 'modal' }} />
+        {/* A resizable sheet (HIG: sheets): rests at three-quarters height, drags to full, grabber shown. */}
+        <Stack.Screen
+          name="transaction"
+          options={{ presentation: 'formSheet', sheetAllowedDetents: [0.75, 1], sheetGrabberVisible: true }}
+        />
         <Stack.Screen name="settings" options={{ title: t('settings.title'), headerLargeTitle: true }} />
         <Stack.Screen name="delete-account" options={{ title: t('settings.deleteAccount'), presentation: 'modal' }} />
       </Stack.Protected>
