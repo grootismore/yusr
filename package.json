@@ -59,7 +59,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest",
-    "test:integration": "jest -c jest.integration.config.js"
+    "test:integration": "jest -c jest.integration.config.js",
+    "copy:seed": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts seed",
+    "copy:export": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts export"
   },
   "private": true,
   "jest": {

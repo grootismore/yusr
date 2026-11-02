@@ -49,6 +49,12 @@ Tests: pgTAP, 279 assertions (`supabase test db`). Every table is exercised by a
 
 `npm audit --omit=dev --audit-level=high` passes in CI (0 high, 0 critical). 29 moderate/low advisories remain, all in build and test tooling pulled in by Expo CLI and Jest through `deepmerge`; none ship in the app bundle. Revisit when Expo or Jest publish a fix.
 
+## 7. Wording editor (`docs/COPY_EDITOR.md`)
+- New Edge Function `copy-editor` (`verify_jwt = false`) behind one shared passcode held only in the function's secrets; empty secret refuses everyone; constant-time comparison; 10 failed guesses per hour per hashed address, then everything is refused.
+- Tables `copy_strings`, `copy_history`, `copy_attempts` have RLS enabled and forced with no policies; only the server role has grants, spelled out in migration 008 (no delete on strings, history and attempts are append-only). pgTAP `008_copy_strings.test.sql` proves clients get nothing.
+- Edits must keep placeholders and are length- and character-checked; they reach the app only through a reviewed pull request. They hold no user data.
+- Limit: a shared passcode cannot tell editors apart; the saved name is self-reported.
+
 ## Known limits (state them in the privacy policy)
 
 - The project owner, with database access, can technically decrypt Vault secrets (PRD §9). Client-side end-to-end encryption is a later release.

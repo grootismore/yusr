@@ -12,7 +12,12 @@ const path = require('node:path');
 const functionUrl = process.env.FUNCTION_URL;
 if (!functionUrl || !/^https:\/\//.test(functionUrl)) throw new Error('Set FUNCTION_URL to the https URL of the accept-invite function');
 
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8').replaceAll('__FUNCTION_URL__', functionUrl);
+// The page's wording is inlined as JSON. `<` is escaped so a string can never close the script tag.
+const strings = JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname, 'strings.json'), 'utf8'))).replaceAll('<', '\\u003c');
+const html = fs
+  .readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+  .replaceAll('__FUNCTION_URL__', functionUrl)
+  .replace('__STRINGS__', () => strings);
 const inline = (tag) => (new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`).exec(html) ?? [])[1];
 const hash = (text) => `'sha256-${crypto.createHash('sha256').update(text).digest('base64')}'`;
 const script = inline('script');

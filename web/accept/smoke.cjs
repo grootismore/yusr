@@ -16,7 +16,13 @@ const os = require('node:os');
 const path = require('node:path');
 process.env.PAGE = path.join(os.tmpdir(), 'yusr-accept.html');
 process.env.OUT = process.env.OUT || os.tmpdir();
-fs.writeFileSync(process.env.PAGE, fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8').replace('__FUNCTION_URL__', `${process.env.API_URL}/functions/v1/accept-invite`));
+fs.writeFileSync(
+  process.env.PAGE,
+  fs
+    .readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+    .replace('__FUNCTION_URL__', `${process.env.API_URL}/functions/v1/accept-invite`)
+    .replace('__STRINGS__', () => JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname, 'strings.json'), 'utf8')))),
+);
 const { chromium } = require('playwright');
 const crypto = require('node:crypto');
 const API = process.env.API_URL, KEY = process.env.ANON_KEY, FILE = process.env.PAGE;

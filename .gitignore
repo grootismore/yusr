@@ -27,3 +27,4 @@ supabase/.temp/
 web/accept/dist/
 .netlify
 web/legal/dist/
+web/copy/dist/
