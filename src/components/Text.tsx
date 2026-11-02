@@ -1,4 +1,5 @@
-import { StyleSheet, Text as RNText, TextInput as RNTextInput, type StyleProp, type TextInputProps, type TextProps, type TextStyle } from 'react-native';
+import type { ComponentProps } from 'react';
+import { StyleSheet, Text as RNText, TextInput as RNTextInput, type StyleProp, type TextProps, type TextStyle } from 'react-native';
 import { familyFor } from '@/lib/fonts';
 import { i18n } from '@/lib/i18n';
 
@@ -18,6 +19,7 @@ export function Text({ style, ...props }: TextProps) {
   return <RNText {...props} style={withTypeface(style)} />;
 }
 
-export function TextInput({ style, ...props }: TextInputProps) {
+/** `ref` is a plain prop in React 19, so a form can move focus to the next field. */
+export function TextInput({ style, ...props }: ComponentProps<typeof RNTextInput>) {
   return <RNTextInput {...props} style={withTypeface(style)} />;
 }
