@@ -6,6 +6,7 @@
  *
  *   seed [--previous-en <file>]  add the strings the database does not have yet (never overwrites an edit)
  *   seed --sql [--previous-en <file>]  print the same seed as SQL instead (needs no passcode; for loading a database directly)
+ *   starter [--previous-en <file>]  write web/copy/starter.json, the strings the editor site's "Add missing strings" button loads
  *   export [--dry]               write the editor's current wording into the repo's files
  *
  * The passcode is read from the environment only and is never printed.
@@ -20,10 +21,11 @@ const FILES = {
 };
 
 const wantsSql = process.argv.includes('seed') && process.argv.includes('--sql');
+const offline = wantsSql || process.argv.includes('starter');
 const url = process.env.COPY_FUNCTION_URL;
 const passcode = process.env.COPY_EDITOR_PASSCODE;
-if (!wantsSql && (!url || !/^https?:\/\//.test(url))) throw new Error('Set COPY_FUNCTION_URL to the copy-editor function URL');
-if (!wantsSql && !passcode) throw new Error('Set COPY_EDITOR_PASSCODE');
+if (!offline && (!url || !/^https?:\/\//.test(url))) throw new Error('Set COPY_FUNCTION_URL to the copy-editor function URL');
+if (!offline && !passcode) throw new Error('Set COPY_EDITOR_PASSCODE');
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 const writeJson = (path: string, value: unknown) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
@@ -41,7 +43,17 @@ async function call(body: unknown): Promise<Record<string, unknown>> {
 
 const [command, ...args] = process.argv.slice(2);
 
-if (command === 'seed') {
+if (command === 'starter') {
+  const previousPath = args[args.indexOf('--previous-en') + 1];
+  const rows = seedRows({
+    en: readJson<Tree>(FILES.en),
+    dv: readJson<Tree>(FILES.dv),
+    invite: readJson<InviteStrings>(FILES.invite),
+    previousEn: args.includes('--previous-en') ? readJson<Tree>(previousPath) : undefined,
+  });
+  writeFileSync('web/copy/starter.json', JSON.stringify(rows));
+  console.log(`Wrote web/copy/starter.json with ${rows.length} strings.`);
+} else if (command === 'seed') {
   const previousPath = args[args.indexOf('--previous-en') + 1];
   const rows = seedRows({
     en: readJson<Tree>(FILES.en),
@@ -73,6 +85,6 @@ if (command === 'seed') {
     console.log('Files updated. Review the diff, run the tests, and open a pull request.');
   }
 } else {
-  console.log('Usage: copy-sync.ts seed [--previous-en <file>] | export [--dry]');
+  console.log('Usage: copy-sync.ts seed [--sql] [--previous-en <file>] | starter [--previous-en <file>] | export [--dry]');
   process.exit(1);
 }
