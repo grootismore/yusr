@@ -159,7 +159,8 @@
       "sdfc": "SDFC",
       "mib": "Maldives Islamic Bank",
       "other": "Other"
-    }
+    },
+    "nameTaken": "You already have an account with this name."
   },
   "categories": {
     "title": "Categories",

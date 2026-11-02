@@ -41,7 +41,6 @@ export default function WasiyyahNoteScreen() {
         <TextInput
           accessibilityLabel={t('wasiyyah.noteTitle')}
           multiline
-          autoFocus
           maxLength={MAX}
           value={value}
           onChangeText={setEdited}

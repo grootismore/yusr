@@ -6,11 +6,13 @@ import { Button, ErrorText, Field, Group, HeaderTextButton, Row, Screen, Segment
 import { useCategories, useSaveCategory, useSoftDelete } from '@/features/transactions/hooks';
 import { KINDS, type Kind } from '@/features/transactions/types';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const { all } = useCategories();
   const existing = id ? all.find((c) => c.id === id && !c.is_default) : undefined;
   const save = useSaveCategory();
@@ -27,6 +29,7 @@ export default function CategoryScreen() {
   function onSave() {
     setSubmitted(true);
     if (!nameOk) return;
+    if (!claim()) return;
     save({ name: name.trim(), kind }, existing);
     router.back();
   }
@@ -54,7 +57,7 @@ export default function CategoryScreen() {
         }}
       />
       <Group>
-        <Field label={t('categories.name')} value={name} onChangeText={setName} maxLength={100} autoFocus={!existing} returnKeyType="done" />
+        <Field label={t('categories.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
       </Group>
       {existing ? (
         // A category's kind is fixed once created: transactions must always match their category's kind.

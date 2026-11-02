@@ -7,14 +7,13 @@ import { useRouter } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
 import { shareMyData } from '@/features/account/hooks';
-import { Group, Row, Segmented } from '@/components/ui';
+import { Group, Row, Screen, Segmented } from '@/components/ui';
 import { requestReminderPermission } from '@/features/reminders/notifications';
 import { setRemindersEnabled, useRemindersEnabled } from '@/features/reminders/preference';
 import { confirmAction } from '@/lib/confirm';
 import { setHapticsEnabled, useHapticsEnabled } from '@/lib/haptics';
 import { useColors } from '@/lib/theme';
 
-// Placeholder settings screen: language switcher only (Phase 1).
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const colors = useColors();
@@ -58,7 +57,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, padding: 16, gap: 8 }}>
+    <Screen>
       <DeletionBanner />
       <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>
         {t('settings.language')}
@@ -131,6 +130,6 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 17, color: colors.danger }}>{t('settings.signOut')}</Text>
         </Pressable>
       </View>
-    </View>
+    </Screen>
   );
 }

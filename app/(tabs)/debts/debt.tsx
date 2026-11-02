@@ -15,11 +15,13 @@ import {
 import { currentBalance, startingBalanceFor } from '@/features/debts/logic';
 import { DEBT_KINDS, type DebtKind } from '@/features/debts/types';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function DebtFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const { all } = useDebts();
   const transactions = useTransactions();
   const existing = id ? all.find((d) => d.id === id) : undefined;
@@ -65,6 +67,7 @@ export default function DebtFormScreen() {
   function onSave() {
     setSubmitted(true);
     if (error || currentLaari === null || originalLaari === null || minimumLaari === null) return;
+    if (!claim()) return;
     const debtId = save(
       {
         lender: lender.trim(),
@@ -110,7 +113,7 @@ export default function DebtFormScreen() {
         }}
       />
       <Group>
-        <Field label={t('debts.lender')} value={lender} onChangeText={setLender} maxLength={100} autoFocus={!existing} returnKeyType="next" />
+        <Field label={t('debts.lender')} value={lender} onChangeText={setLender} maxLength={100} returnKeyType="next" />
       </Group>
       <Group title={t('debts.kind')}>
         <Chips options={DEBT_KINDS.map((value) => ({ value, label: t(`debts.kinds.${value}`) }))} value={kind} onChange={setKind} />

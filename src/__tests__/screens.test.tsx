@@ -17,11 +17,12 @@ import RecurringScreen from '../../app/(tabs)/more/recurring';
 import CommitmentScreen from '../../app/(tabs)/giving/commitment';
 import GivingScreen from '../../app/(tabs)/giving/index';
 import TransactionsScreen from '../../app/(tabs)/transactions/index';
-import SettingsScreen from '../../app/settings';
+import SettingsScreen from '../../app/(tabs)/more/settings';
 import DebtFormScreen from '../../app/(tabs)/debts/debt';
 import DebtsScreen from '../../app/(tabs)/debts/index';
 import HomeScreen from '../../app/(tabs)/(home)/index';
 import TransactionScreen from '../../app/transaction';
+import AccountScreen from '../../app/(tabs)/more/account';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -76,6 +77,7 @@ jest.mock('@react-native-community/datetimepicker', () => ({
 }));
 
 const mockSave = jest.fn();
+const mockSaveAccount = jest.fn();
 const mockRemove = jest.fn();
 const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-debt-id');
 const mockSaveSecrets = jest.fn();
@@ -112,6 +114,7 @@ jest.mock('@/features/transactions/hooks', () => ({
   useDataReady: () => state.ready,
   usePendingChanges: () => state.pending,
   useSaveTransaction: () => mockSave,
+  useSaveAccount: () => mockSaveAccount,
   useSoftDelete: () => mockRemove,
   useDebts: () => ({ all: state.debts, active: state.debts.filter((d) => d.deleted_at === null) }),
   useReceivables: () => ({ all: state.receivables, active: state.receivables.filter((r) => r.deleted_at === null) }),
@@ -187,6 +190,16 @@ describe('transaction sheet', () => {
       undefined,
     );
     expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('saves once however many times Save is tapped (a double tap used to create duplicates)', async () => {
+    await render(<TransactionScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
+    await fireEvent.press(screen.getByText('Groceries'));
+    await fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSave).toHaveBeenCalledTimes(1);
   });
 
   it('saves to the account the user picks, with a trimmed note', async () => {
@@ -1045,5 +1058,27 @@ describe('activity log', () => {
   it('shows a calm empty state', async () => {
     await render(<AuditLogScreen />);
     expect(screen.getByText('Nothing yet')).toBeTruthy();
+  });
+});
+
+describe('new account', () => {
+  it('creates the account once even if Save is tapped repeatedly (five "Nanns" accounts)', async () => {
+    await render(<AccountScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Name'), 'Nanns');
+    for (let i = 0; i < 5; i++) await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveAccount).toHaveBeenCalledTimes(1);
+    expect(mockSaveAccount).toHaveBeenCalledWith(expect.objectContaining({ name: 'Nanns' }), undefined);
+  });
+
+  it('does not create a second account with a name already in use, whatever the case', async () => {
+    state.accounts = [cash];
+    await render(<AccountScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Name'), '  cash ');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveAccount).not.toHaveBeenCalled();
+    expect(screen.getByText('You already have an account with this name.')).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Name'), 'Savings');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveAccount).toHaveBeenCalledTimes(1); // the correction still saves
   });
 });

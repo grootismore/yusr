@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Share, Switch, Text } from 'react-native';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ export default function ContactInviteScreen() {
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false); // never pre-ticked
   const [error, setError] = useState<string | null>(null);
+  const inFlight = useRef(false);
   const [link, setLink] = useState<string | null>(null);
   const baseUrl = inviteBaseUrl();
 
@@ -32,6 +33,8 @@ export default function ContactInviteScreen() {
 
   async function create() {
     if (problem) return setError(problem);
+    if (inFlight.current) return; // a second tap while the invite is being created
+    inFlight.current = true;
     setError(null);
     try {
       const token = await invite({ name: name.trim(), inviterName: inviterName.trim(), email: email.trim(), phone: phone.trim() });
@@ -39,6 +42,8 @@ export default function ContactInviteScreen() {
     } catch (e) {
       const code = (e as { code?: string })?.code;
       setError(code === '23505' ? t('wasiyyah.duplicate') : code === '23514' ? t('wasiyyah.tooMany') : t('wasiyyah.needOnline'));
+    } finally {
+      inFlight.current = false;
     }
   }
 
@@ -69,7 +74,7 @@ export default function ContactInviteScreen() {
       <Stack.Screen options={{ title: t('wasiyyah.inviteTitle') }} />
       {baseUrl === '' ? <Text style={{ fontSize: 15, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('wasiyyah.notSetUp')}</Text> : null}
       <Group>
-        <Field label={t('wasiyyah.theirName')} value={name} onChangeText={setName} maxLength={100} autoFocus />
+        <Field label={t('wasiyyah.theirName')} value={name} onChangeText={setName} maxLength={100} />
         <Field label={t('wasiyyah.theirEmail')} latin value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" maxLength={254} />
         <Field label={t('wasiyyah.theirPhone')} latin value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={30} />
         <Field label={t('wasiyyah.yourName')} value={inviterName} onChangeText={setInviterName} maxLength={100} />

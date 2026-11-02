@@ -26,6 +26,10 @@ export function Screen({ children, refresh }: { children: ReactNode; refresh?: {
       contentContainerStyle={{ padding: 16, gap: 20 }}
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
+      // The keyboard never hides the field being edited: the content scrolls up to make room, and
+      // dragging down dismisses the keyboard (HIG: entering data).
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="interactive"
     >
       {children}
     </ScrollView>
@@ -187,13 +191,17 @@ export function Segmented<T extends string>({
             style={{
               flex: 1,
               minHeight: 44,
+              paddingVertical: 6,
               borderRadius: 10,
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: selected ? colors.tint : 'transparent',
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: '600', color: selected ? colors.background : colors.text }}>
+            <Text
+              numberOfLines={2}
+              style={{ fontSize: 15, fontWeight: '600', textAlign: 'center', paddingHorizontal: 4, color: selected ? colors.background : colors.text }}
+            >
               {option.label}
             </Text>
           </Pressable>

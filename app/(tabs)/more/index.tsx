@@ -16,7 +16,7 @@ export default function MoreScreen() {
         <Row label={t('more.recurring')} chevron onPress={() => router.push('/more/recurring')} />
       </Group>
       <Group>
-        <Row label={t('more.settings')} chevron onPress={() => router.push('/settings')} />
+        <Row label={t('more.settings')} chevron onPress={() => router.push('/more/settings')} />
       </Group>
     </Screen>
   );

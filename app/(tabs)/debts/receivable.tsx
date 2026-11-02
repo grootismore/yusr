@@ -8,11 +8,13 @@ import { parsePositiveAmount, toInputText, useFormatDate } from '@/features/tran
 import { useReceivables, useSaveReceivable, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function ReceivableScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const formatDate = useFormatDate();
   const { all } = useReceivables();
   const existing = id ? all.find((r) => r.id === id) : undefined;
@@ -34,6 +36,7 @@ export default function ReceivableScreen() {
   function onSave() {
     setSubmitted(true);
     if (error || amountLaari === null) return;
+    if (!claim()) return;
     save(
       { debtor: debtor.trim(), amount_laari: amountLaari, due_on: hasDate ? dueOn : null, notes: notes.trim() === '' ? null : notes.trim() },
       existing,
@@ -65,7 +68,7 @@ export default function ReceivableScreen() {
         }}
       />
       <Group>
-        <Field label={t('debts.debtor')} value={debtor} onChangeText={setDebtor} maxLength={100} autoFocus={!existing} />
+        <Field label={t('debts.debtor')} value={debtor} onChangeText={setDebtor} maxLength={100} />
         <Field label={t('debts.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
         <Row label={t('debts.expectedOn')} right={<Switch accessibilityLabel={t('debts.expectedOn')} value={hasDate} onValueChange={setHasDate} />} />
         {hasDate ? <DateField label={t('transactions.date')} value={dueOn} text={formatDate(dueOn)} onChange={setDueOn} /> : null}
