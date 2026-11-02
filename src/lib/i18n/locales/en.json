@@ -134,7 +134,10 @@
     "deleteTitle": "Delete this transaction?",
     "deleteBody": "It will be removed from your totals.",
     "delete": "Delete transaction",
-    "syncPending": "Waiting to sync: {{count}}"
+    "syncPending": "Waiting to sync: {{count}}",
+    "search": "Search transactions",
+    "noMatchesTitle": "No matches",
+    "noMatchesBody": "Try a category, account, note or amount."
   },
   "accounts": {
     "title": "Accounts",

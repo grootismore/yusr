@@ -1,5 +1,5 @@
 import { ActionSheetIOS, Alert, Share } from 'react-native';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
 import type { AuditEntry, TrustedContact } from '@/features/transactions/hooks';
@@ -28,6 +28,8 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 let mockParams: Record<string, string> = {};
 
+// The native search bar's callbacks, captured from the header options so a test can type into it.
+const mockSearchBar: { current?: { placeholder: string; onChangeText: (e: { nativeEvent: { text: string } }) => void } } = {};
 jest.mock('expo-router', () => {
   const React = jest.requireActual('react');
   return {
@@ -35,8 +37,10 @@ jest.mock('expo-router', () => {
     useLocalSearchParams: () => mockParams,
     // Render the header buttons so tests can press Save / Cancel like a user would.
     Stack: {
-      Screen: ({ options }: { options?: { headerLeft?: () => unknown; headerRight?: () => unknown } }) =>
-        React.createElement(React.Fragment, null, options?.headerLeft?.(), options?.headerRight?.()),
+      Screen: ({ options }: { options?: { headerLeft?: () => unknown; headerRight?: () => unknown; headerSearchBarOptions?: unknown } }) => {
+        mockSearchBar.current = options?.headerSearchBarOptions as typeof mockSearchBar.current;
+        return React.createElement(React.Fragment, null, options?.headerLeft?.(), options?.headerRight?.());
+      },
     },
   };
 });
@@ -592,6 +596,28 @@ describe('private mode on other screens', () => {
     expect(screen.queryByText('-MVR 50.00')).toBeNull();
     expect(screen.getByText(/weekly shop/)).toBeTruthy();
     expect(screen.getByText('-MVR 125.00')).toBeTruthy();
+  });
+
+  it('searches the list from the native search bar, and says so when nothing matches', async () => {
+    state.transactions = [
+      { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense',
+        occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp },
+      { id: 'tx-pay', user_id: 'u', account_id: 'a-cash', category_id: 'c-sal', amount_laari: 500000, kind: 'income',
+        occurred_on: today(), note: 'October pay', debt_id: null, commitment_id: null, ...stamp },
+    ];
+    await render(<TransactionsScreen />);
+    expect(mockSearchBar.current?.placeholder).toBe('Search transactions');
+    const type = async (text: string) => {
+      const bar = mockSearchBar.current;
+      await act(async () => bar?.onChangeText({ nativeEvent: { text } }));
+    };
+    await type('weekly');
+    expect(screen.getByText(/weekly shop/)).toBeTruthy();
+    expect(screen.queryByText(/October pay/)).toBeNull();
+    await type('submarine');
+    expect(screen.getByText('No matches')).toBeTruthy();
+    await type('');
+    expect(screen.getByText(/October pay/)).toBeTruthy();
   });
 
   it('shows everything when private mode is off', async () => {
