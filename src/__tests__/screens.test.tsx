@@ -399,8 +399,8 @@ describe('debt form', () => {
 
   it.each([
     ['', '100', '', 'Enter who the debt is owed to.'],
-    ['Ali', '', '', 'Enter a valid amount, for example 1,250.00.'],
-    ['Ali', 'abc', '', 'Enter a valid amount, for example 1,250.00.'],
+    ['Ali', '', '', 'Enter a valid amount, like 1,250.00.'],
+    ['Ali', 'abc', '', 'Enter a valid amount, like 1,250.00.'],
     ['Ali', '100', '40', 'Enter a day from 1 to 31.'],
   ])('refuses lender %j balance %j day %j', async (lender, balance, day, message) => {
     await render(<DebtFormScreen />);
@@ -580,7 +580,7 @@ describe('commitment form', () => {
     await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '0');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveCommitment).not.toHaveBeenCalled();
-    expect(screen.getByText('Enter a valid amount, for example 1,250.00.')).toBeTruthy();
+    expect(screen.getByText('Enter a valid amount, like 1,250.00.')).toBeTruthy();
   });
 });
 
@@ -821,7 +821,7 @@ describe('reminders switch', () => {
     notifications.requestReminderPermission.mockResolvedValueOnce(false);
     await render(<SettingsScreen />);
     await fireEvent(screen.getByLabelText('Reminders'), 'valueChange', true);
-    expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('settings'));
+    expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('Settings'));
     alert.mockRestore();
   });
 });
@@ -835,8 +835,8 @@ const contact = (over: Partial<TrustedContact> = {}): TrustedContact => ({
 describe('Wasiyyah hub', () => {
   it('is plain about what exists: nothing is released automatically yet, and no rulings are given', async () => {
     await render(<WasiyyahScreen />);
-    expect(screen.getByText(/Nothing is released to your trusted contacts automatically yet/)).toBeTruthy();
-    expect(screen.getByText(/does not give rulings or work out inheritance shares/)).toBeTruthy();
+    expect(screen.getByText(/Nothing is released automatically yet/)).toBeTruthy();
+    expect(screen.getByText(/gives no rulings or inheritance shares/)).toBeTruthy();
   });
 
   it('shows the readiness checklist and opens each step', async () => {
@@ -935,7 +935,7 @@ describe('invite a trusted contact', () => {
     await fireEvent.changeText(screen.getByLabelText('Their email'), 'cee@example.test');
     await fireEvent.changeText(screen.getByLabelText('Your name on the invite (optional)'), 'Aisha');
   };
-  const consentLabel = 'I have their permission to store their name and email in Yusr so they can be a trusted contact.';
+  const consentLabel = 'I have their permission to store their name and email in Yusr.';
 
   it('starts with consent unticked and will not create an invite without it', async () => {
     await render(<ContactInviteScreen />);
@@ -966,15 +966,15 @@ describe('invite a trusted contact', () => {
     await fireEvent.press(screen.getByText('Create invite link'));
     expect(mockInvite).toHaveBeenCalledWith({ name: 'Cee', inviterName: 'Aisha', email: 'cee@example.test', phone: '' });
     expect(await screen.findByText('https://invite.example/accept/#TOKEN-FROM-SERVER')).toBeTruthy();
-    expect(screen.getByText(/shown only once/)).toBeTruthy();
+    expect(screen.getByText(/shows once/)).toBeTruthy();
     await fireEvent.press(screen.getByText('Send the link'));
-    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('Aisha has invited you') });
+    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('Aisha invited you') });
     expect((share.mock.calls[0][0] as { message: string }).message).toContain('https://invite.example/accept/#TOKEN-FROM-SERVER');
     share.mockRestore();
   });
   it.each([
     ['23505', 'That email is already invited.'],
-    ['23514', 'You can have at most three trusted contacts.'],
+    ['23514', 'Three trusted contacts at most.'],
     [undefined, 'You need to be online to do this.'],
   ])('explains failure code %s in plain words', async (code, message) => {
     mockInvite.mockRejectedValueOnce(Object.assign(new Error('x'), { code }));
@@ -987,7 +987,7 @@ describe('invite a trusted contact', () => {
   it('says so, and cannot create a dead link, when the invite page is not set up', async () => {
     process.env.EXPO_PUBLIC_INVITE_URL = '';
     await render(<ContactInviteScreen />);
-    expect(screen.getByText('Invite links are not set up yet in this version of the app.')).toBeTruthy();
+    expect(screen.getByText('Invite links aren\'t set up in this version yet.')).toBeTruthy();
     await fill();
     await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
     await fireEvent.press(screen.getByText('Create invite link'));
@@ -1042,7 +1042,7 @@ describe('share the register', () => {
     await render(<WasiyyahShareScreen />);
     await fireEvent.press(screen.getByText('Share'));
     expect(share).not.toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledWith('Could not record this share. Connect to the internet and try again.');
+    expect(alert).toHaveBeenCalledWith('Couldn\'t record this share. Connect to the internet and try again.');
     share.mockRestore();
     alert.mockRestore();
   });
@@ -1070,7 +1070,7 @@ describe('activity log', () => {
     expect(screen.getByText('You shared your register (Debts, Note)')).toBeTruthy();
     expect(screen.getByText('You changed your note')).toBeTruthy();
     expect(screen.getByText('A trusted contact viewed your register')).toBeTruthy();
-    expect(screen.getByText(/cannot be edited/)).toBeTruthy();
+    expect(screen.getByText(/can't be edited/)).toBeTruthy();
   });
   it('shows a calm empty state', async () => {
     await render(<AuditLogScreen />);
