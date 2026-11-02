@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   I18nManager,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,10 +19,11 @@ import { useColors } from '@/lib/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, refresh }: { children: ReactNode; refresh?: { refreshing: boolean; onRefresh: () => void } }) {
   const colors = useColors();
   return (
     <ScrollView
+      refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ padding: 16, gap: 20 }}
       contentInsetAdjustmentBehavior="automatic"

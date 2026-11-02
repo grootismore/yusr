@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Money } from '@/components/ui';
 import { useCategoryName, useFormatDate } from '@/features/transactions/format';
-import { useAccounts, useCategories, usePendingChanges, useProfile, useTransactions } from '@/features/transactions/hooks';
+import { useAccounts, useCategories, usePendingChanges, useProfile, useRefresh, useTransactions } from '@/features/transactions/hooks';
 import { useFormatHijri } from '@/features/giving/format';
 import { groupByDay, signedAmount } from '@/features/transactions/logic';
 import { useColors } from '@/lib/theme';
@@ -21,6 +21,7 @@ export default function TransactionsScreen() {
   const accounts = useAccounts();
   const categories = useCategories();
   const transactions = useTransactions();
+  const refresh = useRefresh();
 
   const sections = useMemo(() => groupByDay(transactions), [transactions]);
   const accountNames = useMemo(() => new Map(accounts.all.map((a) => [a.id, a.name])), [accounts.all]);
@@ -30,6 +31,8 @@ export default function TransactionsScreen() {
     <SectionList
       style={{ backgroundColor: colors.background }}
       contentInsetAdjustmentBehavior="automatic"
+      refreshing={refresh.refreshing}
+      onRefresh={refresh.onRefresh}
       sections={sections}
       keyExtractor={(item) => item.id}
       stickySectionHeadersEnabled={false}

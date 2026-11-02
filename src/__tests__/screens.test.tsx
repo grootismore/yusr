@@ -100,6 +100,7 @@ const state = {
 };
 jest.mock('@/features/account/DeletionBanner', () => ({ DeletionBanner: () => null }));
 jest.mock('@/features/transactions/hooks', () => ({
+  useRefresh: () => ({ refreshing: false, onRefresh: () => undefined }),
   useAccounts: () => ({ all: state.accounts, active: state.accounts.filter((a) => a.deleted_at === null) }),
   useCategories: () => ({ all: state.categories, active: state.categories.filter((c) => c.deleted_at === null) }),
   useTransactions: () => state.transactions,
