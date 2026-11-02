@@ -11,7 +11,7 @@ No advertising, analytics, attribution or crash-reporting SDK is installed. Sent
 | `expo-sqlite` | Local cache of the user's data and queued changes | No |
 | `expo-secure-store` | Session tokens, language | No |
 | `expo-local-authentication` | Face ID / fingerprint lock | No (handled by the OS) |
-| `expo-notifications` | Local reminders only; no push token is requested or sent | No |
+| `expo-notifications` | Local reminders only; no push token is requested or sent. The config plugin is set with `enableRemoteNotifications: false`, so the iOS app has no push entitlement and the plugin only sets the Android notification icon and colour | No |
 | `expo-screen-capture` | Blocks screenshots on Wasiyyah screens (Android) | No |
 | `expo-crypto` | Random ids and invite tokens, SHA-256 | No |
 | `expo-haptics` | Light taps on choices, saves and confirmations (can be turned off in Settings) | No |
