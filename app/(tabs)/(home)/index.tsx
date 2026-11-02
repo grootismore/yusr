@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { I18nManager, Text, View } from 'react-native';
+import { I18nManager, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DeletionBanner } from '@/features/account/DeletionBanner';

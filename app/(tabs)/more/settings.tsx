@@ -1,4 +1,5 @@
-import { Alert, Pressable, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, Switch, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Text, TextInput } from '@/components/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';

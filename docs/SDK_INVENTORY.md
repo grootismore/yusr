@@ -16,6 +16,7 @@ No advertising, analytics, attribution or crash-reporting SDK is installed. Sent
 | `expo-crypto` | Random ids and invite tokens, SHA-256 | No |
 | `expo-haptics` | Light taps on choices, saves and confirmations (can be turned off in Settings) | No |
 | `expo-symbols` | Draws Apple's SF Symbols on iOS | No |
+| `@expo-google-fonts/nunito-sans` | The Nunito Sans font files, bundled in the app (no network request at run time) | No |
 | `expo-system-ui` | Lets Android follow the system light/dark setting | No |
 | `expo-localization`, `i18next`, `react-i18next` | Language and RTL | No |
 | `@umalqura/core` | Hijri date calculation | No |

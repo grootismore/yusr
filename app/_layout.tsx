@@ -4,17 +4,19 @@ import { Stack, ThemeProvider } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { AppLockGate } from '@/lib/auth/AppLock';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
-import { initI18n } from '@/lib/i18n';
+import { i18n, initI18n } from '@/lib/i18n';
+import { useAppFonts } from '@/lib/useAppFonts';
 import { navigationTheme } from '@/lib/navTheme';
 import { QueryProvider } from '@/lib/query/Provider';
 import { useColors } from '@/lib/theme';
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
+  const fontsReady = useAppFonts();
   useEffect(() => {
     initI18n().then(() => setReady(true));
   }, []);
-  if (!ready) return null;
+  if (!ready || !fontsReady) return null;
   return (
     <NavigationTheme>
       <AuthProvider>
@@ -31,7 +33,7 @@ export default function RootLayout() {
 function NavigationTheme({ children }: { children: ReactNode }) {
   const colors = useColors();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-  const theme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
+  const theme = useMemo(() => navigationTheme(scheme, colors, i18n.language), [scheme, colors]);
   return <ThemeProvider value={theme}>{children}</ThemeProvider>;
 }
 

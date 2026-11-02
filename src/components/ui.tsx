@@ -1,16 +1,6 @@
 import { Children, Fragment, type ComponentProps, type ReactNode } from 'react';
-import {
-  ActivityIndicator,
-  I18nManager,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
+import { ActivityIndicator, I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, View, type TextInputProps } from 'react-native';
+import { Text, TextInput } from '@/components/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { AppIcon, type IconName } from './AppIcon';
