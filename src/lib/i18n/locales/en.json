@@ -303,7 +303,7 @@
     "done": "Done",
     "due": "Due {{date}}",
     "during": "During {{month}}",
-    "overdue": "Waiting since {{date}}",
+    "overdue": "Due {{date}}, not marked done",
     "hidden": "Hidden",
     "dateRequired": "Choose a date.",
     "archive": "Archive Sadaqat",
