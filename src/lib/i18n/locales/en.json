@@ -109,7 +109,17 @@
     "upcoming": "Coming up",
     "upcomingEmpty": "Nothing due in the next 7 days.",
     "overdue": "{{label}} · waiting since {{date}}",
-    "debtFree": "Debt-free by"
+    "debtFree": "Debt-free by",
+    "safeLead": "You can safely spend",
+    "shortBy": "Short by {{amount}} this month",
+    "column": {
+      "spent": "Spent",
+      "debts": "Debt payments",
+      "giving": "Giving",
+      "bills": "Bills",
+      "used": "Spent and set aside",
+      "safe": "Safe to spend"
+    }
   },
   "kind": {
     "expense": "Expense",
@@ -255,7 +265,9 @@
     "markReceived": "Mark as received",
     "receivedTitle": "Mark as received?",
     "receivedBody": "It will be removed from the list.",
-    "debtorRequired": "Enter who owes you."
+    "debtorRequired": "Enter who owes you.",
+    "paidSoFar": "Paid so far",
+    "stillOwed": "Still owed"
   },
   "giving": {
     "emptyTitle": "No giving set up",

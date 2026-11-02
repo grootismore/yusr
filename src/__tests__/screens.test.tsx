@@ -70,6 +70,12 @@ jest.mock('expo-secure-store', () => ({
 jest.mock('expo-localization', () => ({ getLocales: () => [] }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
+jest.mock('expo-linear-gradient', () => {
+  const { View } = jest.requireActual('react-native');
+  const React = jest.requireActual('react');
+  return { LinearGradient: ({ children, ...props }: { children?: unknown }) => React.createElement(View, props, children) };
+});
+jest.mock('react-native-svg', () => ({ __esModule: true, default: () => null, Path: () => null }));
 jest.mock('@react-native-community/datetimepicker', () => ({
   __esModule: true,
   default: () => null,
@@ -699,6 +705,16 @@ describe('home: safe to spend, coming up, debt-free', () => {
     expect(screen.getAllByText('Giving')).toHaveLength(2); // this month's total, and what is still set aside
     expect(screen.getByText('Bills')).toBeTruthy();
     expect(screen.getByText(/A guide, not a promise/)).toBeTruthy();
+  });
+
+  it('says how much the month is short by when more is due than has come in, and spends nothing', async () => {
+    state.transactions = [income(10000)];
+    state.recurring = [rent()]; // 300.00 bill against 100.00 of income
+    await render(<HomeScreen />);
+    expect(screen.getByText('You can safely spend')).toBeTruthy();
+    expect(screen.getByText('Short by MVR 200.00 this month')).toBeTruthy();
+    // VoiceOver hears one summary: nothing to spend, and by how much the month is short.
+    expect(screen.getByLabelText(/^You can safely spend MVR 0\.00\. Short by MVR 200\.00 this month/)).toBeTruthy();
   });
 
   it('hides the set-aside giving amount in private mode', async () => {

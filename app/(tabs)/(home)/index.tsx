@@ -3,12 +3,13 @@ import { I18nManager, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
+import { DEPTH, DepthCard } from '@/components/DepthCard';
 import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
 import { planInput } from '@/features/debts/logic';
 import { planDebts } from '@/features/debts/plan';
 import { usePlanSettings } from '@/features/debts/settings';
 import { useHijriMonthLabel } from '@/features/giving/format';
-import { safeToSpend, upcomingItems, type UpcomingItem } from '@/features/transactions/budget';
+import { safeToSpend, upcomingItems, waterColumn, type UpcomingItem } from '@/features/transactions/budget';
 import { useCategoryName, useFormatDate, useMonthLabel } from '@/features/transactions/format';
 import {
   useAccounts,
@@ -22,6 +23,7 @@ import {
   useTransactions,
 } from '@/features/transactions/hooks';
 import { accountBalance, categoryBreakdown, monthOf, monthSummary, shiftMonth, toISODate } from '@/features/transactions/logic';
+import { formatMVR } from '@/lib/money';
 import { useColors } from '@/lib/theme';
 
 export default function HomeScreen() {
@@ -52,6 +54,7 @@ export default function HomeScreen() {
     () => safeToSpend({ today, transactions, debts, commitments, recurring, hijriAdjustment }),
     [today, transactions, debts, commitments, recurring, hijriAdjustment],
   );
+  const column = useMemo(() => waterColumn(safe, privacyMode), [safe, privacyMode]);
   const upcoming = useMemo(
     () => upcomingItems({ today, days: 7, transactions, debts, commitments, recurring, hijriAdjustment }),
     [today, transactions, debts, commitments, recurring, hijriAdjustment],
@@ -120,14 +123,29 @@ export default function HomeScreen() {
 
       {month === monthOf(today) ? (
         <>
-          <Group title={t('home.safeToSpend')}>
-            <Row label={t('home.safeToSpend')} right={<Money laari={safe.safeToSpend} bold />} />
-            {setAside
-              .filter(([, amount]) => amount > 0)
-              .map(([key, amount, isGiving]) => (
-                <Row key={key} label={t(key)} right={<Money laari={amount} hidden={privacyMode && isGiving} />} />
-              ))}
-          </Group>
+          <DepthCard
+            lead={t('home.safeLead')}
+            amount={Math.max(safe.safeToSpend, 0)}
+            note={column.shortBy > 0 ? t('home.shortBy', { amount: formatMVR(column.shortBy) }) : undefined}
+            parts={column.parts.map((part) => ({
+              key: part.key,
+              laari: part.laari,
+              color: DEPTH[part.key],
+              label: t(`home.column.${part.key}`),
+              // Private mode hides what has been spent and set aside, which includes giving.
+              hidden: part.key === 'used',
+              legend: part.key !== 'safe',
+            }))}
+            accessibilityLabel={[
+              `${t('home.safeLead')} ${formatMVR(Math.max(safe.safeToSpend, 0))}`,
+              column.shortBy > 0 ? t('home.shortBy', { amount: formatMVR(column.shortBy) }) : '',
+              ...column.parts
+                .filter((part) => part.key !== 'safe')
+                .map((part) => `${t(`home.column.${part.key}`)} ${part.key === 'used' ? t('common.hidden') : formatMVR(part.laari)}`),
+            ]
+              .filter(Boolean)
+              .join('. ')}
+          />
           <Text style={note}>{t('home.safeHint')}</Text>
 
           <Group title={t('home.upcoming')}>
@@ -162,7 +180,7 @@ export default function HomeScreen() {
         accessibilityLabel={`${t('home.income')} ${summary.income / 100}, ${t('home.expenses')} ${summary.expense / 100}`}
         style={{ gap: 6, paddingHorizontal: 16 }}
       >
-        {([['home.income', summary.income, colors.tint], ['home.expenses', summary.expense, colors.secondaryText]] as const).map(([key, value, color]) => (
+        {([['home.income', summary.income, colors.positive], ['home.expenses', summary.expense, colors.secondaryText]] as const).map(([key, value, color]) => (
           <View key={key} style={{ height: 8, borderRadius: 4, backgroundColor: colors.separator, overflow: 'hidden' }}>
             <View style={{ height: 8, width: `${Math.round((value * 100) / outgoing)}%`, backgroundColor: color }} />
           </View>

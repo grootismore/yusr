@@ -1,7 +1,7 @@
 import { navigationTheme } from './navTheme';
 import type { Colors } from './theme';
 
-const colors: Colors = { background: '#000000', surface: '#1C1C1E', text: '#FFFFFF', secondaryText: '#AEAEB2', separator: '#38383A', tint: '#5CC49A', danger: '#FF6961' };
+const colors: Colors = { background: '#000000', surface: '#1C1C1E', surfaceMuted: '#2C2C2E', text: '#FFFFFF', secondaryText: '#AEAEB2', separator: '#38383A', tint: '#5CC49A', positive: '#5CC49A', gold: '#E0B260', danger: '#FF6961' };
 
 describe('navigationTheme', () => {
   it('uses the app colours so titles and header buttons are readable in dark mode', () => {

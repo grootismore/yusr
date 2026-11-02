@@ -11,6 +11,7 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { AppIcon, type IconName } from './AppIcon';
 import { formatMVR } from '@/lib/money';
@@ -23,7 +24,7 @@ export function Screen({ children, refresh }: { children: ReactNode; refresh?: {
     <ScrollView
       refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 16, gap: 20 }}
+      contentContainerStyle={{ padding: 16, gap: 22 }}
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       // The keyboard never hides the field being edited: the content scrolls up to make room, and
@@ -43,11 +44,11 @@ export function Group({ title, footer, children }: { title?: string; footer?: st
   return (
     <View style={{ gap: 6 }}>
       {title ? (
-        <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>
+        <Text accessibilityRole="header" style={{ fontSize: 14, fontWeight: '700', color: colors.tint, paddingHorizontal: 4 }}>
           {title}
         </Text>
       ) : null}
-      <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
+      <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth * 2, borderColor: colors.separator }}>
         {items.map((child, index) => (
           <Fragment key={index}>
             {index > 0 ? (
@@ -58,7 +59,7 @@ export function Group({ title, footer, children }: { title?: string; footer?: st
         ))}
       </View>
       {footer ? (
-        <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{footer}</Text>
+        <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 4 }}>{footer}</Text>
       ) : null}
     </View>
   );
@@ -77,7 +78,7 @@ interface RowProps {
 export function Row({ label, value, right, onPress, chevron, destructive, accessibilityHint }: RowProps) {
   const colors = useColors();
   const content = (
-    <View style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 12 }}>
+    <View style={{ minHeight: 50, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
       <Text style={{ flex: 1, fontSize: 17, color: destructive ? colors.danger : colors.text }}>{label}</Text>
       {value ? <Text style={{ fontSize: 17, color: colors.secondaryText, flexShrink: 1 }}>{value}</Text> : null}
       {right}
@@ -147,8 +148,8 @@ export function Button({
       disabled={disabled || busy}
       onPress={onPress}
       style={({ pressed }) => ({
-        minHeight: 44,
-        borderRadius: 12,
+        minHeight: 52,
+        borderRadius: 14,
         backgroundColor: background,
         alignItems: 'center',
         justifyContent: 'center',
@@ -159,7 +160,7 @@ export function Button({
       {busy ? (
         <ActivityIndicator color={colors.background} />
       ) : (
-        <Text style={{ fontSize: 17, fontWeight: '600', color: colors.background }}>{title}</Text>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: colors.background }}>{title}</Text>
       )}
     </Pressable>
   );
@@ -176,7 +177,7 @@ export function Segmented<T extends string>({
 }) {
   const colors = useColors();
   return (
-    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 12, padding: 3 }}>
+    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: colors.surfaceMuted, borderRadius: 14, padding: 3 }}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -239,7 +240,7 @@ export function Chips<T extends string>({
               justifyContent: 'center',
               paddingHorizontal: 16,
               borderRadius: 22,
-              backgroundColor: selected ? colors.tint : colors.background,
+              backgroundColor: selected ? colors.tint : colors.surfaceMuted,
             }}
           >
             <Text style={{ fontSize: 15, color: selected ? colors.background : colors.text }}>{option.label}</Text>
@@ -295,7 +296,14 @@ export function EmptyState({
   const colors = useColors();
   return (
     <View style={{ alignItems: 'center', gap: 12, padding: 32 }}>
-      <AppIcon accessible={false} name={icon} size={40} color={colors.secondaryText} />
+      <LinearGradient
+        colors={['#0D4E3A', '#13705F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <AppIcon accessible={false} name={icon} size={34} color="#F3FBF7" />
+      </LinearGradient>
       <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center' }}>
         {title}
       </Text>

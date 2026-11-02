@@ -102,6 +102,34 @@ export function safeToSpend(input: {
   };
 }
 
+export type ColumnKey = 'spent' | 'debts' | 'giving' | 'bills' | 'used' | 'safe';
+export interface ColumnPart {
+  key: ColumnKey;
+  laari: number;
+}
+
+/**
+ * The month's money as one water column, top to bottom: what has gone out, what is still set aside
+ * for debts, giving and bills, and what is left safe to spend. Parts with nothing in them are left
+ * out. When the month is overspent there is no "safe" part and `shortBy` says by how much.
+ *
+ * Private mode folds everything that is not safe into one "used" part, so the column cannot show how
+ * large the giving share is.
+ */
+export function waterColumn(safe: SafeToSpend, privacy: boolean): { parts: ColumnPart[]; total: number; shortBy: number } {
+  const room = Math.max(safe.safeToSpend, 0);
+  const raw: ColumnPart[] = privacy
+    ? [{ key: 'used', laari: sum([safe.spent, safe.reservedDebts, safe.reservedGiving, safe.reservedBills]) }]
+    : [
+        { key: 'spent', laari: safe.spent },
+        { key: 'debts', laari: safe.reservedDebts },
+        { key: 'giving', laari: safe.reservedGiving },
+        { key: 'bills', laari: safe.reservedBills },
+      ];
+  const parts = [...raw, { key: 'safe' as const, laari: room }].filter((part) => part.laari > 0);
+  return { parts, total: sum(parts.map((part) => part.laari)), shortBy: safe.safeToSpend < 0 ? -safe.safeToSpend : 0 };
+}
+
 export interface UpcomingItem {
   kind: 'debt' | 'giving' | 'bill' | 'income';
   id: string;

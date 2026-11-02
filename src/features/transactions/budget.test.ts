@@ -1,6 +1,6 @@
 import type { Debt } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
-import { safeToSpend, upcomingItems } from './budget';
+import { safeToSpend, upcomingItems, waterColumn, type SafeToSpend } from './budget';
 import { dueDatesBetween, nextDueAfter } from './recurring';
 import type { RecurringItem, Transaction } from './types';
 
@@ -131,5 +131,38 @@ describe('upcoming items', () => {
   it('shows a bill that was never logged as overdue and includes expected income', () => {
     const items = upcoming({ recurring: [bill({ next_due_on: '2026-11-01', day_of_month: 1 }), bill({ id: 'r2', name: 'Salary', kind: 'income', next_due_on: '2026-11-12' })] });
     expect(items.map((i) => [i.kind, i.overdue])).toEqual([['bill', true], ['income', false]]);
+  });
+});
+
+describe('water column', () => {
+  const base: SafeToSpend = { income: 1800000, spent: 270000, reservedDebts: 185000, reservedGiving: 70000, reservedBills: 30000, safeToSpend: 1245000 };
+
+  it('lays out what has gone out, what is set aside and what is safe, top to bottom', () => {
+    const column = waterColumn(base, false);
+    expect(column.parts.map((p) => p.key)).toEqual(['spent', 'debts', 'giving', 'bills', 'safe']);
+    expect(column.total).toBe(1800000); // equals the month's income when nothing is over
+    expect(column.shortBy).toBe(0);
+  });
+
+  it('leaves out parts with nothing in them', () => {
+    const column = waterColumn({ ...base, spent: 0, reservedGiving: 0, reservedBills: 0 }, false);
+    expect(column.parts.map((p) => p.key)).toEqual(['debts', 'safe']);
+  });
+
+  it('has no safe part when overspent, and says by how much', () => {
+    const column = waterColumn({ income: 0, spent: 270000, reservedDebts: 0, reservedGiving: 70000, reservedBills: 0, safeToSpend: -340000 }, false);
+    expect(column.parts.map((p) => p.key)).toEqual(['spent', 'giving']);
+    expect(column.shortBy).toBe(340000);
+  });
+
+  it('is empty for a month with nothing in it', () => {
+    expect(waterColumn({ income: 0, spent: 0, reservedDebts: 0, reservedGiving: 0, reservedBills: 0, safeToSpend: 0 }, false)).toEqual({ parts: [], total: 0, shortBy: 0 });
+  });
+
+  it('folds everything not safe into one part in private mode, so the giving share cannot be read', () => {
+    const column = waterColumn(base, true);
+    expect(column.parts.map((p) => p.key)).toEqual(['used', 'safe']);
+    expect(column.parts[0].laari).toBe(555000);
+    expect(JSON.stringify(column)).not.toContain('giving');
   });
 });
