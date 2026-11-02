@@ -497,8 +497,8 @@ const gave = (on: string, over: Partial<Transaction> = {}): Transaction => ({
 describe('giving tab', () => {
   it('invites the user to plan their first giving', async () => {
     await render(<GivingScreen />);
-    expect(screen.getByText('No giving set up')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Add giving'));
+    expect(screen.getByText('No Sadaqat set up')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add Sadaqat'));
     expect(mockPush).toHaveBeenCalledWith('/giving/commitment');
   });
 
@@ -535,7 +535,7 @@ describe('giving tab', () => {
   it('does not list a paused (inactive) commitment', async () => {
     state.commitments = [friday({ active: false })];
     await render(<GivingScreen />);
-    expect(screen.getByText('No giving set up')).toBeTruthy();
+    expect(screen.getByText('No Sadaqat set up')).toBeTruthy();
   });
 });
 
@@ -703,7 +703,7 @@ describe('home: safe to spend, coming up, debt-free', () => {
     // 1,000.00 income - 100.00 debt - 20.00 giving - 300.00 bill
     expect(screen.getByText('MVR 580.00')).toBeTruthy();
     expect(screen.getByText('Debt payments')).toBeTruthy();
-    expect(screen.getAllByText('Giving')).toHaveLength(2); // this month's total, and what is still set aside
+    expect(screen.getAllByText('Sadaqat')).toHaveLength(2); // this month's total, and what is still set aside
     expect(screen.getByText('Bills')).toBeTruthy();
     expect(screen.getByText(/A guide, not a promise/)).toBeTruthy();
   });
@@ -1049,7 +1049,7 @@ describe('share the register', () => {
   it('cannot be sent with nothing chosen', async () => {
     setup();
     await render(<WasiyyahShareScreen />);
-    for (const section of ['Debts', 'Owed to you', 'Pending giving', 'Note']) await fireEvent(screen.getByLabelText(section), 'valueChange', false);
+    for (const section of ['Debts', 'Owed to you', 'Pending Sadaqat', 'Note']) await fireEvent(screen.getByLabelText(section), 'valueChange', false);
     expect(screen.getByText('Choose at least one section to share.')).toBeTruthy();
     await fireEvent.press(screen.getByText('Share'));
     expect(mockLogShared).not.toHaveBeenCalled();
