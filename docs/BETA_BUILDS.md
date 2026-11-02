@@ -14,7 +14,7 @@ Download the `yusr-beta-apk` artifact, open `yusr-beta.apk` on the phone and all
 Download `yusr-beta-unsigned-ipa`, unzip it, and install the `.ipa` with SideStore or AltStore using your own free Apple ID (they re-sign it). A free Apple ID's apps expire after 7 days unless the store refreshes them; the bundle id may be changed by the store to fit your account. Face ID, notifications and layout behave as in a normal install.
 
 ## What to test
-Sign up (the three consent switches), sign in, Face ID lock, add an account and a transaction offline then reconnect, a debt and its payoff plan, a giving commitment and reminders, Wasiyyah note and an invite link, export and delete account (use a throwaway account), language switch to Dhivehi and the right-to-left layout, light and dark mode, large text.
+Sign up (the three consent switches), sign in, Face ID lock, add an account and a transaction offline then reconnect, a debt and its payoff plan, a giving commitment and reminders, Wasiyyah note and an invite link, pull down to refresh on Home, Transactions, Debts and Giving, search in Transactions, the add-transaction sheet (drag it up and down), confirmations as action sheets, haptics and the Settings switch for them, the native tab bar in Dhivehi right-to-left (tab order and icons), export and delete account (use a throwaway account), language switch to Dhivehi and the right-to-left layout, light and dark mode, large text.
 
 ## Not covered
 TestFlight, App Store and Play Store builds need the developer accounts and signing. Use the `production` profile in `eas.json` for those later.
