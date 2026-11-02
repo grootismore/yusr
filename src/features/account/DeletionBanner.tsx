@@ -15,7 +15,7 @@ export function DeletionBanner() {
   const cancel = useCancelDeletion();
   if (!date) return null;
   return (
-    <View accessibilityRole="alert" style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 16, gap: 12 }}>
+    <View accessibilityRole="alert" style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 16, gap: 12 }}>
       <Text style={{ fontSize: 17, fontWeight: '600', color: colors.text }}>{t('deleteAccount.pendingTitle')}</Text>
       <Text style={{ fontSize: 15, color: colors.secondaryText }}>{t('deleteAccount.pendingBody', { date: formatDate(date.slice(0, 10)) })}</Text>
       <Button
