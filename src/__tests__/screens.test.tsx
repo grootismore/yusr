@@ -1,4 +1,4 @@
-import { Alert, Share } from 'react-native';
+import { ActionSheetIOS, Alert, Share } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
@@ -847,7 +847,7 @@ describe('trusted contacts', () => {
     expect(mockPush).toHaveBeenCalledWith('/more/contact-invite');
   });
   it('lists contacts with their status and removes one only after confirming', async () => {
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
     state.contacts = [contact(), contact({ id: 'k2', name: 'Dee', status: 'accepted' }), contact({ id: 'k3', name: 'Gone', status: 'revoked' })];
     await render(<ContactsScreen />);
     expect(screen.getByText('Cee')).toBeTruthy();
@@ -855,10 +855,14 @@ describe('trusted contacts', () => {
     expect(screen.queryByText('Gone')).toBeNull();
     await fireEvent.press(screen.getByText('Cee'));
     expect(mockRevoke).not.toHaveBeenCalled(); // asks first
-    const buttons = alert.mock.calls[0][2] as { text: string; onPress?: () => void }[];
-    buttons.find((b) => b.text === 'Remove contact')?.onPress?.();
+    // iOS asks with an action sheet: the destructive choice first, Cancel last.
+    const [options, choose] = sheet.mock.calls[0];
+    expect(options).toMatchObject({ options: ['Remove contact', 'Cancel'], destructiveButtonIndex: 0, cancelButtonIndex: 1 });
+    choose(1);
+    expect(mockRevoke).not.toHaveBeenCalled(); // cancelling does nothing
+    choose(0);
     expect(mockRevoke).toHaveBeenCalledWith('k1');
-    alert.mockRestore();
+    sheet.mockRestore();
   });
   it('stops offering invites at three contacts', async () => {
     state.contacts = [contact({ id: 'a' }), contact({ id: 'b', name: 'B' }), contact({ id: 'c', name: 'C' })];

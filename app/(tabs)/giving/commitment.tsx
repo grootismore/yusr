@@ -8,6 +8,7 @@ import { parsePositiveAmount, toInputText, useFormatDate } from '@/features/tran
 import { useCommitments, useSaveCommitment, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { COMMITMENT_TYPES, SCHEDULES, type CommitmentType, type Schedule } from '@/features/giving/types';
+import { confirmAction } from '@/lib/confirm';
 
 export default function CommitmentScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -58,17 +59,16 @@ export default function CommitmentScreen() {
 
   function onArchive() {
     if (!existing) return;
-    Alert.alert(t('giving.archiveTitle'), t('giving.archiveBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('giving.archive'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('giving.archiveTitle'),
+      message: t('giving.archiveBody'),
+      confirmLabel: t('giving.archive'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           archive(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   return (

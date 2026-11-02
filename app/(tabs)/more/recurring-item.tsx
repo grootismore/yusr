@@ -9,6 +9,7 @@ import { parsePositiveAmount, toInputText, useCategoryName, useFormatDate } from
 import { useAccounts, useCategories, useRecurringItems, useSaveRecurring, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { nextDueAfter } from '@/features/transactions/recurring';
+import { confirmAction } from '@/lib/confirm';
 
 type Kind = 'income' | 'expense';
 
@@ -85,17 +86,16 @@ export default function RecurringItemScreen() {
 
   function onArchive() {
     if (!existing) return;
-    Alert.alert(t('recurring.archiveTitle'), t('recurring.archiveBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('recurring.archive'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('recurring.archiveTitle'),
+      message: t('recurring.archiveBody'),
+      confirmLabel: t('recurring.archive'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           archive(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   return (

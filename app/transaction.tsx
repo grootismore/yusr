@@ -20,6 +20,8 @@ import { currentBalance } from '@/features/debts/logic';
 import { nextDueAfter } from '@/features/transactions/recurring';
 import { toISODate } from '@/features/transactions/logic';
 import { KINDS, type Kind } from '@/features/transactions/types';
+import { confirmAction } from '@/lib/confirm';
+import { successHaptic } from '@/lib/haptics';
 
 // Add / edit sheet. Built for speed: amount first, sensible defaults, one tap per choice.
 export default function TransactionScreen() {
@@ -139,22 +141,22 @@ export default function TransactionScreen() {
         dueItem,
       );
     }
+    successHaptic();
     router.back(); // saved on this device already; syncs in the background
   }
 
   function onDelete() {
     if (!existing) return;
-    Alert.alert(t('transactions.deleteTitle'), t('transactions.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('transactions.deleteTitle'),
+      message: t('transactions.deleteBody'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           remove(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   const header = (

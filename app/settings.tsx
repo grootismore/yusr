@@ -10,6 +10,8 @@ import { shareMyData } from '@/features/account/hooks';
 import { Group, Row, Segmented } from '@/components/ui';
 import { requestReminderPermission } from '@/features/reminders/notifications';
 import { setRemindersEnabled, useRemindersEnabled } from '@/features/reminders/preference';
+import { confirmAction } from '@/lib/confirm';
+import { setHapticsEnabled, useHapticsEnabled } from '@/lib/haptics';
 import { useColors } from '@/lib/theme';
 
 // Placeholder settings screen: language switcher only (Phase 1).
@@ -22,6 +24,7 @@ export default function SettingsScreen() {
   const { privacyMode, hijriAdjustment } = useProfile();
   const updateProfile = useUpdateProfile();
   const remindersOn = useRemindersEnabled();
+  const hapticsOn = useHapticsEnabled();
 
   async function toggleReminders(value: boolean) {
     if (!value) return setRemindersEnabled(false);
@@ -33,10 +36,13 @@ export default function SettingsScreen() {
   function confirmSignOut() {
     if (pending === 0) return void signOut();
     // Queued offline writes are wiped on sign-out, so make that explicit.
-    Alert.alert(t('settings.pendingTitle'), t('settings.pendingBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('settings.signOut'), style: 'destructive', onPress: () => void signOut() },
-    ]);
+    confirmAction({
+      title: t('settings.pendingTitle'),
+      message: t('settings.pendingBody'),
+      confirmLabel: t('settings.signOut'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => void signOut(),
+    });
   }
 
   async function choose(language: Language) {
@@ -89,6 +95,12 @@ export default function SettingsScreen() {
           right={<Switch accessibilityLabel={t('settings.reminders')} value={remindersOn} onValueChange={toggleReminders} />}
         />
       </Group>
+      <Group footer={t('settings.hapticsHint')}>
+        <Row
+          label={t('settings.haptics')}
+          right={<Switch accessibilityLabel={t('settings.haptics')} value={hapticsOn} onValueChange={setHapticsEnabled} />}
+        />
+      </Group>
       <Group footer={t('settings.privacyHint')}>
         <Row
           label={t('settings.privacy')}
@@ -116,7 +128,7 @@ export default function SettingsScreen() {
           onPress={confirmSignOut}
           style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 }}
         >
-          <Text style={{ fontSize: 17, color: '#C62828' }}>{t('settings.signOut')}</Text>
+          <Text style={{ fontSize: 17, color: colors.danger }}>{t('settings.signOut')}</Text>
         </Pressable>
       </View>
     </View>

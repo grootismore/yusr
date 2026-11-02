@@ -14,6 +14,7 @@ import {
 } from '@/features/transactions/hooks';
 import { currentBalance, startingBalanceFor } from '@/features/debts/logic';
 import { DEBT_KINDS, type DebtKind } from '@/features/debts/types';
+import { confirmAction } from '@/lib/confirm';
 
 export default function DebtFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -88,17 +89,16 @@ export default function DebtFormScreen() {
 
   function onArchive() {
     if (!existing) return;
-    Alert.alert(t('debts.archiveTitle'), t('debts.archiveBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('debts.archive'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('debts.archiveTitle'),
+      message: t('debts.archiveBody'),
+      confirmLabel: t('debts.archive'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           archive(existing.id);
           router.dismissAll();
         },
-      },
-    ]);
+    });
   }
 
   return (

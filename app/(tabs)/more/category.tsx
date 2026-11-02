@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, ErrorText, Field, Group, HeaderTextButton, Row, Screen, Segmented } from '@/components/ui';
 import { useCategories, useSaveCategory, useSoftDelete } from '@/features/transactions/hooks';
 import { KINDS, type Kind } from '@/features/transactions/types';
+import { confirmAction } from '@/lib/confirm';
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -32,17 +33,16 @@ export default function CategoryScreen() {
 
   function onArchive() {
     if (!existing) return;
-    Alert.alert(t('categories.archiveTitle'), t('categories.archiveBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('categories.archive'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('categories.archiveTitle'),
+      message: t('categories.archiveBody'),
+      confirmLabel: t('categories.archive'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           archive(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   return (

@@ -125,7 +125,7 @@ export default function SignInScreen() {
         </>
       ) : null}
       {errorKey ? (
-        <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: '#C62828', paddingHorizontal: 16 }}>
+        <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: colors.danger, paddingHorizontal: 16 }}>
           {t(errorKey)}
         </Text>
       ) : null}

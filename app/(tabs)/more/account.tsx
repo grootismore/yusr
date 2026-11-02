@@ -7,6 +7,7 @@ import { toInputText } from '@/features/transactions/format';
 import { useAccounts, useSaveAccount, useSoftDelete } from '@/features/transactions/hooks';
 import { ACCOUNT_TYPES, type AccountType } from '@/features/transactions/types';
 import { parseMVR } from '@/lib/money';
+import { confirmAction } from '@/lib/confirm';
 
 export default function AccountScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -42,17 +43,16 @@ export default function AccountScreen() {
 
   function onArchive() {
     if (!existing) return;
-    Alert.alert(t('accounts.archiveTitle'), t('accounts.archiveBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('accounts.archive'),
-        style: 'destructive',
-        onPress: () => {
+    confirmAction({
+      title: t('accounts.archiveTitle'),
+      message: t('accounts.archiveBody'),
+      confirmLabel: t('accounts.archive'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => {
           archive(existing.id);
           router.back();
         },
-      },
-    ]);
+    });
   }
 
   return (
