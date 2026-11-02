@@ -1,7 +1,7 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useTranslation } from 'react-i18next';
 import { useReminderSync } from '@/features/reminders/useReminderSync';
-import { usesNunito } from '@/lib/fonts';
+import { familyFor } from '@/lib/fonts';
 import { i18n } from '@/lib/i18n';
 import { useColors } from '@/lib/theme';
 
@@ -21,7 +21,7 @@ export default function TabsLayout() {
   const colors = useColors();
   useReminderSync(); // keeps scheduled reminders matching the data (only when the user turned them on)
   return (
-    <NativeTabs tintColor={colors.tint} labelStyle={usesNunito(i18n.language) ? { fontFamily: 'NunitoSans_600SemiBold' } : undefined}>
+    <NativeTabs tintColor={colors.tint} labelStyle={{ fontFamily: familyFor(i18n.language, 600) }}>
       {TABS.map(({ name, title, sf, md }) => (
         <NativeTabs.Trigger key={name} name={name}>
           <NativeTabs.Trigger.Label>{t(title)}</NativeTabs.Trigger.Label>

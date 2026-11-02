@@ -16,9 +16,9 @@ describe('withTypeface', () => {
     const style = { fontFamily: 'Menlo', fontWeight: '700' as const };
     expect(withTypeface(style, 'en')).toBe(style);
   });
-  it('leaves Dhivehi on the system font', () => {
-    const style = { fontSize: 17, fontWeight: '600' as const };
-    expect(withTypeface(style, 'dv')).toBe(style);
+  it('uses MV Faseyha for Dhivehi, bold from semibold up', () => {
+    expect(withTypeface({ fontSize: 17, fontWeight: '600' }, 'dv')).toEqual({ fontSize: 17, fontFamily: 'MVFaseyha_Bold', fontWeight: 'normal' });
+    expect(withTypeface({ fontSize: 17 }, 'dv')).toMatchObject({ fontFamily: 'MVFaseyha_Regular' });
   });
 });
 

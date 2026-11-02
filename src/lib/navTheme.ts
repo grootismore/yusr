@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme } from 'expo-router';
-import { usesNunito } from './fonts';
+import { familyFor } from './fonts';
 import type { Colors } from './theme';
 
 /**
@@ -10,14 +10,8 @@ import type { Colors } from './theme';
 export function navigationTheme(scheme: 'light' | 'dark', colors: Colors, language?: string) {
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
   // Screen titles and header buttons use the same typeface as the rest of the app.
-  const fonts = usesNunito(language)
-    ? {
-        regular: { fontFamily: 'NunitoSans_400Regular', fontWeight: 'normal' as const },
-        medium: { fontFamily: 'NunitoSans_600SemiBold', fontWeight: 'normal' as const },
-        bold: { fontFamily: 'NunitoSans_700Bold', fontWeight: 'normal' as const },
-        heavy: { fontFamily: 'NunitoSans_800ExtraBold', fontWeight: 'normal' as const },
-      }
-    : base.fonts;
+  const font = (weight: 400 | 600 | 700 | 800) => ({ fontFamily: familyFor(language, weight), fontWeight: 'normal' as const });
+  const fonts = { regular: font(400), medium: font(600), bold: font(700), heavy: font(800) };
   return {
     ...base,
     dark: scheme === 'dark',

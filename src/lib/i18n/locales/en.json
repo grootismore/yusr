@@ -40,7 +40,8 @@
     "exportFailedBody": "Check your connection and try again.",
     "deleteAccount": "Delete account",
     "haptics": "Haptic feedback",
-    "hapticsHint": "A light tap when you change a choice, save, or confirm something."
+    "hapticsHint": "A light tap when you change a choice, save, or confirm something.",
+    "about": "About"
   },
   "auth": {
     "signIn": "Sign in",
@@ -480,5 +481,18 @@
     "keep": "Keep my account",
     "failedTitle": "Couldn't update",
     "failedBody": "Check your connection and try again."
+  },
+  "about": {
+    "title": "About",
+    "version": "Version",
+    "fonts": "Fonts",
+    "faseyhaName": "MV Faseyha (Dhivehi)",
+    "faseyhaCredit": "Calligraphy and design by Abdulla Waheed. Management and editing by Hassan Shujau and Hassan Hameed. Digital remapping by Ahmed Niyaz.",
+    "faseyhaLicense": "Free for personal and commercial use. From the Thaana Font Gallery.",
+    "nunitoName": "Nunito Sans (English)",
+    "nunitoCredit": "Copyright 2016 The Nunito Sans Project Authors.",
+    "nunitoLicense": "SIL Open Font License, Version 1.1.",
+    "openGallery": "Thaana Font Gallery",
+    "openTerms": "Gallery terms"
   }
 }

@@ -1,4 +1,4 @@
-import { ActionSheetIOS, Alert, Share } from 'react-native';
+import { ActionSheetIOS, Alert, Linking, Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
@@ -17,6 +17,7 @@ import RecurringScreen from '../../app/(tabs)/more/recurring';
 import CommitmentScreen from '../../app/(tabs)/giving/commitment';
 import GivingScreen from '../../app/(tabs)/giving/index';
 import TransactionsScreen from '../../app/(tabs)/transactions/index';
+import AboutScreen from '../../app/(tabs)/more/about';
 import SettingsScreen from '../../app/(tabs)/more/settings';
 import DebtFormScreen from '../../app/(tabs)/debts/debt';
 import DebtsScreen from '../../app/(tabs)/debts/index';
@@ -1096,5 +1097,36 @@ describe('new account', () => {
     await fireEvent.changeText(screen.getByLabelText('Name'), 'Savings');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveAccount).toHaveBeenCalledTimes(1); // the correction still saves
+  });
+});
+
+describe('about', () => {
+  it('credits MV Faseyha and its authors as the Thaana Font Gallery lists them, with its licence', async () => {
+    await render(<AboutScreen />);
+    expect(screen.getByText('MV Faseyha (Dhivehi)')).toBeTruthy();
+    expect(screen.getByText('Calligraphy and design by Abdulla Waheed. Management and editing by Hassan Shujau and Hassan Hameed. Digital remapping by Ahmed Niyaz.')).toBeTruthy();
+    expect(screen.getByText('Free for personal and commercial use. From the Thaana Font Gallery.')).toBeTruthy();
+  });
+
+  it('credits Nunito Sans under its open font licence', async () => {
+    await render(<AboutScreen />);
+    expect(screen.getByText('Nunito Sans (English)')).toBeTruthy();
+    expect(screen.getByText('SIL Open Font License, Version 1.1.')).toBeTruthy();
+  });
+
+  it('links to the gallery and its terms', async () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await render(<AboutScreen />);
+    await fireEvent.press(screen.getByText('Thaana Font Gallery'));
+    await fireEvent.press(screen.getByText('Gallery terms'));
+    expect(open).toHaveBeenCalledWith('https://www.thaanafontgallery.com/font/mv-faseyha');
+    expect(open).toHaveBeenCalledWith('https://www.thaanafontgallery.com/terms/');
+    open.mockRestore();
+  });
+
+  it('is reachable from Settings', async () => {
+    await render(<SettingsScreen />);
+    await fireEvent.press(screen.getByText('About'));
+    expect(mockPush).toHaveBeenCalledWith('/more/about');
   });
 });

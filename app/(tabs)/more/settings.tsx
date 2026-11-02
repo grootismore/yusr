@@ -122,6 +122,9 @@ export default function SettingsScreen() {
         <Row label={t('settings.export')} chevron onPress={exportData} />
         <Row label={t('settings.deleteAccount')} destructive chevron onPress={() => router.push('/delete-account')} />
       </Group>
+      <Group>
+        <Row label={t('settings.about')} chevron onPress={() => router.push('/more/about')} />
+      </Group>
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
           accessibilityRole="button"
