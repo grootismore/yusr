@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "Mobile App Design Standards": {
+      "source": "awesome-skills/mobile-app-design",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "1f5bbf9b7f8b8ad8879de190cfb0e060d4a54bfd973b12e6cc2cfafdc8e650f1"
+    },
     "apple-design": {
       "source": "dickwu/apple-design-skill",
       "sourceType": "github",
