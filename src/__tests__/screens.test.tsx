@@ -64,6 +64,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 jest.mock('expo-localization', () => ({ getLocales: () => [] }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
+jest.mock('expo-symbols', () => ({ SymbolView: () => null }));
 jest.mock('@react-native-community/datetimepicker', () => ({
   __esModule: true,
   default: () => null,

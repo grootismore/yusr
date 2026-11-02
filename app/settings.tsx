@@ -1,10 +1,10 @@
 import { Alert, Pressable, Switch, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useRouter } from 'expo-router';
+import { AppIcon } from '@/components/AppIcon';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
 import { shareMyData } from '@/features/account/hooks';
 import { Group, Row, Segmented } from '@/components/ui';
@@ -84,7 +84,7 @@ export default function SettingsScreen() {
               }}
             >
               <Text style={{ fontSize: 17, color: colors.text }}>{LANGUAGE_NAMES[language]}</Text>
-              {selected ? <Ionicons name="checkmark" size={22} color={colors.tint} /> : null}
+              {selected ? <AppIcon name="checkmark" size={22} color={colors.tint} /> : null}
             </Pressable>
           );
         })}
