@@ -419,3 +419,6 @@ enabled = true
 # so there is no user JWT to verify.
 [functions.accept-invite]
 verify_jwt = false
+
+[functions.copy-editor]
+verify_jwt = false

@@ -30,7 +30,7 @@ Everything else (`expo-router`, `expo-font`, `expo-linking`, `expo-constants`, `
 | Service | Used for | Data | Status |
 | --- | --- | --- | --- |
 | Supabase (Postgres, Auth, Edge Functions, Vault) | Everything server-side | All user data, encrypted at rest; secret fields in Vault | In use (yusr-dev) |
-| Netlify | Hosts the invite-accept page and the legal pages | Standard web server logs; the invite token is in the URL fragment and is not sent to Netlify | In use |
+| Netlify | Hosts the invite-accept page, the legal pages and the wording editor (no user data; the editor holds only the app's own text) | Standard web server logs; the invite token is in the URL fragment and is not sent to Netlify | In use |
 | Resend | Emailing trusted contacts | Contact email address and message | **Not yet used.** Invites are shared by the owner as a link. List it in the privacy policy only when it is wired up |
 | Expo (EAS) | Builds and store submission | No user data | Build tooling |
 

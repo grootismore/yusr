@@ -60,42 +60,8 @@
   <script>
     'use strict';
     // No cookies, no storage, no analytics. The only network request is to the invite function.
-    var TEXT = {
-      en: {
-        loading: 'One moment',
-        invitedTitle: 'You have been invited',
-        invitedBy: '{name} has invited you to be a trusted contact on Yusr.',
-        invitedBySomeone: 'Someone has invited you to be a trusted contact on Yusr.',
-        what: 'A trusted contact is a person someone chooses to help their family settle their debts and obligations if they pass away.',
-        nothing: 'Accepting does not give you access to anything. You will not see their records now. In the future you may be asked to confirm how they are, and only after that process could a read-only list be shown to you.',
-        stored: 'Your name and email were entered by the person who invited you. Accepting records your answer and the time. You can say no, and nothing is shared either way.',
-        accept: 'Accept', decline: 'Decline', retry: 'Try again',
-        acceptedTitle: 'Thank you', accepted: 'You are now a trusted contact. You do not need to do anything else.',
-        declinedTitle: 'Declined', declined: 'You declined. The person will see your answer in their activity.',
-        invalidTitle: 'This link is no longer valid', invalid: 'It may have expired or already been used. Ask the person to send you a new invitation.',
-        limitTitle: 'Too many attempts', limit: 'Please try again later.',
-        errorTitle: 'Something went wrong', error: 'We could not reach the server. Check your connection and try again.',
-        missingTitle: 'This link is incomplete', missing: 'Open the full link the person sent you.',
-        switchTo: 'ދިވެހި'
-      },
-      dv: {
-        loading: 'ކުޑަކޮށް މަޑުކުރައްވާ',
-        invitedTitle: 'ތިޔަބޭފުޅާއަށް ދައުވަތު ދީފި',
-        invitedBy: '{name} ތިޔަބޭފުޅާއަށް ޔުސްރުގައި ހަމަޖެހިފައިވާ ފަރާތެއް ކަމުގައި ވުމަށް ގޮވާލައްވައިފި.',
-        invitedBySomeone: 'މީހަކު ތިޔަބޭފުޅާއަށް ޔުސްރުގައި ހަމަޖެހިފައިވާ ފަރާތެއް ކަމުގައި ވުމަށް ގޮވާލައްވައިފި.',
-        what: 'ހަމަޖެހިފައިވާ ފަރާތެއް ކަމަކީ، މީހަކު ނިޔާވެއްޖެނަމަ އޭނާގެ ޢާއިލާއަށް ދަރަނި އަދި އަމާނާތްތައް ފިލުވުމަށް އެހީތެރިވުމަށް އޭނާ ހޮވާ މީހެއް.',
-        nothing: 'ގަބޫލުކުރުމުން ތިޔަބޭފުޅާއަށް އެއްވެސް އެއްޗެއް ފެންނާކަށް ނެތް. މިހާރު އެމީހެއްގެ ރެކޯޑުތައް ނުފެނޭ. ކުރިއަށް ދާއިރު، އެމީހާ ކިހިނެއްތޯ ކަށަވަރުކުރުމަށް ތިޔަބޭފުޅާގާ އެދިދާނެ، އެ ކުރިއަރުން ނިމުނު ފަހުން ހަމައެކަނި ކިޔަން ލިބޭ ލިސްޓެއް ދެއްކިދާނެ.',
-        stored: 'ތިޔަބޭފުޅުންގެ ނަމާއި އީމެއިލް ލިޔުއްވީ ދައުވަތު ދެއްވި މީހާ. ގަބޫލުކުރުމުން ތިޔަބޭފުޅުންގެ ޖަވާބާއި ވަގުތު ރެކޯޑް ކުރެވޭ. ނޫނެކޭ ބުނެވޭނެ، ދެފަރާތުގެ ގޮތުންވެސް އެއްވެސް އެއްޗެއް ޝެއަރ ނުކުރެވޭ.',
-        accept: 'ގަބޫލުކުރަން', decline: 'ދެކޮޅު ހަދަން', retry: 'އަލުން މަސައްކަތް ކުރައްވާ',
-        acceptedTitle: 'ޝުކުރިއްޔާ', accepted: 'ތިޔަބޭފުޅާ މިހާރު ހަމަޖެހިފައިވާ ފަރާތެކެވެ. އިތުރަށް އެއްވެސް ކަމެއް ކުރަންނުޖެހޭ.',
-        declinedTitle: 'ދެކޮޅު ހަދައިފި', declined: 'ތިޔަބޭފުޅުން ދެކޮޅު ހެދިއެވެ. އެމީހާއަށް އެމީހެއްގެ ހިނގި ކަންތައްތަކުގައި ތިޔަބޭފުޅުންގެ ޖަވާބު ފެންނާނެ.',
-        invalidTitle: 'މި ލިންކް މިހާރު ބޭނުންކުރެވޭކަށް ނެތް', invalid: 'ހަމަވެފައި ނުވަތަ ކުރިން ބޭނުންކުރެވިފައި ވެދާނެ. އެމީހާއާ ގުޅި އާ ދައުވަތެއް ފޮނުއްވުމަށް އެދިވަޑައިގަންނަވާ.',
-        limitTitle: 'މަސައްކަތް ގިނަ ފަހަރު ކުރެވިއްޖެ', limit: 'ފަހުން އަލުން މަސައްކަތް ކުރައްވާ.',
-        errorTitle: 'މައްސަލައެއް ދިމާވެއްޖެ', error: 'ސާވަރާ ގުޅެން ނުކުޅުދާނެ. ކަނެކްޝަން ބަލައި އަލުން މަސައްކަތް ކުރައްވާ.',
-        missingTitle: 'މި ލިންކް ނުފުރިހަމަ', missing: 'އެމީހާ ފޮނުއްވި ފުރިހަމަ ލިންކް ހުޅުވާލައްވާ.',
-        switchTo: 'English'
-      }
-    };
+    // The wording lives in strings.json (edited on the wording editor and exported); the build inlines it here.
+    var TEXT = __STRINGS__;
 
     var lang = (navigator.language || '').toLowerCase().indexOf('dv') === 0 ? 'dv' : 'en';
     var token = (location.hash || '').replace(/^#/, '');

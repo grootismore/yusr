@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta name="yusr-function-url" content="__FUNCTION_URL__">
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAYFBMVEX//O388+Ty69vl4dHQ08O2vqnBrHiFn412jW9IdGA5aVErYEogW0cUUz8RUD0QUDwPUDwQTzsPTzsOTzsOTjoNTjoMTjkLTTkJTDgISjYESTUCRzQBRTEARDAAQi4AOydujU3ZAAABOElEQVR42s2T3XKEIAyFEYgBRKOwFuXP93/LWmfb3e2629vmgiHDNyScHNj8R7B/CDj3HnBxceeA935fp6RNmvbN5UjvAFrWhcgttm3t4kcKe3oPhNzbvuQhqrZVqU/V2T5/3AC/oGg46JwPoBoQjcDVfwMudo1QKBn0pm1NxkaiEk0X3RXwq+WwlawF75SqIE0uG3B7XHGUoAxMlz5PkusNoaS+aAaFfnpwqxXc1HkZpNCYaK6GC7u62ysodpKhLVvXyDVWi0x2kR50iBMKDqoqpjrgAqdIj0qOoZIGKbUUCJpqGH/Pwg8hbwERGW4pDP5kWJ4C8G7v4u74AaCiGJZBXgU4A4CZtMqrhM/AUL/qay6GcDkFXDScSc5UpheOGpMBCTr5l5YbY1lzdm886Wge6f//rKf4BIdjSzREmPdWAAAAAElFTkSuQmCC">
+  <title>Yusr wording</title>
+  <style>
+    @font-face { font-family: "Nunito Sans"; font-weight: 400; src: url("NunitoSans_400Regular.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Nunito Sans"; font-weight: 700; src: url("NunitoSans_700Bold.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "MV Faseyha"; src: url("MV_Faseyha_Regular.ttf") format("truetype"); font-display: swap; }
+    :root {
+      --bg: #eaf2ef; --surface: #ffffff; --text: #0f2a23; --muted: #4b6a60; --line: #d2e1da; --tint: #0d4e3a; --on-tint: #ffffff;
+      --danger: #b4412f; --ok: #13705f; --flag: #8a5a0e; --field: #f6faf8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #071a14; --surface: #0e2a22; --text: #e6f2ec; --muted: #9dbbb0; --line: #1f3f35; --tint: #6fcba6; --on-tint: #06231b; --danger: #ff8f7f; --ok: #6fcba6; --flag: #e0b260; --field: #0a211a; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    header { background: linear-gradient(135deg, #0d4e3a, #13705f); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+    header img { border-radius: 9px; }
+    header h1 { font-size: 1.15rem; margin: 0; flex: 1; }
+    header button { color: #fff; border-color: #fff; min-height: 40px; padding: 4px 14px; }
+    main { max-width: 64rem; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    label { display: grid; gap: 4px; font-weight: 700; font-size: .9rem; }
+    input, select, textarea, button { font: inherit; color: var(--text); }
+    input[type=text], input[type=password], input[type=search], select, textarea { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--field); }
+    textarea { resize: vertical; line-height: 1.5; }
+    textarea.dv { font-family: "MV Faseyha", "Noto Sans Thaana", "MV Boli", sans-serif; font-size: 1.3rem; line-height: 1.7; direction: rtl; text-align: right; }
+    button { min-height: 44px; padding: 8px 18px; border-radius: 12px; border: 1px solid var(--tint); background: transparent; color: var(--tint); font-weight: 700; cursor: pointer; }
+    button.primary { background: var(--tint); color: var(--on-tint); }
+    button[disabled] { opacity: .45; cursor: not-allowed; }
+    :focus-visible { outline: 3px solid var(--tint); outline-offset: 2px; }
+    .stack { display: grid; gap: 12px; }
+    .gate-title { margin: 0; }
+    .bar { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 700px) { .bar { grid-template-columns: 2fr 1fr 1fr auto; align-items: end; } .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } }
+    .pair { display: grid; gap: 12px; }
+    .key { font: .82rem ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); word-break: break-all; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font: .78rem ui-monospace, Menlo, monospace; border: 1px solid var(--line); border-radius: 8px; padding: 1px 8px; }
+    .flag { color: var(--flag); font-weight: 700; font-size: .85rem; }
+    .row-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; margin-bottom: 8px; }
+    .row-foot { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 10px; }
+    .check { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .check input { width: 20px; height: 20px; }
+    .meta, .count { color: var(--muted); font-size: .88rem; }
+    .error { color: var(--danger); font-weight: 600; }
+    .ok { color: var(--ok); font-weight: 600; }
+    .dirty { border-color: var(--tint); }
+    .help { color: var(--muted); font-size: .92rem; margin: 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="data:image/png;base64,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" alt="" width="32" height="32">
+    <h1>Yusr wording</h1>
+    <button id="signout" type="button" hidden>Sign out</button>
+  </header>
+  <main>
+    <section class="card stack" id="gate" aria-labelledby="gate-title">
+      <h2 id="gate-title" class="gate-title">Edit the app's wording</h2>
+      <p class="help">Enter the passcode you were given. Your name is saved with each change you make, so others can see who edited what.</p>
+      <label>Passcode<input id="pass" type="password" autocomplete="off"></label>
+      <label>Your name<input id="who" type="text" autocomplete="name" maxlength="60"></label>
+      <p class="error" id="gate-msg" role="alert"></p>
+      <button class="primary" id="open" type="button">Open</button>
+    </section>
+
+    <section id="app" class="stack" hidden>
+      <div class="card bar">
+        <label>Search<input id="q" type="search" placeholder="A word in English or Dhivehi, or part of a key"></label>
+        <label>Where<select id="where"><option value="">App and invite page</option><option value="app">App</option><option value="invite">Invite page</option></select></label>
+        <label>Show<select id="show"><option value="">Everything</option><option value="review">Needs review</option></select></label>
+        <button id="reload" type="button">Reload</button>
+      </div>
+      <p class="count" id="count" aria-live="polite"></p>
+      <div class="stack" id="list"></div>
+      <button id="more" type="button" hidden>Show more</button>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+    // Wording editor. The passcode is sent in a header to the copy-editor function and kept only for this browser tab.
+    var FN = (document.querySelector('meta[name="yusr-function-url"]') || {}).content || '';
+    var PAGE = 25;
+    var pass = '', who = '', rows = [], shown = PAGE;
+    var el = function (id) { return document.getElementById(id); };
+    var store = {
+      get: function (k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } },
+      set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* the tab just forgets it */ } },
+      clear: function () { try { sessionStorage.clear(); } catch (e) { /* nothing stored */ } }
+    };
+    var MESSAGES = {
+      wrong_passcode: 'That passcode is not right.',
+      too_many_attempts: 'Too many wrong attempts. Try again in an hour.',
+      not_configured: 'The editor is not set up yet. Ask the developer to set the passcode.',
+      placeholders_changed: 'Keep the placeholders exactly as they are, in both languages: ',
+      text_empty: 'The wording cannot be empty.',
+      text_too_long: 'That is too long.',
+      text_invalid_characters: 'That has a character that is not allowed.',
+      not_found: 'That string no longer exists. Reload the list.'
+    };
+
+    function api(body) {
+      return fetch(FN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-editor-passcode': pass },
+        body: JSON.stringify(body), credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store'
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (json) { return { status: res.status, json: json }; });
+      });
+    }
+    function explain(result, tokens) {
+      var text = MESSAGES[result.json.error] || 'Something went wrong. Check your connection and try again.';
+      if (result.json.error === 'placeholders_changed') text += (tokens && tokens.length ? tokens.join(' ') : 'none');
+      return text;
+    }
+    function make(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
+
+    function unlock() {
+      pass = el('pass').value; who = el('who').value.trim();
+      el('gate-msg').textContent = '';
+      if (!pass) { el('gate-msg').textContent = 'Enter the passcode.'; return; }
+      if (!who) { el('gate-msg').textContent = 'Enter your name.'; return; }
+      el('open').disabled = true;
+      api({ action: 'list' }).then(function (r) {
+        el('open').disabled = false;
+        if (r.status === 200 && r.json.ok) { store.set('pass', pass); store.set('who', who); rows = r.json.rows; start(); }
+        else { el('gate-msg').textContent = explain(r); }
+      }, function () { el('open').disabled = false; el('gate-msg').textContent = 'Could not reach the server. Check your connection.'; });
+    }
+    function start() {
+      el('gate').hidden = true; el('app').hidden = false; el('signout').hidden = false; el('pass').value = '';
+      shown = PAGE; draw();
+    }
+    function reload() {
+      api({ action: 'list' }).then(function (r) { if (r.status === 200 && r.json.ok) { rows = r.json.rows; draw(); } else { el('count').textContent = explain(r); } });
+    }
+    function visible() {
+      var q = el('q').value.trim().toLowerCase(), where = el('where').value, show = el('show').value;
+      return rows.filter(function (r) {
+        if (where && r.surface !== where) return false;
+        if (show === 'review' && !r.needs_review) return false;
+        if (!q) return true;
+        return (r.key + ' ' + r.en + ' ' + r.dv).toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    function draw() {
+      var list = el('list'); list.textContent = '';
+      var all = visible();
+      all.slice(0, shown).forEach(function (r) { list.appendChild(card(r)); });
+      el('count').textContent = 'Showing ' + Math.min(shown, all.length) + ' of ' + all.length + (all.length === rows.length ? '' : ' (' + rows.length + ' in total)');
+      el('more').hidden = all.length <= shown;
+    }
+
+    function card(r) {
+      var c = make('article', 'card');
+      var head = make('div', 'row-head');
+      head.appendChild(make('span', 'key', (r.surface === 'invite' ? 'Invite page · ' : 'App · ') + r.key));
+      if (r.tokens && r.tokens.length) { var chips = make('span', 'chips'); r.tokens.forEach(function (t) { chips.appendChild(make('span', 'chip', t)); }); head.appendChild(chips); }
+      var flag = make('span', 'flag', 'Needs review'); flag.hidden = !r.needs_review; head.appendChild(flag);
+      c.appendChild(head);
+
+      var pair = make('div', 'pair');
+      var en = field('English', r.en, 'en', ltr()); var dv = field('Dhivehi', r.dv, 'dv', 'dv');
+      pair.appendChild(en.label); pair.appendChild(dv.label); c.appendChild(pair);
+
+      var foot = make('div', 'row-foot');
+      var rev = make('label', 'check'); var box = document.createElement('input'); box.type = 'checkbox'; rev.appendChild(box); rev.appendChild(make('span', '', 'Mark as reviewed'));
+      var save = make('button', 'primary', 'Save'); save.type = 'button'; save.disabled = true;
+      var status = make('span', 'meta'); status.setAttribute('role', 'status');
+      foot.appendChild(rev); foot.appendChild(save); foot.appendChild(status);
+      var meta = make('span', 'meta', r.updated_by ? 'Last edited by ' + r.updated_by + ' on ' + new Date(r.updated_at).toLocaleDateString() : '');
+      foot.appendChild(meta);
+      c.appendChild(foot);
+
+      function changed() { return en.input.value !== r.en || dv.input.value !== r.dv || box.checked; }
+      function sync() { save.disabled = !changed(); c.classList.toggle('dirty', changed()); status.textContent = ''; status.className = 'meta'; }
+      [en.input, dv.input].forEach(function (i) { i.addEventListener('input', sync); });
+      box.addEventListener('change', sync);
+      save.addEventListener('click', function () {
+        save.disabled = true; status.textContent = 'Saving…'; status.className = 'meta';
+        api({ action: 'save', surface: r.surface, key: r.key, en: en.input.value, dv: dv.input.value, reviewed: box.checked, editor: who }).then(function (res) {
+          if (res.status === 200 && res.json.ok) {
+            r.en = en.input.value; r.dv = dv.input.value; if (box.checked) { r.needs_review = false; flag.hidden = true; box.checked = false; }
+            r.updated_by = who; meta.textContent = 'Last edited by ' + who + ' just now';
+            c.classList.remove('dirty'); status.textContent = 'Saved'; status.className = 'ok';
+          } else { save.disabled = false; status.textContent = explain(res, r.tokens); status.className = 'error'; }
+        }, function () { save.disabled = false; status.textContent = 'Could not reach the server.'; status.className = 'error'; });
+      });
+      return c;
+    }
+    function ltr() { return 'en'; }
+    function field(name, value, lang, cls) {
+      var label = make('label'); label.appendChild(make('span', '', name));
+      var t = document.createElement('textarea'); t.value = value; t.lang = lang; t.rows = Math.min(8, Math.max(2, Math.ceil(value.length / (lang === 'dv' ? 32 : 40))));
+      if (lang === 'dv') { t.className = 'dv'; t.dir = 'rtl'; }
+      label.appendChild(t); return { label: label, input: t };
+    }
+
+    el('open').addEventListener('click', unlock);
+    el('pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+    el('who').addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+    el('q').addEventListener('input', function () { shown = PAGE; draw(); });
+    el('where').addEventListener('change', function () { shown = PAGE; draw(); });
+    el('show').addEventListener('change', function () { shown = PAGE; draw(); });
+    el('more').addEventListener('click', function () { shown += PAGE; draw(); });
+    el('reload').addEventListener('click', reload);
+    el('signout').addEventListener('click', function () { store.clear(); pass = ''; rows = []; el('app').hidden = true; el('gate').hidden = false; el('signout').hidden = true; });
+    window.addEventListener('beforeunload', function (e) { if (document.querySelector('.dirty')) { e.preventDefault(); e.returnValue = ''; } });
+
+    el('who').value = store.get('who');
+    if (store.get('pass') && store.get('who')) { el('pass').value = store.get('pass'); unlock(); }
+  </script>
+</body>
+</html>
