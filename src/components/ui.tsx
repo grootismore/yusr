@@ -1,4 +1,4 @@
-import { Children, Fragment, type ComponentProps, type ReactNode } from 'react';
+import { Children, Fragment, type ReactNode } from 'react';
 import { ActivityIndicator, I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, View, type TextInputProps } from 'react-native';
 import { Text, TextInput } from '@/components/Text';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -213,7 +213,7 @@ export function Chips<T extends string>({
 }) {
   const colors = useColors();
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}>
+    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -246,13 +246,13 @@ export function Field({ label, latin, ...input }: { label: string; latin?: boole
   const colors = useColors();
   return (
     <View style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 12 }}>
-      <Text style={{ fontSize: 17, color: colors.text }}>{label}</Text>
+      <Text style={{ fontSize: 17, color: colors.text, flexShrink: 1, maxWidth: '55%' }}>{label}</Text>
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={colors.secondaryText}
         {...input}
         style={[
-          { flex: 1, minHeight: 44, fontSize: 17, color: colors.text },
+          { flex: 1, minHeight: 44, minWidth: 96, fontSize: 17, color: colors.text },
           latin ? { textAlign: 'right', writingDirection: 'ltr' } : null,
         ]}
       />

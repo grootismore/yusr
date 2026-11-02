@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, SectionList, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -94,10 +94,12 @@ export default function TransactionsScreen() {
             paddingVertical: 10,
             backgroundColor: colors.surface,
             opacity: pressed ? 0.6 : 1,
-            borderTopLeftRadius: index === 0 ? 12 : 0,
-            borderTopRightRadius: index === 0 ? 12 : 0,
-            borderBottomLeftRadius: index === section.data.length - 1 ? 12 : 0,
-            borderBottomRightRadius: index === section.data.length - 1 ? 12 : 0,
+            borderTopLeftRadius: index === 0 ? 16 : 0,
+            borderTopRightRadius: index === 0 ? 16 : 0,
+            borderBottomLeftRadius: index === section.data.length - 1 ? 16 : 0,
+            borderBottomRightRadius: index === section.data.length - 1 ? 16 : 0,
+            borderBottomWidth: index === section.data.length - 1 ? 0 : StyleSheet.hairlineWidth,
+            borderBottomColor: colors.separator,
             marginHorizontal: 16,
           })}
         >

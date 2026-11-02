@@ -84,7 +84,7 @@ export function DepthCard({
       <Text
         adjustsFontSizeToFit
         numberOfLines={1}
-        style={{ fontSize: 38, fontWeight: '800', letterSpacing: -0.8, color: DEPTH.text, writingDirection: 'ltr', fontVariant: ['tabular-nums'], textAlign: 'left' }}
+        style={{ fontSize: 38, fontWeight: '800', letterSpacing: -0.8, color: DEPTH.text, writingDirection: 'ltr', fontVariant: ['tabular-nums'], alignSelf: 'flex-start' }}
       >
         {formatMVR(amount)}
       </Text>

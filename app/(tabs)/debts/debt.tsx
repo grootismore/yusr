@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Switch } from 'react-native';
+import { Switch } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button, Chips, ErrorText, Field, Group, HeaderTextButton, Row, Screen } from '@/components/ui';

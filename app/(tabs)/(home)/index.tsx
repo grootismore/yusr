@@ -92,11 +92,6 @@ export default function HomeScreen() {
       params: item.kind === 'debt' ? { debtId: item.id } : item.kind === 'giving' ? { commitmentId: item.id } : { recurringId: item.id },
     });
   const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
-  const setAside = [
-    ['home.setAsideDebts', safe.reservedDebts, false],
-    ['home.setAsideGiving', safe.reservedGiving, true],
-    ['home.setAsideBills', safe.reservedBills, false],
-  ] as const;
 
   return (
     <Screen refresh={refresh}>
