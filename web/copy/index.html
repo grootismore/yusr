@@ -80,6 +80,10 @@
         <label>Show<select id="show"><option value="">Everything</option><option value="review">Needs review</option></select></label>
         <button id="reload" type="button">Reload</button>
       </div>
+      <div class="card stack" id="starter-box" hidden>
+        <p class="help" id="starter-help"></p>
+        <button id="starter" type="button">Add missing strings</button>
+      </div>
       <p class="count" id="count" aria-live="polite"></p>
       <div class="stack" id="list"></div>
       <button id="more" type="button" hidden>Show more</button>
@@ -139,7 +143,26 @@
     }
     function start() {
       el('gate').hidden = true; el('app').hidden = false; el('signout').hidden = false; el('pass').value = '';
-      shown = PAGE; draw();
+      shown = PAGE; draw(); offerStarter();
+    }
+    // First run, or after the app gains new strings: adds the ones the editor does not have. Edits are never overwritten.
+    function offerStarter() {
+      el('starter-box').hidden = false;
+      el('starter-help').textContent = rows.length === 0
+        ? 'The editor has no wording yet. Load the app\'s starter wording to begin.'
+        : 'If the app has gained new strings, add them here. Existing wording and your edits are not touched.';
+    }
+    function loadStarter() {
+      el('starter').disabled = true; el('starter-help').textContent = 'Loading…';
+      fetch('starter.json', { cache: 'no-store' }).then(function (res) { return res.json(); }).then(function (list) {
+        return api({ action: 'seed', rows: list });
+      }).then(function (r) {
+        el('starter').disabled = false;
+        if (r.status === 200 && r.json.ok) {
+          var note = r.json.added + ' strings added, ' + r.json.skipped + ' already there.' + (r.json.rejected.length ? ' Not added (placeholders differ): ' + r.json.rejected.join(', ') : '');
+          reload(); el('starter-help').textContent = note;
+        } else { el('starter-help').textContent = explain(r); }
+      }, function () { el('starter').disabled = false; el('starter-help').textContent = 'Could not load the starter wording.'; });
     }
     function reload() {
       api({ action: 'list' }).then(function (r) { if (r.status === 200 && r.json.ok) { rows = r.json.rows; draw(); } else { el('count').textContent = explain(r); } });
@@ -215,6 +238,7 @@
     el('show').addEventListener('change', function () { shown = PAGE; draw(); });
     el('more').addEventListener('click', function () { shown += PAGE; draw(); });
     el('reload').addEventListener('click', reload);
+    el('starter').addEventListener('click', loadStarter);
     el('signout').addEventListener('click', function () { store.clear(); pass = ''; rows = []; el('app').hidden = true; el('gate').hidden = false; el('signout').hidden = true; });
     window.addEventListener('beforeunload', function (e) { if (document.querySelector('.dirty')) { e.preventDefault(); e.returnValue = ''; } });
 

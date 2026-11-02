@@ -26,8 +26,8 @@ When the code gains new strings, run `npm run copy:seed` (or `npm run copy:seed 
 1. Apply migration `supabase/migrations/20261102160000_008_copy_strings.sql` to the project (three tables, closed to every client role).
 2. Deploy the `copy-editor` Edge Function (`supabase/functions/copy-editor`).
 3. In the Supabase dashboard, Edge Functions > Secrets, set `COPY_EDITOR_PASSCODE` (the shared passcode; choose a long one) and `COPY_ALLOWED_ORIGIN` (the editor site's address, so only that page can call the function from a browser).
-4. Build and deploy the site: `FUNCTION_URL=https://<project>.supabase.co/functions/v1/copy-editor node web/copy/build.cjs`, then publish `web/copy/dist`.
-5. Load the strings: `npm run copy:seed -- --sql` and run the SQL, or `npm run copy:seed`.
+4. Build and deploy the site: `npm run copy:starter`, then `FUNCTION_URL=https://<project>.supabase.co/functions/v1/copy-editor node web/copy/build.cjs`, then publish `web/copy/dist`.
+5. Load the strings: sign in to the site and press **Add missing strings** (it only adds what is missing). Developers can instead run `npm run copy:seed`, or `npm run copy:seed -- --sql` for SQL that needs no passcode.
 
 ## How it is protected
 - One shared passcode is the only credential. It is stored only as a function secret, compared in constant time, and sent in a request header over HTTPS. If the secret is missing the function refuses everyone.

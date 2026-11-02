@@ -61,7 +61,8 @@
     "test": "jest",
     "test:integration": "jest -c jest.integration.config.js",
     "copy:seed": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts seed",
-    "copy:export": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts export"
+    "copy:export": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts export",
+    "copy:starter": "node --no-warnings --experimental-strip-types scripts/copy-sync.ts starter"
   },
   "private": true,
   "jest": {

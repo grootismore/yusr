@@ -3,7 +3,7 @@
  *   FUNCTION_URL=https://<ref>.supabase.co/functions/v1/copy-editor node web/copy/build.cjs
  * Fills in the function URL, copies the Dhivehi font, and writes a strict Content-Security-Policy
  * (Netlify `_headers`): only the page's own script and style (by hash), the font file, inline
- * images, and connections to that one function host.
+ * images, and connections to that one function host (and its own starter.json).
  */
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -25,7 +25,7 @@ const csp = [
   `script-src ${hash(script)}`,
   `style-src ${hash(style)}`,
   "font-src 'self'",
-  `connect-src ${new URL(functionUrl).origin}`,
+  `connect-src 'self' ${new URL(functionUrl).origin}`,
   'img-src data:',
   "base-uri 'none'",
   "form-action 'none'",
@@ -38,6 +38,10 @@ fs.mkdirSync(dist);
 fs.writeFileSync(path.join(dist, 'index.html'), html);
 // MV Faseyha (free for personal and commercial use) so Dhivehi previews look like the app.
 fs.copyFileSync(path.join(__dirname, '../../assets/fonts/MV_Faseyha_Regular.ttf'), path.join(dist, 'MV_Faseyha_Regular.ttf'));
+// The strings the "Add missing strings" button loads (made by `npm run copy:starter`).
+const starter = path.join(__dirname, 'starter.json');
+if (!fs.existsSync(starter)) throw new Error('Run `npm run copy:starter` first: web/copy/starter.json is missing');
+fs.copyFileSync(starter, path.join(dist, 'starter.json'));
 for (const name of ['NunitoSans_400Regular', 'NunitoSans_700Bold']) {
   fs.copyFileSync(path.join(__dirname, `../../assets/fonts/${name}.ttf`), path.join(dist, `${name}.ttf`));
 }

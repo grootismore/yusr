@@ -28,3 +28,4 @@ web/accept/dist/
 .netlify
 web/legal/dist/
 web/copy/dist/
+web/copy/starter.json
