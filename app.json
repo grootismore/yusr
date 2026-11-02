@@ -17,7 +17,7 @@
     "android": {
       "package": "mv.yusr.app",
       "adaptiveIcon": {
-        "backgroundColor": "#1F6B49",
+        "backgroundColor": "#0D4E3A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -30,7 +30,16 @@
       "expo-localization",
       "expo-font",
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0D4E3A"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

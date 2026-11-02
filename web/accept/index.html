@@ -4,13 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAYFBMVEX//O388+Ty69vl4dHQ08O2vqnBrHiFn412jW9IdGA5aVErYEogW0cUUz8RUD0QUDwPUDwQTzsPTzsOTzsOTjoNTjoMTjkLTTkJTDgISjYESTUCRzQBRTEARDAAQi4AOydujU3ZAAABOElEQVR42s2T3XKEIAyFEYgBRKOwFuXP93/LWmfb3e2629vmgiHDNyScHNj8R7B/CDj3HnBxceeA935fp6RNmvbN5UjvAFrWhcgttm3t4kcKe3oPhNzbvuQhqrZVqU/V2T5/3AC/oGg46JwPoBoQjcDVfwMudo1QKBn0pm1NxkaiEk0X3RXwq+WwlawF75SqIE0uG3B7XHGUoAxMlz5PkusNoaS+aAaFfnpwqxXc1HkZpNCYaK6GC7u62ysodpKhLVvXyDVWi0x2kR50iBMKDqoqpjrgAqdIj0qOoZIGKbUUCJpqGH/Pwg8hbwERGW4pDP5kWJ4C8G7v4u74AaCiGJZBXgU4A4CZtMqrhM/AUL/qay6GcDkFXDScSc5UpheOGpMBCTr5l5YbY1lzdm886Wge6f//rKf4BIdjSzREmPdWAAAAAElFTkSuQmCC">
   <meta name="referrer" content="no-referrer">
   <!-- Replaced at deploy time with the invite function's URL, e.g. https://<ref>.supabase.co/functions/v1/accept-invite -->
   <meta name="yusr-function-url" content="__FUNCTION_URL__">
   <title>Yusr</title>
   <style>
     :root {
-      --bg: #f2f2f7; --surface: #ffffff; --text: #1c1c1e; --muted: #5c5c61; --tint: #2e7d5b; --on-tint: #ffffff; --line: #c6c6c8; --danger: #b3261e;
+      --bg: #f2f2f7; --surface: #ffffff; --text: #1c1c1e; --muted: #5c5c61; --tint: #0d4e3a; --on-tint: #ffffff; --line: #c6c6c8; --danger: #b3261e;
     }
     @media (prefers-color-scheme: dark) {
       :root { --bg: #000000; --surface: #1c1c1e; --text: #ffffff; --muted: #aeaeb2; --tint: #5cc49a; --on-tint: #000000; --line: #38383a; --danger: #ff8a80; }
@@ -19,6 +20,7 @@
     body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thaana", "MV Boli", sans-serif; }
     main { max-width: 36rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .logo { border-radius: 9px; vertical-align: middle; margin-inline-end: .6rem; }
     .brand { font-weight: 700; font-size: 1.25rem; }
     .card { background: var(--surface); border-radius: 12px; padding: 1.25rem; }
     h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 .75rem; }
@@ -38,7 +40,7 @@
 <body>
   <main>
     <div class="bar">
-      <span class="brand">Yusr</span>
+      <span class="brand"><img class="logo" src="data:image/png;base64,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" alt="" width="36" height="36">Yusr</span>
       <button class="link" id="lang" type="button" lang="dv">ދިވެހި</button>
     </div>
 

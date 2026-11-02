@@ -8,8 +8,8 @@ const light = {
   text: '#1C1C1E',
   secondaryText: '#6C6C70',
   separator: '#C6C6C8',
-  // Matches the app icon. 6.45:1 on white, 5.78:1 on the background (WCAG AA for text).
-  tint: '#1F6B49',
+  // The logo's deep green. 9.69:1 on white, 8.68:1 on the background (WCAG AA needs 4.5:1 for text).
+  tint: '#0D4E3A',
   // Apple's accessible system red (increased-contrast variant), so red text passes 4.5:1.
   danger: '#D70015',
 } as const;

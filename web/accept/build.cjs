@@ -25,6 +25,7 @@ const csp = [
   `script-src ${hash(script)}`,
   `style-src ${hash(style)}`,
   `connect-src ${new URL(functionUrl).origin}`,
+  "img-src data:", // the logo and favicon are inline
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",
