@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';
 import { isValidEmail, MIN_PASSWORD_LENGTH } from '@/lib/auth/authErrors';
@@ -55,6 +55,12 @@ export default function SignInScreen() {
       keyboardShouldPersistTaps="handled"
       contentInsetAdjustmentBehavior="automatic"
     >
+      <Image
+        source={require('../../assets/icon.png')}
+        accessible={false}
+        accessibilityIgnoresInvertColors
+        style={{ width: 88, height: 88, borderRadius: 20, alignSelf: 'center', marginTop: 8 }}
+      />
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
         <TextInput
           style={input}

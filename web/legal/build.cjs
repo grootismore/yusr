@@ -42,6 +42,6 @@ for (const file of fs.readdirSync(path.join(__dirname, 'pages'))) {
 
 fs.writeFileSync(
   path.join(dist, '_headers'),
-  `/*\n  Content-Security-Policy: default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n`,
+  `/*\n  Content-Security-Policy: default-src 'none'; style-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n`,
 );
 console.log(`built ${dist}: ${fs.readdirSync(path.join(__dirname, 'pages')).length} pages`);
