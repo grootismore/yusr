@@ -22,7 +22,9 @@ A nautical chart of the lagoon. Deep green fading to shallows, hairline contour 
 All text pairs are at least 4.5:1 (measured). The depth card is always deep green (`#0D4E3A` to `#13705F`) with white text (5.98:1 or better), in both appearances. Red is only for overdue and destructive things.
 
 ## Type
-System font (SF Pro on iOS) with Dynamic Type. Amounts use tabular figures and always render left-to-right, even in right-to-left layouts. Hero figure 38 pt heavy; section titles 14 pt bold in the tint colour; rows 17 pt.
+**Nunito Sans** is the default for English (regular 400, semibold 600, bold 700, extra bold 800): rounded terminals and open letterforms that match the calm, friendly tone and the logo's loops. Its digits are tabular, so amounts line up. **MV Faseyha** (regular and bold) is the default for Dhivehi: Nunito Sans has no Thaana glyphs, and Faseyha also carries Latin letters and tabular digits, so mixed text and amounts stay in one family. Text follows Dynamic Type. Amounts always render left-to-right, even in right-to-left layouts. Hero figure 38 pt extra bold; section titles 14 pt bold in the tint colour; rows 17 pt.
+
+Implementation: every `Text` and `TextInput` comes from `src/components/Text.tsx`, which maps the style's weight and the language to a font family (`src/lib/fonts.ts`; React Native needs one family name per weight; Faseyha has two weights, so semibold and up use Bold). Navigation titles and tab labels get the same family through the navigation theme and the tab bar's label style. The invite and legal web pages use the system font (no third-party font requests). Both fonts are credited in Settings > About.
 
 ## Shape and depth
 Cards 16 pt radius, buttons 14 pt, the hero 20 pt. Depth is declared once, as a hairline outline on grouped lists; the hero has no shadow. No nested cards.

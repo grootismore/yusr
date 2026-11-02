@@ -1,4 +1,5 @@
-import { Alert, Text, View } from 'react-native';
+import { Alert, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui';
 import { useFormatDate } from '@/features/transactions/format';

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, Share, Switch, Text } from 'react-native';
+import { Alert, Share, Switch } from 'react-native';
+import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { PreventCapture } from '@/components/PreventCapture';
 import { Button, Group, Row, Screen } from '@/components/ui';

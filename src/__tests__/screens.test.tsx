@@ -1,4 +1,4 @@
-import { ActionSheetIOS, Alert, Share } from 'react-native';
+import { ActionSheetIOS, Alert, Linking, Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { Debt, Receivable } from '@/features/debts/types';
 import type { Commitment } from '@/features/giving/types';
@@ -17,6 +17,7 @@ import RecurringScreen from '../../app/(tabs)/more/recurring';
 import CommitmentScreen from '../../app/(tabs)/giving/commitment';
 import GivingScreen from '../../app/(tabs)/giving/index';
 import TransactionsScreen from '../../app/(tabs)/transactions/index';
+import AboutScreen from '../../app/(tabs)/more/about';
 import SettingsScreen from '../../app/(tabs)/more/settings';
 import DebtFormScreen from '../../app/(tabs)/debts/debt';
 import DebtsScreen from '../../app/(tabs)/debts/index';
@@ -398,8 +399,8 @@ describe('debt form', () => {
 
   it.each([
     ['', '100', '', 'Enter who the debt is owed to.'],
-    ['Ali', '', '', 'Enter a valid amount, for example 1,250.00.'],
-    ['Ali', 'abc', '', 'Enter a valid amount, for example 1,250.00.'],
+    ['Ali', '', '', 'Enter a valid amount, like 1,250.00.'],
+    ['Ali', 'abc', '', 'Enter a valid amount, like 1,250.00.'],
     ['Ali', '100', '40', 'Enter a day from 1 to 31.'],
   ])('refuses lender %j balance %j day %j', async (lender, balance, day, message) => {
     await render(<DebtFormScreen />);
@@ -579,7 +580,7 @@ describe('commitment form', () => {
     await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '0');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveCommitment).not.toHaveBeenCalled();
-    expect(screen.getByText('Enter a valid amount, for example 1,250.00.')).toBeTruthy();
+    expect(screen.getByText('Enter a valid amount, like 1,250.00.')).toBeTruthy();
   });
 });
 
@@ -820,7 +821,7 @@ describe('reminders switch', () => {
     notifications.requestReminderPermission.mockResolvedValueOnce(false);
     await render(<SettingsScreen />);
     await fireEvent(screen.getByLabelText('Reminders'), 'valueChange', true);
-    expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('settings'));
+    expect(alert).toHaveBeenCalledWith('Notifications are off', expect.stringContaining('Settings'));
     alert.mockRestore();
   });
 });
@@ -834,8 +835,8 @@ const contact = (over: Partial<TrustedContact> = {}): TrustedContact => ({
 describe('Wasiyyah hub', () => {
   it('is plain about what exists: nothing is released automatically yet, and no rulings are given', async () => {
     await render(<WasiyyahScreen />);
-    expect(screen.getByText(/Nothing is released to your trusted contacts automatically yet/)).toBeTruthy();
-    expect(screen.getByText(/does not give rulings or work out inheritance shares/)).toBeTruthy();
+    expect(screen.getByText(/Nothing is released automatically yet/)).toBeTruthy();
+    expect(screen.getByText(/gives no rulings or inheritance shares/)).toBeTruthy();
   });
 
   it('shows the readiness checklist and opens each step', async () => {
@@ -934,7 +935,7 @@ describe('invite a trusted contact', () => {
     await fireEvent.changeText(screen.getByLabelText('Their email'), 'cee@example.test');
     await fireEvent.changeText(screen.getByLabelText('Your name on the invite (optional)'), 'Aisha');
   };
-  const consentLabel = 'I have their permission to store their name and email in Yusr so they can be a trusted contact.';
+  const consentLabel = 'I have their permission to store their name and email in Yusr.';
 
   it('starts with consent unticked and will not create an invite without it', async () => {
     await render(<ContactInviteScreen />);
@@ -965,15 +966,15 @@ describe('invite a trusted contact', () => {
     await fireEvent.press(screen.getByText('Create invite link'));
     expect(mockInvite).toHaveBeenCalledWith({ name: 'Cee', inviterName: 'Aisha', email: 'cee@example.test', phone: '' });
     expect(await screen.findByText('https://invite.example/accept/#TOKEN-FROM-SERVER')).toBeTruthy();
-    expect(screen.getByText(/shown only once/)).toBeTruthy();
+    expect(screen.getByText(/shows once/)).toBeTruthy();
     await fireEvent.press(screen.getByText('Send the link'));
-    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('Aisha has invited you') });
+    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('Aisha invited you') });
     expect((share.mock.calls[0][0] as { message: string }).message).toContain('https://invite.example/accept/#TOKEN-FROM-SERVER');
     share.mockRestore();
   });
   it.each([
     ['23505', 'That email is already invited.'],
-    ['23514', 'You can have at most three trusted contacts.'],
+    ['23514', 'Three trusted contacts at most.'],
     [undefined, 'You need to be online to do this.'],
   ])('explains failure code %s in plain words', async (code, message) => {
     mockInvite.mockRejectedValueOnce(Object.assign(new Error('x'), { code }));
@@ -986,7 +987,7 @@ describe('invite a trusted contact', () => {
   it('says so, and cannot create a dead link, when the invite page is not set up', async () => {
     process.env.EXPO_PUBLIC_INVITE_URL = '';
     await render(<ContactInviteScreen />);
-    expect(screen.getByText('Invite links are not set up yet in this version of the app.')).toBeTruthy();
+    expect(screen.getByText('Invite links aren\'t set up in this version yet.')).toBeTruthy();
     await fill();
     await fireEvent(screen.getByLabelText(consentLabel), 'valueChange', true);
     await fireEvent.press(screen.getByText('Create invite link'));
@@ -1041,7 +1042,7 @@ describe('share the register', () => {
     await render(<WasiyyahShareScreen />);
     await fireEvent.press(screen.getByText('Share'));
     expect(share).not.toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledWith('Could not record this share. Connect to the internet and try again.');
+    expect(alert).toHaveBeenCalledWith('Couldn\'t record this share. Connect to the internet and try again.');
     share.mockRestore();
     alert.mockRestore();
   });
@@ -1069,7 +1070,7 @@ describe('activity log', () => {
     expect(screen.getByText('You shared your register (Debts, Note)')).toBeTruthy();
     expect(screen.getByText('You changed your note')).toBeTruthy();
     expect(screen.getByText('A trusted contact viewed your register')).toBeTruthy();
-    expect(screen.getByText(/cannot be edited/)).toBeTruthy();
+    expect(screen.getByText(/can't be edited/)).toBeTruthy();
   });
   it('shows a calm empty state', async () => {
     await render(<AuditLogScreen />);
@@ -1096,5 +1097,36 @@ describe('new account', () => {
     await fireEvent.changeText(screen.getByLabelText('Name'), 'Savings');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveAccount).toHaveBeenCalledTimes(1); // the correction still saves
+  });
+});
+
+describe('about', () => {
+  it('credits MV Faseyha and its authors as the Thaana Font Gallery lists them, with its licence', async () => {
+    await render(<AboutScreen />);
+    expect(screen.getByText('MV Faseyha (Dhivehi)')).toBeTruthy();
+    expect(screen.getByText('Calligraphy and design by Abdulla Waheed. Management and editing by Hassan Shujau and Hassan Hameed. Digital remapping by Ahmed Niyaz.')).toBeTruthy();
+    expect(screen.getByText('Free for personal and commercial use. From the Thaana Font Gallery.')).toBeTruthy();
+  });
+
+  it('credits Nunito Sans under its open font licence', async () => {
+    await render(<AboutScreen />);
+    expect(screen.getByText('Nunito Sans (English)')).toBeTruthy();
+    expect(screen.getByText('SIL Open Font License, Version 1.1.')).toBeTruthy();
+  });
+
+  it('links to the gallery and its terms', async () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await render(<AboutScreen />);
+    await fireEvent.press(screen.getByText('Thaana Font Gallery'));
+    await fireEvent.press(screen.getByText('Gallery terms'));
+    expect(open).toHaveBeenCalledWith('https://www.thaanafontgallery.com/font/mv-faseyha');
+    expect(open).toHaveBeenCalledWith('https://www.thaanafontgallery.com/terms/');
+    open.mockRestore();
+  });
+
+  it('is reachable from Settings', async () => {
+    await render(<SettingsScreen />);
+    await fireEvent.press(screen.getByText('About'));
+    expect(mockPush).toHaveBeenCalledWith('/more/about');
   });
 });

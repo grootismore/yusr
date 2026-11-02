@@ -15,7 +15,10 @@ describe('navigationTheme', () => {
     expect(theme.dark).toBe(false);
     expect(theme.colors).toMatchObject({ text: '#1C1C1E', background: '#F2F2F7', primary: '#0D4E3A' });
   });
-  it('keeps the other theme fields (fonts) from the base theme', () => {
-    expect(navigationTheme('dark', colors).fonts).toBeDefined();
+  it('puts Nunito Sans in the screen titles for English and MV Faseyha for Dhivehi', () => {
+    expect(navigationTheme('dark', colors, 'en').fonts.heavy.fontFamily).toBe('NunitoSans_800ExtraBold');
+    expect(navigationTheme('dark', colors).fonts.regular.fontFamily).toBe('NunitoSans_400Regular');
+    expect(navigationTheme('dark', colors, 'dv').fonts.heavy.fontFamily).toBe('MVFaseyha_Bold');
+    expect(navigationTheme('dark', colors, 'dv').fonts.regular.fontFamily).toBe('MVFaseyha_Regular');
   });
 });

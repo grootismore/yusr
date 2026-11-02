@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Pressable, Text, View, type AppStateStatus } from 'react-native';
+import { AppState, Pressable, View, type AppStateStatus } from 'react-native';
+import { Text } from '@/components/Text';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { useColors } from '@/lib/theme';

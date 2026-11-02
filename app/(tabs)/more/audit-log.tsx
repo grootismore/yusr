@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { PreventCapture } from '@/components/PreventCapture';
 import { EmptyState, Group, Row, Screen } from '@/components/ui';

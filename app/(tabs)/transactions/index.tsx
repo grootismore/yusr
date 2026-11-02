@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Pressable, SectionList, Text, View } from 'react-native';
+import { Pressable, SectionList, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { EmptyState, Money } from '@/components/ui';

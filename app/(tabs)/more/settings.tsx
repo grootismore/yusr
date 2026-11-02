@@ -1,4 +1,5 @@
-import { Alert, Pressable, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, Switch, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
@@ -120,6 +121,9 @@ export default function SettingsScreen() {
       <Group title={t('settings.yourData')} footer={t('settings.exportHint')}>
         <Row label={t('settings.export')} chevron onPress={exportData} />
         <Row label={t('settings.deleteAccount')} destructive chevron onPress={() => router.push('/delete-account')} />
+      </Group>
+      <Group>
+        <Row label={t('settings.about')} chevron onPress={() => router.push('/more/about')} />
       </Group>
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
