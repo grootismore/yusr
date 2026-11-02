@@ -33,12 +33,12 @@ describe('tab bar', () => {
   it('is the native tab bar with the five PRD tabs, single-word labels and an SF Symbol and Material icon each', async () => {
     await render(<TabsLayout />);
     expect(mockTriggers.map((t) => t.name)).toEqual(['(home)', 'transactions', 'debts', 'giving', 'more']);
-    expect(mockTriggers.map((t) => t.label)).toEqual(['Home', 'Transactions', 'Debts', 'Giving', 'More']);
+    expect(mockTriggers.map((t) => t.label)).toEqual(['Home', 'Transactions', 'Debts', 'Sadaqat', 'More']);
     for (const t of mockTriggers) {
       expect(t.label.split(' ')).toHaveLength(1);
       expect(t.icon.sf).toBeTruthy();
       expect(t.icon.md).toBeTruthy();
     }
-    expect(screen.getByText('Giving')).toBeTruthy();
+    expect(screen.getByText('Sadaqat')).toBeTruthy();
   });
 });

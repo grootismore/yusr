@@ -3,7 +3,7 @@
     "home": "Home",
     "transactions": "Transactions",
     "debts": "Debts",
-    "giving": "Giving",
+    "giving": "Sadaqat",
     "more": "More"
   },
   "more": {
@@ -23,14 +23,14 @@
     "pendingTitle": "Unsynced changes",
     "pendingBody": "Some changes haven't synced and will be lost. Sign out anyway?",
     "privacy": "Private mode",
-    "privacyHint": "Hides giving amounts and recipients. Totals like net still include giving.",
+    "privacyHint": "Hides Sadaqat amounts and recipients. Totals like net still include Sadaqat.",
     "hijriAdjust": "Hijri date adjustment",
     "hijriHint": "Shift Hijri dates by a day to match your moon sighting.",
     "hijriMinus": "−1 day",
     "hijriZero": "None",
     "hijriPlus": "+1 day",
     "reminders": "Reminders",
-    "remindersHint": "Gentle reminders for payments, giving and bills. No amounts or names shown.",
+    "remindersHint": "Gentle reminders for payments, Sadaqat and bills. No amounts or names shown.",
     "remindersOffTitle": "Notifications are off",
     "remindersOffBody": "Turn on notifications for Yusr in Settings to get reminders.",
     "yourData": "Your data",
@@ -89,7 +89,7 @@
     "thisMonth": "This month",
     "income": "Income",
     "expenses": "Expenses",
-    "giving": "Giving",
+    "giving": "Sadaqat",
     "net": "Net",
     "whereItWent": "Where it went",
     "nothingYet": "Nothing recorded this month yet.",
@@ -105,7 +105,7 @@
     "spentSoFar": "Spent so far",
     "setAside": "Still to set aside",
     "setAsideDebts": "Debt payments",
-    "setAsideGiving": "Giving",
+    "setAsideGiving": "Sadaqat",
     "setAsideBills": "Bills",
     "upcoming": "Coming up",
     "upcomingEmpty": "Nothing due in the next 7 days.",
@@ -116,7 +116,7 @@
     "column": {
       "spent": "Spent",
       "debts": "Debt payments",
-      "giving": "Giving",
+      "giving": "Sadaqat",
       "bills": "Bills",
       "used": "Spent and set aside",
       "safe": "Safe to spend"
@@ -125,7 +125,7 @@
   "kind": {
     "expense": "Expense",
     "income": "Income",
-    "giving": "Giving"
+    "giving": "Sadaqat"
   },
   "transactions": {
     "add": "Add transaction",
@@ -271,11 +271,11 @@
     "stillOwed": "Still owed"
   },
   "giving": {
-    "emptyTitle": "No giving set up",
+    "emptyTitle": "No Sadaqat set up",
     "emptyBody": "Plan your sadaqah or zakat and be reminded gently.",
-    "add": "Add giving",
-    "newTitle": "New giving",
-    "editTitle": "Edit giving",
+    "add": "Add Sadaqat",
+    "newTitle": "New Sadaqat",
+    "editTitle": "Edit Sadaqat",
     "types": {
       "sadaqah": "Sadaqah",
       "zakat": "Zakat",
@@ -306,8 +306,8 @@
     "overdue": "Waiting since {{date}}",
     "hidden": "Hidden",
     "dateRequired": "Choose a date.",
-    "archive": "Archive giving",
-    "archiveTitle": "Archive this giving?",
+    "archive": "Archive Sadaqat",
+    "archiveTitle": "Archive this Sadaqat?",
     "archiveBody": "Hidden from lists. What you already gave is kept.",
     "guidance": "A planning aid, not a ruling. For zakat amounts, ask a scholar."
   },
@@ -330,7 +330,7 @@
   "reminders": {
     "title": "Yusr",
     "debt": "A payment is due today.",
-    "giving": "A reminder to give is due today.",
+    "giving": "A Sadaqat reminder is due today.",
     "bill": "A bill is due today."
   },
   "recurring": {
@@ -371,7 +371,7 @@
   },
   "wasiyyah": {
     "title": "Wasiyyah & Amanah",
-    "intro": "Keep what your family needs to know: debts, money owed to you, and giving still to do. Yusr gives no rulings or inheritance shares; ask a scholar.",
+    "intro": "Keep what your family needs to know: debts, money owed to you, and Sadaqat still to do. Yusr gives no rulings or inheritance shares; ask a scholar.",
     "notAutomatic": "Nothing is released automatically yet. For now, use Share to send your register to people you choose.",
     "readiness": "Getting ready",
     "readinessDone": "{{done}} of 3 done",
@@ -383,7 +383,7 @@
     "register": "Your register",
     "debtsRow": "Debts you owe",
     "receivablesRow": "Owed to you",
-    "givingRow": "Giving still pending",
+    "givingRow": "Sadaqat still pending",
     "noteRow": "Note for your family",
     "noteWritten": "Written",
     "noteEmpty": "Not written",
@@ -432,7 +432,7 @@
       "title": "Wasiyyah & Amanah register",
       "debts": "Debts to settle",
       "receivables": "Owed to me",
-      "giving": "Giving still pending",
+      "giving": "Sadaqat still pending",
       "note": "Note for my family",
       "reference": "Reference",
       "contactFirst": "Contact first",
@@ -441,7 +441,7 @@
     "sections": {
       "debts": "Debts",
       "receivables": "Owed to you",
-      "giving": "Pending giving",
+      "giving": "Pending Sadaqat",
       "note": "Note"
     },
     "activityTitle": "Activity",
@@ -466,7 +466,7 @@
     "items": {
       "accounts": "Accounts, transactions, categories and budgets",
       "debts": "Debts and money owed to you, with encrypted references and notes",
-      "giving": "Giving commitments and recurring items",
+      "giving": "Sadaqat commitments and recurring items",
       "register": "Your Wasiyyah note and register",
       "contacts": "Trusted contacts and any invitations",
       "audit": "The audit log and your consent records",
