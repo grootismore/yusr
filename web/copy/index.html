@@ -77,7 +77,7 @@
       <div class="card bar">
         <label>Search<input id="q" type="search" placeholder="A word in English or Dhivehi, or part of a key"></label>
         <label>Where<select id="where"><option value="">App and invite page</option><option value="app">App</option><option value="invite">Invite page</option></select></label>
-        <label>Show<select id="show"><option value="">Everything</option><option value="review">Needs review</option></select></label>
+        <label>Show<select id="show"><option value="">Everything</option><option value="review">Not reviewed</option><option value="done">Reviewed</option></select></label>
         <button id="reload" type="button">Reload</button>
       </div>
       <div class="card stack" id="starter-box" hidden>
@@ -172,6 +172,7 @@
       return rows.filter(function (r) {
         if (where && r.surface !== where) return false;
         if (show === 'review' && !r.needs_review) return false;
+        if (show === 'done' && r.needs_review) return false;
         if (!q) return true;
         return (r.key + ' ' + r.en + ' ' + r.dv).toLowerCase().indexOf(q) !== -1;
       });
