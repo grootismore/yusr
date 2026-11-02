@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { DEPTH, DepthCard } from '@/components/DepthCard';
 import { EmptyState, Field, Group, Money, Row, Screen, Segmented } from '@/components/ui';
 import { parseNonNegativeAmount, toInputText, useMonthLabel } from '@/features/transactions/format';
 import { useDebts, useReceivables, useRefresh, useTransactions } from '@/features/transactions/hooks';
@@ -9,6 +10,7 @@ import { currentBalance, planInput, totalOwed, totalReceivable } from '@/feature
 import { planDebts, STRATEGIES } from '@/features/debts/plan';
 import { usePlanSettings } from '@/features/debts/settings';
 import { monthOf, toISODate } from '@/features/transactions/logic';
+import { formatMVR } from '@/lib/money';
 import { useColors } from '@/lib/theme';
 
 export default function DebtsScreen() {
@@ -44,20 +46,29 @@ export default function DebtsScreen() {
   }
 
   const owed = totalOwed(debts, transactions);
+  const original = debts.reduce((total, debt) => total + debt.original_laari, 0);
   const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
 
   return (
     <Screen refresh={refresh}>
       {debts.length > 0 ? (
         <>
-          <Group>
-            <Row label={t('debts.totalOwed')} right={<Money laari={owed} bold />} />
-            {plan.debtFreeMonth ? (
-              <Row label={t('debts.debtFree', { month: monthLabel(plan.debtFreeMonth) })} />
-            ) : plan.neverPaysOff ? (
-              <Row label={t('debts.neverFree')} />
-            ) : null}
-          </Group>
+          <DepthCard
+            lead={t('debts.totalOwed')}
+            amount={owed}
+            note={plan.debtFreeMonth ? t('debts.debtFree', { month: monthLabel(plan.debtFreeMonth) }) : plan.neverPaysOff ? t('debts.neverFree') : undefined}
+            parts={[
+              { key: 'paid', label: t('debts.paidSoFar'), laari: Math.max(original - owed, 0), color: DEPTH.paid },
+              { key: 'owed', label: t('debts.stillOwed'), laari: owed, color: DEPTH.owed, legend: false },
+            ].filter((part) => part.laari > 0)}
+            accessibilityLabel={[
+              `${t('debts.totalOwed')} ${formatMVR(owed)}`,
+              plan.debtFreeMonth ? t('debts.debtFree', { month: monthLabel(plan.debtFreeMonth) }) : plan.neverPaysOff ? t('debts.neverFree') : '',
+              `${t('debts.paidSoFar')} ${formatMVR(Math.max(original - owed, 0))}`,
+            ]
+              .filter(Boolean)
+              .join('. ')}
+          />
 
           {owed > 0 ? (
             <>

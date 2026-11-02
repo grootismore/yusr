@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';
 import { isValidEmail, MIN_PASSWORD_LENGTH } from '@/lib/auth/authErrors';
@@ -55,12 +56,22 @@ export default function SignInScreen() {
       keyboardShouldPersistTaps="handled"
       contentInsetAdjustmentBehavior="automatic"
     >
-      <Image
-        source={require('../../assets/icon.png')}
-        accessible={false}
-        accessibilityIgnoresInvertColors
-        style={{ width: 88, height: 88, borderRadius: 20, alignSelf: 'center', marginTop: 8 }}
-      />
+      <LinearGradient
+        colors={['#0D4E3A', '#13705F']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ borderRadius: 20, padding: 24, alignItems: 'center', gap: 12 }}
+      >
+        <Image
+          source={require('../../assets/icon.png')}
+          accessible={false}
+          accessibilityIgnoresInvertColors
+          style={{ width: 72, height: 72, borderRadius: 18 }}
+        />
+        <Text accessibilityRole="header" style={{ fontSize: 30, fontWeight: '800', letterSpacing: -0.5, color: '#FFFFFF' }}>
+          Yusr
+        </Text>
+      </LinearGradient>
       <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
         <TextInput
           style={input}
