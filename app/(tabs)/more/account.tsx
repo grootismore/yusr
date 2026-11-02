@@ -8,11 +8,13 @@ import { useAccounts, useSaveAccount, useSoftDelete } from '@/features/transacti
 import { ACCOUNT_TYPES, type AccountType } from '@/features/transactions/types';
 import { parseMVR } from '@/lib/money';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function AccountScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const { all } = useAccounts();
   const existing = id ? all.find((a) => a.id === id) : undefined;
   const save = useSaveAccount();
@@ -32,11 +34,20 @@ export default function AccountScreen() {
     openingLaari = null;
   }
   const nameOk = name.trim().length > 0 && name.trim().length <= 100;
-  const error = !nameOk ? t('accounts.nameRequired') : openingLaari === null ? t('accounts.openingInvalid') : null;
+  // Two accounts with the same name cannot be told apart in the lists, so a name can only be used once.
+  const nameTaken = all.some((a) => a.id !== existing?.id && a.deleted_at === null && a.name.trim().toLowerCase() === name.trim().toLowerCase());
+  const error = !nameOk
+    ? t('accounts.nameRequired')
+    : nameTaken
+      ? t('accounts.nameTaken')
+      : openingLaari === null
+        ? t('accounts.openingInvalid')
+        : null;
 
   function onSave() {
     setSubmitted(true);
     if (error || openingLaari === null) return;
+    if (!claim()) return;
     save({ name: name.trim(), type, opening_balance_laari: openingLaari }, existing);
     router.back();
   }
@@ -64,7 +75,7 @@ export default function AccountScreen() {
         }}
       />
       <Group>
-        <Field label={t('accounts.name')} value={name} onChangeText={setName} maxLength={100} autoFocus={!existing} returnKeyType="done" />
+        <Field label={t('accounts.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
         <Field
           label={t('accounts.opening')}
           latin

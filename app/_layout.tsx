@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useColorScheme } from 'react-native';
+import { Stack, ThemeProvider } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { AppLockGate } from '@/lib/auth/AppLock';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
 import { initI18n } from '@/lib/i18n';
+import { navigationTheme } from '@/lib/navTheme';
 import { QueryProvider } from '@/lib/query/Provider';
+import { useColors } from '@/lib/theme';
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
@@ -13,14 +16,23 @@ export default function RootLayout() {
   }, []);
   if (!ready) return null;
   return (
-    <AuthProvider>
-      <QueryProvider>
-        <AppLockGate>
-          <Layout />
-        </AppLockGate>
-      </QueryProvider>
-    </AuthProvider>
+    <NavigationTheme>
+      <AuthProvider>
+        <QueryProvider>
+          <AppLockGate>
+            <Layout />
+          </AppLockGate>
+        </QueryProvider>
+      </AuthProvider>
+    </NavigationTheme>
   );
+}
+
+function NavigationTheme({ children }: { children: ReactNode }) {
+  const colors = useColors();
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const theme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
+  return <ThemeProvider value={theme}>{children}</ThemeProvider>;
 }
 
 function Layout() {
@@ -36,7 +48,6 @@ function Layout() {
           name="transaction"
           options={{ presentation: 'formSheet', sheetAllowedDetents: [0.75, 1], sheetGrabberVisible: true }}
         />
-        <Stack.Screen name="settings" options={{ title: t('settings.title'), headerLargeTitle: true }} />
         <Stack.Screen name="delete-account" options={{ title: t('settings.deleteAccount'), presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>

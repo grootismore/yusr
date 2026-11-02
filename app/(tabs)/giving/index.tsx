@@ -67,7 +67,7 @@ export default function GivingScreen() {
                 onPress={() => router.push({ pathname: '/transaction', params: { commitmentId: c.id } })}
               />
             )}
-            <Row label={t('transactions.editTitle')} chevron onPress={() => router.push({ pathname: '/giving/commitment', params: { id: c.id } })} />
+            <Row label={t('giving.editTitle')} chevron onPress={() => router.push({ pathname: '/giving/commitment', params: { id: c.id } })} />
           </Group>
         );
       })}

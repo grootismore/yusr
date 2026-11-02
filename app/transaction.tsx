@@ -22,6 +22,7 @@ import { toISODate } from '@/features/transactions/logic';
 import { KINDS, type Kind } from '@/features/transactions/types';
 import { confirmAction } from '@/lib/confirm';
 import { successHaptic } from '@/lib/haptics';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 // Add / edit sheet. Built for speed: amount first, sensible defaults, one tap per choice.
 export default function TransactionScreen() {
@@ -33,6 +34,7 @@ export default function TransactionScreen() {
   }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const formatDate = useFormatDate();
   const categoryName = useCategoryName();
   const accounts = useAccounts();
@@ -117,6 +119,7 @@ export default function TransactionScreen() {
   function onSave() {
     setSubmitted(true);
     if (error || amount === null || !chosenCategoryId || !chosenAccountId) return;
+    if (!claim()) return;
     save(
       {
         account_id: chosenAccountId,
@@ -202,7 +205,6 @@ export default function TransactionScreen() {
           onChangeText={setAmountText}
           placeholder="0.00"
           keyboardType="decimal-pad"
-          autoFocus={!existing}
         />
         <DateField label={t('transactions.date')} value={date} text={formatDate(date)} onChange={setDate} />
       </Group>

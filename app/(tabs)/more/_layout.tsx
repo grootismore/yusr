@@ -37,6 +37,7 @@ export default function MoreLayout() {
       <Stack.Screen name="wasiyyah-share" options={{ title: t('wasiyyah.shareTitle') }} />
       <Stack.Screen name="contacts" options={{ title: t('wasiyyah.contactsTitle') }} />
       <Stack.Screen name="contact-invite" options={{ title: t('wasiyyah.inviteTitle') }} />
+      <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
       <Stack.Screen name="audit-log" options={{ title: t('wasiyyah.activityTitle') }} />
     </Stack>
   );

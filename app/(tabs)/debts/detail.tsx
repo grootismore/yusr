@@ -31,7 +31,7 @@ export default function DebtDetailScreen() {
           title: debt.lender,
           headerRight: () => (
             <HeaderTextButton
-              label={t('transactions.editTitle')}
+              label={t('debts.editTitle')}
               onPress={() => router.push({ pathname: '/debts/debt', params: { id: debt.id } })}
             />
           ),

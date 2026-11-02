@@ -10,6 +10,7 @@ import { useAccounts, useCategories, useRecurringItems, useSaveRecurring, useSof
 import { toISODate } from '@/features/transactions/logic';
 import { nextDueAfter } from '@/features/transactions/recurring';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 type Kind = 'income' | 'expense';
 
@@ -17,6 +18,7 @@ export default function RecurringItemScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const formatDate = useFormatDate();
   const categoryName = useCategoryName();
   const accounts = useAccounts();
@@ -62,6 +64,7 @@ export default function RecurringItemScreen() {
   function onSave() {
     setSubmitted(true);
     if (error || amountLaari === null || !chosenCategoryId || !chosenAccountId) return;
+    if (!claim()) return;
     const fields = {
       schedule,
       day_of_month: schedule === 'monthly' ? day : null,
@@ -115,7 +118,7 @@ export default function RecurringItemScreen() {
         onChange={setKind}
       />
       <Group>
-        <Field label={t('recurring.name')} value={name} onChangeText={setName} maxLength={100} autoFocus={!existing} />
+        <Field label={t('recurring.name')} value={name} onChangeText={setName} maxLength={100} />
         <Field label={t('recurring.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
       </Group>
       <Group title={t('recurring.category')}>

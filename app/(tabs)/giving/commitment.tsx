@@ -9,11 +9,13 @@ import { useCommitments, useSaveCommitment, useSoftDelete } from '@/features/tra
 import { toISODate } from '@/features/transactions/logic';
 import { COMMITMENT_TYPES, SCHEDULES, type CommitmentType, type Schedule } from '@/features/giving/types';
 import { confirmAction } from '@/lib/confirm';
+import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function CommitmentScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation();
   const router = useRouter();
+  const claim = useSubmitOnce();
   const formatDate = useFormatDate();
   const { all } = useCommitments();
   const existing = id ? all.find((c) => c.id === id) : undefined;
@@ -41,6 +43,7 @@ export default function CommitmentScreen() {
   function onSave() {
     setSubmitted(true);
     if (error || amountLaari === null) return;
+    if (!claim()) return;
     save(
       {
         type,
@@ -83,7 +86,7 @@ export default function CommitmentScreen() {
         <Chips options={COMMITMENT_TYPES.map((value) => ({ value, label: t(`giving.types.${value}`) }))} value={type} onChange={setType} />
       </Group>
       <Group>
-        <Field label={t('giving.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" autoFocus={!existing} />
+        <Field label={t('giving.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
       </Group>
       <Group title={t('giving.schedule')}>
         <Chips options={SCHEDULES.map((value) => ({ value, label: t(`giving.schedules.${value}`) }))} value={schedule} onChange={setSchedule} />
