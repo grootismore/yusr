@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Alert, useColorScheme } from 'react-native';
 import { Stack, ThemeProvider, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { NoticeBar } from '@/components/NoticeBar';
 import { RestartGate } from '@/components/RestartGate';
 import { useConsentGate } from '@/features/account/hooks';
 import { useOnboarded } from '@/features/onboarding/state';
@@ -65,6 +66,7 @@ function Layout() {
   if (loading || (session && consent.checking)) return null;
   const mustAccept = !!session && consent.needed.length > 0;
   return (
+    <>
     <Stack screenOptions={headerFontOptions(i18n.language)}>
       {/* The updated Terms or Privacy Policy come first: nothing else opens until they are accepted. */}
       <Stack.Protected guard={mustAccept}>
@@ -89,5 +91,7 @@ function Layout() {
         <Stack.Screen name="(auth)/sign-in" options={{ title: t('auth.signIn'), headerLargeTitle: true }} />
       </Stack.Protected>
     </Stack>
+    <NoticeBar />
+    </>
   );
 }

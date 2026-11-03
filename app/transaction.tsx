@@ -12,14 +12,18 @@ import {
   useRecurringItems,
   useSaveRecurring,
   useSaveTransaction,
-  useSoftDelete,
+  useAddCashAccount,
+  useDeleteTransactionWithUndo,
+  useProfile,
   useTransactions,
 } from '@/features/transactions/hooks';
 import { currentBalance } from '@/features/debts/logic';
 import { nextDueAfter } from '@/features/transactions/recurring';
-import { toISODate } from '@/features/transactions/logic';
-import { KINDS, type Kind } from '@/features/transactions/types';
-import { confirmAction } from '@/lib/confirm';
+import { safeToSpend } from '@/features/transactions/budget';
+import { monthOf, toISODate } from '@/features/transactions/logic';
+import { formatMVR } from '@/lib/money';
+import { showNotice } from '@/lib/notice';
+import { KINDS, type Kind, type Transaction } from '@/features/transactions/types';
 import { successHaptic } from '@/lib/haptics';
 import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
@@ -41,7 +45,9 @@ export default function TransactionScreen() {
   const categories = useCategories();
   const transactions = useTransactions();
   const save = useSaveTransaction();
-  const remove = useSoftDelete('transactions');
+  const { privacyMode, hijriAdjustment } = useProfile();
+  const removeWithUndo = useDeleteTransactionWithUndo();
+  const addCash = useAddCashAccount();
 
   const debts = useDebts();
   const commitments = useCommitments();
@@ -134,6 +140,24 @@ export default function TransactionScreen() {
           ? t('transactions.pickAccount')
           : null;
 
+  // After a new entry, say what it did to the one number people watch (quietly, and only for this month).
+  function tellWhatItDid(laari: number, account_id: string, category_id: string) {
+    const today = toISODate(new Date());
+    if (monthOf(date) !== monthOf(today) || (privacyMode && kind === 'giving')) return showNotice(t('transactions.saved'));
+    const now = new Date().toISOString();
+    const added = {
+      id: 'new', user_id: '', account_id, category_id, amount_laari: laari, kind, occurred_on: date, note: null,
+      debt_id: paymentDebt?.id ?? null, commitment_id: doneCommitment?.id ?? null, created_at: now, updated_at: now, deleted_at: null,
+    } as Transaction;
+    const bills = dueItem
+      ? recurringItems.active.map((r) => (r.id === dueItem.id ? { ...r, next_due_on: nextDueAfter(dueItem, dueItem.next_due_on) } : r))
+      : recurringItems.active;
+    const { safeToSpend: room } = safeToSpend({
+      today, transactions: [...transactions, added], debts: debts.active, commitments: commitments.active, recurring: bills, hijriAdjustment,
+    });
+    showNotice(room >= 0 ? t('transactions.savedSafe', { amount: formatMVR(room) }) : t('transactions.savedShort', { amount: formatMVR(-room) }));
+  }
+
   function onSave() {
     setSubmitted(true);
     if (error || amount === null || !chosenCategoryId || !chosenAccountId) return;
@@ -165,21 +189,15 @@ export default function TransactionScreen() {
     successHaptic();
     leave();
     router.back(); // saved on this device already; syncs in the background
+    if (!existing) tellWhatItDid(amount, chosenAccountId, chosenCategoryId);
   }
 
+  // No "are you sure?": the row is removed and Undo brings it straight back.
   function onDelete() {
     if (!existing) return;
-    confirmAction({
-      title: t('transactions.deleteTitle'),
-      message: t('transactions.deleteBody'),
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      onConfirm: () => {
-          remove(existing.id);
-          leave();
-          router.back();
-        },
-    });
+    removeWithUndo(existing);
+    leave();
+    router.back();
   }
 
   const header = (
@@ -204,9 +222,11 @@ export default function TransactionScreen() {
         {header}
         <EmptyState
           title={t('transactions.needAccount')}
-          actionLabel={t('home.addAccount')}
-          onAction={() => router.replace('/more/account')}
+          body={t('transactions.needAccountBody')}
+          actionLabel={t('accounts.useCash')}
+          onAction={addCash}
         />
+        <Button title={t('home.addAccount')} variant="secondary" onPress={() => router.replace('/more/account')} />
       </Screen>
     );
   }

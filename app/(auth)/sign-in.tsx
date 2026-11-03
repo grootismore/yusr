@@ -23,6 +23,7 @@ export default function SignInScreen() {
   const passwordRef = useRef<ComponentRef<typeof RNTextInput>>(null);
   // Unticked by default, one per document (launch checklist 6).
   const [agreed, setAgreed] = useState<Record<string, boolean>>({});
+  const missing = CONSENT_KINDS.filter((kind) => !agreed[kind]).map((kind) => t(`auth.consent.${kind}`)).join(', ');
 
   async function submit() {
     setNotice(null);
@@ -122,7 +123,7 @@ export default function SignInScreen() {
       ) : null}
       {errorKey ? (
         <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, color: colors.danger, paddingHorizontal: 16 }}>
-          {t(errorKey)}
+          {t(errorKey, { items: missing })}
         </Text>
       ) : null}
       {notice ? (

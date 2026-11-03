@@ -24,6 +24,8 @@ export function setRemindersEnabled(value: boolean): void {
   listeners.forEach((listener) => listener());
 }
 
+export const remindersEnabledNow = (): boolean => enabled;
+
 export const useRemindersEnabled = (): boolean =>
   useSyncExternalStore(
     (listener) => {

@@ -5,7 +5,7 @@ import type { Table } from './cache';
 export interface RowApi {
   fetchAll(table: Table): Promise<Record<string, unknown>[]>;
   upsert(table: Table, row: Record<string, unknown>): Promise<void>;
-  softDelete(table: Table, id: string, at: string): Promise<void>;
+  softDelete(table: Table, id: string, at: string | null): Promise<void>;
   /** Encrypted debt fields (Vault, via security-definer functions). */
   getDebtSecrets(debtId: string): Promise<DebtSecrets>;
   setDebtSecrets(debtId: string, secrets: DebtSecrets): Promise<void>;

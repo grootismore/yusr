@@ -20,7 +20,7 @@ export function upsertById<T extends Row>(list: readonly T[], row: T): T[] {
  * deleted) so old transactions can still show their names; transactions are
  * dropped because the server query never returns deleted ones.
  */
-export function applySoftDelete<T extends Row>(table: Table, list: readonly T[], id: string, at: string): T[] {
+export function applySoftDelete<T extends Row>(table: Table, list: readonly T[], id: string, at: string | null): T[] {
   if (table === 'transactions') return list.filter((item) => item.id !== id);
   return list.map((item) => (item.id === id ? { ...item, deleted_at: at } : item));
 }

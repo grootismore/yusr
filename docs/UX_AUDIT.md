@@ -48,6 +48,25 @@ Score = round(5 / 8 × 10) = **6**.
 
 Per person: first transaction within 24 h, reminders switched on, bills/plans added, second-week return. A habit exists when about 5% of people come back unprompted, with no reminder (hooked-ux "5% rule").
 
+## Status: fixed on branch `ux-audit-fixes`
+
+| Finding | What changed |
+|---------|--------------|
+| Usability #1 | New **Use a Cash account** button, on Home and in the transaction sheet: one tap, then the sheet is ready. "Add account" stays as the second choice. |
+| Usability #2 | Sign out with waiting changes now says it will **sync first** (Sync, then sign out). Only if that fails does the old "will be lost" warning appear. |
+| Usability #3 | Deleting a transaction (sheet, swipe, screen-reader action) no longer asks; a bar offers **Undo** for 7 seconds (also offline: the restore is queued after the delete). Debts, accounts and account deletion still ask. |
+| Usability #4, hooked-ux #1 | After adding a new bill, a debt with a due day, or a Sadaqat plan with a reminder, **one** question: "Remind you when this is due?" Allow shows the system prompt; Not now is remembered. Never at launch. |
+| Usability #5 | One phrase for the Home number: "Safe to spend". "Riba" already has its one-line meaning under the selector. |
+| Usability #6 | Checked in the code: tab and plans use "Sadaqat", the type list uses "Sadaqah". Left as is; needs the Dhivehi reviewer's view. |
+| Usability #7 | The sign-up message now names what is still unticked. |
+| hooked-ux #2 | After saving a new entry: "Saved. Safe to spend this month: MVR x" (or "Short by MVR x"). Plain "Saved" when it would reveal private-mode giving. |
+| hooked-ux #4 | Home shows **How October went** during the first week of a month (income, expenses, Sadaqat, net; net and Sadaqat hidden in private mode), with Hide this. No scores or comparisons. |
+| hooked-ux #3 | Same as usability #1. |
+| hooked-ux #5 | Nothing added: no streaks, nudges or gamified giving. |
+
 ## Next step
+
+Try it on a phone (new beta build), then re-run both skills. Dhivehi for the new strings is mine and needs a native review.
+
 
 If you agree, the order is: usability #1 and #2, then hooked-ux #1, then #2 and #3 of usability. I will plan each briefly and wait for approval, as CLAUDE.md asks.

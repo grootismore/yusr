@@ -12,6 +12,7 @@ import { nextDueAfter } from '@/features/transactions/recurring';
 import { confirmAction } from '@/lib/confirm';
 import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
+import { offerReminders } from '@/features/reminders/offer';
 
 type Kind = 'income' | 'expense';
 
@@ -89,6 +90,7 @@ export default function RecurringItemScreen() {
       existing,
     );
     leave(); router.back();
+    if (!existing) offerReminders(t);
   }
 
   function onArchive() {

@@ -16,7 +16,7 @@ import {
 const fakeApi = () => ({
   fetchAll: jest.fn(async (_table: Table): Promise<Record<string, unknown>[]> => []),
   upsert: jest.fn(async (_table: Table, _row: Record<string, unknown>): Promise<void> => undefined),
-  softDelete: jest.fn(async (_table: Table, _id: string, _at: string): Promise<void> => undefined),
+  softDelete: jest.fn(async (_table: Table, _id: string, _at: string | null): Promise<void> => undefined),
   getDebtSecrets: jest.fn(async (_debtId: string): Promise<DebtSecrets> => ({ reference_no: '', notes: '' })),
   setDebtSecrets: jest.fn(async (_debtId: string, _secrets: DebtSecrets): Promise<void> => undefined),
   fetchContacts: jest.fn(async (): Promise<Record<string, unknown>[]> => []),
@@ -206,6 +206,18 @@ describe('offline mutation queue', () => {
     onlineManager.setOnline(true);
     await client.resumePausedMutations();
     expect(api.softDelete).toHaveBeenCalledWith('transactions', 'tx-1', 'now');
+  });
+
+  it('Undo: a delete followed by a restore (at = null) clears deleted_at on the server, in order', async () => {
+    const api = fakeApi();
+    const client = makeClient(api);
+    onlineManager.setOnline(false);
+    deleteObserver(client).mutate({ table: 'transactions', userId: 'u1', id: 'tx-1', at: 'now' }).catch(() => undefined);
+    deleteObserver(client).mutate({ table: 'transactions', userId: 'u1', id: 'tx-1', at: null }).catch(() => undefined);
+    await tick();
+    onlineManager.setOnline(true);
+    await client.resumePausedMutations();
+    expect(api.softDelete.mock.calls.map((call) => call[2])).toEqual(['now', null]);
   });
 
   it('rolls back to server truth when the server rejects a write (no retry for rule violations)', async () => {
