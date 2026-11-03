@@ -1,6 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { headerFontOptions } from '@/lib/headerFonts';
+import { I18nManager } from 'react-native';
+import { headerFontOptions, largeTitleOptions } from '@/lib/headerFonts';
 import { logoHeaderOptions } from '@/components/HeaderLogo';
 import { HeaderIconButton } from '@/components/ui';
 
@@ -13,7 +14,7 @@ export default function DebtsLayout() {
         name="index"
         options={{
           title: t('tabs.debts'),
-          headerLargeTitle: true,
+          ...largeTitleOptions(I18nManager.isRTL),
           ...logoHeaderOptions,
           headerRight: () => <HeaderIconButton icon="add" label={t('debts.add')} onPress={() => router.push('/debts/debt')} />,
         }}
