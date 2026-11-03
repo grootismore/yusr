@@ -20,7 +20,7 @@ describe('restart screen after a language change', () => {
     requireRestart();
     expect(await screen.findByText('Restart to finish')).toBeTruthy();
     expect(screen.getByText(/Close and reopen Yusr to apply the new layout\. Swipe up to close Yusr, then open it again\./)).toBeTruthy();
-    expect(screen.getByText(/ޔުސްރު ބަންދުކުރުމަށް/)).toBeTruthy(); // the Dhivehi version, so it reads in either direction
+    expect(screen.getByText(/ސްވައިޕް/)).toBeTruthy(); // the Dhivehi version, so it reads in either direction
     expect(screen.queryByRole('button')).toBeNull(); // nothing to tap: reopening the app is the only way forward
   });
 });

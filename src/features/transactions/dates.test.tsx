@@ -38,6 +38,6 @@ describe('short dates', () => {
 describe('Hijri range under the month', () => {
   it('names the year once when both months are in it', async () => {
     const { result } = await renderHook(() => useHijriRange());
-    expect(result.current('2026-11-01', '2026-11-28')).toBe('Jumada al-Ula – Jumada al-Thani 1448');
+    expect(result.current('2026-11-01', '2026-11-28')).toBe('Jumada al-Ula – Jumada al-Akhir 1448');
   });
 });

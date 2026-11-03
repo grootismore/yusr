@@ -83,7 +83,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Welcome to Yusr",
+      "title": "Welcome to Yusr!",
       "body": "Budget, debts, Sadaqat and a Wasiyyah register, in one calm place."
     },
     "language": {
@@ -112,7 +112,7 @@
     "title": "Updated terms",
     "intro": "We updated our Terms of Service and Privacy Policy. To keep using Yusr, please read and accept them.",
     "accept": "Accept and continue",
-    "else": "If you do not accept, you can sign out or delete your account. Nothing about your data changes until you decide."
+    "else": "If you do not accept, you can sign out or request to delete your account. Nothing about your data changes until you decide."
   },
   "legal": {
     "privacy": "Privacy Policy",
@@ -121,7 +121,7 @@
   "common": {
     "discardTitle": "Discard changes?",
     "discard": "Discard",
-    "keepEditing": "Keep editing",
+    "keepEditing": "Keep editing?",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -331,7 +331,7 @@
     "title": "Sadaqat plans",
     "name": "Name (optional)",
     "givenOn": "Given {{date}}",
-    "howItWorks": "A plan reminds you and reserves the money. Mark done records the gift in Transactions.",
+    "howItWorks": "A plan reminds you and reserves the money. Mark done records the Sadaqat in Transactions.",
     "emptyTitle": "No Sadaqat set up",
     "emptyBody": "Plan your sadaqah or zakat and be reminded gently.",
     "add": "Add Sadaqat",
@@ -377,9 +377,9 @@
       "m01": "Muharram",
       "m02": "Safar",
       "m03": "Rabiʿ al-Awwal",
-      "m04": "Rabiʿ al-Thani",
+      "m04": "Rabiʿ al-Akhir",
       "m05": "Jumada al-Ula",
-      "m06": "Jumada al-Thani",
+      "m06": "Jumada al-Akhir",
       "m07": "Rajab",
       "m08": "Shaʿban",
       "m09": "Ramadan",

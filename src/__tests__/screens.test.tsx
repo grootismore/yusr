@@ -217,7 +217,7 @@ describe('transaction sheet', () => {
     const repeat = jest.fn();
     mockPrevent.callback?.({ data: { action: {} }, repeat }); // Cancel, back or a swipe down
     const [options, choose] = sheet.mock.calls[0];
-    expect(options).toMatchObject({ title: 'Discard changes?', options: ['Discard', 'Keep editing'], cancelButtonIndex: 1 });
+    expect(options).toMatchObject({ title: 'Discard changes?', options: ['Discard', 'Keep editing?'], cancelButtonIndex: 1 });
     choose(1);
     expect(repeat).not.toHaveBeenCalled(); // keeps the form
     choose(0);
@@ -611,7 +611,7 @@ describe('giving tab', () => {
   it('explains plans versus gifts under the list', async () => {
     state.commitments = [friday()];
     await render(<GivingScreen />);
-    expect(screen.getByText(/Mark done records the gift in Transactions/)).toBeTruthy();
+    expect(screen.getByText(/Mark done records the Sadaqat in Transactions/)).toBeTruthy();
   });
 
   it('does not list a paused (inactive) commitment', async () => {
