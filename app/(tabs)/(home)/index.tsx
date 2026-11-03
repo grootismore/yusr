@@ -65,11 +65,11 @@ export default function HomeScreen() {
     [debts, transactions, plan.strategy, plan.monthlyLaari, today],
   );
 
-  if (!ready) return <Screen>{null}</Screen>;
+  if (!ready) return <Screen title={t('tabs.home')}>{null}</Screen>;
 
   if (accounts.active.length === 0) {
     return (
-      <Screen refresh={refresh}>
+      <Screen title={t('tabs.home')} refresh={refresh}>
         <DeletionBanner />
         <EmptyState
           title={t('home.noAccountsTitle')}
@@ -94,7 +94,7 @@ export default function HomeScreen() {
   const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
 
   return (
-    <Screen refresh={refresh}>
+    <Screen title={t('tabs.home')} refresh={refresh}>
       <DeletionBanner />
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <HeaderIconButton

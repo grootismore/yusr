@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Stack, useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { headerFontOptions } from '@/lib/headerFonts';
+import { I18nManager } from 'react-native';
+import { headerFontOptions, largeTitleOptions } from '@/lib/headerFonts';
 import { logoHeaderOptions } from './HeaderLogo';
 import { HeaderIconButton } from './ui';
 
@@ -25,7 +26,7 @@ export function TabStack({
         name="index"
         options={{
           title: t(titleKey),
-          headerLargeTitle: true,
+          ...largeTitleOptions(I18nManager.isRTL),
           ...logoHeaderOptions,
           headerRight:
             addHref && addLabelKey

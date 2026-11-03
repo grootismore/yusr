@@ -4,7 +4,7 @@ import { Text } from '@/components/Text';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SwipeToDelete } from '@/components/SwipeToDelete';
-import { EmptyState, Money } from '@/components/ui';
+import { EmptyState, Money, ScreenTitle } from '@/components/ui';
 import { confirmAction } from '@/lib/confirm';
 import { useCategoryName, useFormatDate } from '@/features/transactions/format';
 import { useAccounts, useCategories, usePendingChanges, useProfile, useRefresh, useSoftDelete, useTransactions } from '@/features/transactions/hooks';
@@ -72,11 +72,16 @@ export default function TransactionsScreen() {
       keyExtractor={(item) => item.id}
       stickySectionHeadersEnabled={false}
       ListHeaderComponent={
-        pending > 0 ? (
-          <Text accessibilityLiveRegion="polite" style={{ padding: 16, fontSize: 13, color: colors.secondaryText }}>
-            {t('transactions.syncPending', { count: pending })}
-          </Text>
-        ) : undefined
+        <>
+          <View style={{ paddingHorizontal: 12, paddingTop: 8 }}>
+            <ScreenTitle>{t('tabs.transactions')}</ScreenTitle>
+          </View>
+          {pending > 0 ? (
+            <Text accessibilityLiveRegion="polite" style={{ padding: 16, fontSize: 13, color: colors.secondaryText }}>
+              {t('transactions.syncPending', { count: pending })}
+            </Text>
+          ) : null}
+        </>
       }
       ListEmptyComponent={
         query.trim() !== '' ? (

@@ -34,7 +34,7 @@ export default function DebtsScreen() {
 
   if (debts.length === 0 && receivables.length === 0) {
     return (
-      <Screen refresh={refresh}>
+      <Screen title={t('tabs.debts')} refresh={refresh}>
         <EmptyState
           icon="receipt-outline"
           title={t('debts.emptyTitle')}
@@ -51,7 +51,7 @@ export default function DebtsScreen() {
   const note = { fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 } as const;
 
   return (
-    <Screen refresh={refresh}>
+    <Screen title={t('tabs.debts')} refresh={refresh}>
       {debts.length > 0 ? (
         <>
           <DepthCard

@@ -11,3 +11,9 @@ export const headerFontOptions = (language: string | undefined) => ({
   headerLargeTitleStyle: { fontFamily: familyFor(language, 800) },
   headerBackTitleStyle: { fontFamily: familyFor(language, 400) },
 });
+
+/**
+ * The large title is the iPhone's own, except in right-to-left layouts: there it is switched off
+ * (and the small title emptied) and each tab's screen draws its title itself with `ScreenTitle`.
+ */
+export const largeTitleOptions = (rtl: boolean) => (rtl ? { headerLargeTitle: false, headerTitle: '' } : { headerLargeTitle: true });

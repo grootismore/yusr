@@ -1,4 +1,4 @@
-import { headerFontOptions } from './headerFonts';
+import { headerFontOptions, largeTitleOptions } from './headerFonts';
 
 describe('headerFontOptions', () => {
   it('puts the app typefaces on the navigation bar titles', () => {
@@ -12,5 +12,12 @@ describe('headerFontOptions', () => {
       headerLargeTitleStyle: { fontFamily: 'MVFaseyha_Bold' },
       headerBackTitleStyle: { fontFamily: 'MVFaseyha_Regular' },
     });
+  });
+});
+
+describe('largeTitleOptions', () => {
+  it('keeps the native large title in English and switches it off (with the small title) in right-to-left', () => {
+    expect(largeTitleOptions(false)).toEqual({ headerLargeTitle: true });
+    expect(largeTitleOptions(true)).toEqual({ headerLargeTitle: false, headerTitle: '' });
   });
 });
