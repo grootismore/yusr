@@ -1,27 +1,38 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isDhivehi } from '@/lib/fonts';
 import { formatMVR, parseMVR } from '@/lib/money';
 import type { Category } from './types';
+
+/**
+ * The two-digit year with its apostrophe, written so it always reads "’26". Inside right-to-left
+ * text a lone apostrophe would flip to the other side of the digits ("26’"), so in Dhivehi the
+ * pair is isolated as one left-to-right unit (U+2066 ... U+2069).
+ */
+const shortYear = (year: string, language: string): string => (isDhivehi(language) ? `\u2066’${year}\u2069` : `’${year}`);
 
 /**
  * "5 Nov ’26": short month and a two-digit year (the apostrophe keeps "Nov ’26" from reading as
  * the 26th). Month names come from the active language (Intl lacks Dhivehi on some devices).
  */
 export function useFormatDate() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return useCallback(
     (iso: string) => {
       const [year, month, day] = iso.split('-');
-      return `${Number(day)} ${t(`monthsShort.m${month}`)} ’${year.slice(2)}`;
+      return `${Number(day)} ${t(`monthsShort.m${month}`)} ${shortYear(year.slice(2), i18n.language)}`;
     },
-    [t],
+    [t, i18n.language],
   );
 }
 
 /** "Nov ’26", for a "2026-11" month. */
 export function useMonthLabel() {
-  const { t } = useTranslation();
-  return useCallback((month: string) => `${t(`monthsShort.m${month.slice(5, 7)}`)} ’${month.slice(2, 4)}`, [t]);
+  const { t, i18n } = useTranslation();
+  return useCallback(
+    (month: string) => `${t(`monthsShort.m${month.slice(5, 7)}`)} ${shortYear(month.slice(2, 4), i18n.language)}`,
+    [t, i18n.language],
+  );
 }
 
 export function useCategoryName() {

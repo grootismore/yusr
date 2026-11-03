@@ -223,7 +223,7 @@ export type ReceivableInput = Pick<Receivable, 'debtor' | 'amount_laari' | 'due_
 export type CommitmentInput = Pick<
   Commitment,
   'type' | 'amount_laari' | 'schedule' | 'due_on' | 'day_of_month' | 'recipient_note' | 'reminder_enabled' | 'active'
->;
+> & { name?: string | null };
 export type RecurringInput = Pick<
   RecurringItem,
   'name' | 'kind' | 'amount_laari' | 'category_id' | 'account_id' | 'schedule' | 'day_of_month' | 'weekday' | 'next_due_on' | 'active'

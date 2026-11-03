@@ -23,6 +23,7 @@ export default function CommitmentScreen() {
   const save = useSaveCommitment();
   const archive = useSoftDelete('commitments');
 
+  const [name, setName] = useState(existing?.name ?? '');
   const [type, setType] = useState<CommitmentType>(existing?.type ?? 'sadaqah');
   const [amount, setAmount] = useState(existing ? toInputText(existing.amount_laari) : '');
   const [schedule, setSchedule] = useState<Schedule>(existing?.schedule ?? 'weekly_friday');
@@ -34,7 +35,7 @@ export default function CommitmentScreen() {
   const [submitted, setSubmitted] = useState(false);
 
   // Asks before a changed form is closed without saving.
-  const leave = useDiscardGuard([type, amount, schedule, dueOn, dayOfMonth, recipient, reminder, active]);
+  const leave = useDiscardGuard([name, type, amount, schedule, dueOn, dayOfMonth, recipient, reminder, active]);
 
   if (id && !existing) return null;
 
@@ -50,6 +51,8 @@ export default function CommitmentScreen() {
     if (!claim()) return;
     save(
       {
+        // Sent only when there is a name to set or clear, so a plan without one saves exactly as before.
+        ...(name.trim() !== '' || existing?.name ? { name: name.trim() === '' ? null : name.trim() } : {}),
         type,
         amount_laari: amountLaari,
         schedule,
@@ -87,6 +90,9 @@ export default function CommitmentScreen() {
         }}
       />
       {submitted ? <ErrorText>{error}</ErrorText> : null}
+      <Group>
+        <Field label={t('giving.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="next" />
+      </Group>
       <Group title={t('giving.type')}>
         <Chips options={COMMITMENT_TYPES.map((value) => ({ value, label: t(`giving.types.${value}`) }))} value={type} onChange={setType} />
       </Group>

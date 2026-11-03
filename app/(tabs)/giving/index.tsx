@@ -32,6 +32,13 @@ export default function GivingScreen() {
     [active, transactions, today, hijriAdjustment],
   );
 
+  /** The latest gifts logged against a plan (Mark done, or a Sadaqat transaction linked to it), newest first. */
+  const gifts = (commitmentId: string) =>
+    transactions
+      .filter((x) => x.commitment_id === commitmentId && x.deleted_at === null)
+      .sort((a, b) => (a.occurred_on < b.occurred_on ? 1 : -1))
+      .slice(0, 3);
+
   if (rows.length === 0) {
     return (
       <Screen refresh={refresh}>
@@ -54,7 +61,12 @@ export default function GivingScreen() {
               : t('giving.due', { date: formatDate(o.dueOn) });
         return (
           <Group key={c.id}>
-            <Row label={t(`giving.types.${c.type}`)} right={<Money laari={c.amount_laari} hidden={privacyMode} bold />} />
+            {/* A name can reveal who it is for, so private mode shows only the type, as it does for the recipient note. */}
+            <Row
+              label={c.name && !privacyMode ? c.name : t(`giving.types.${c.type}`)}
+              value={c.name && !privacyMode ? t(`giving.types.${c.type}`) : undefined}
+              right={<Money laari={c.amount_laari} hidden={privacyMode} bold />}
+            />
             <Row label={t(`giving.schedules.${c.schedule}`)} value={when} />
             {o && !seasonal ? <Row label={formatHijri(o.dueOn, hijriAdjustment)} /> : null}
             {c.recipient_note ? <Row label={privacyMode ? t('common.hidden') : c.recipient_note} /> : null}
@@ -67,10 +79,18 @@ export default function GivingScreen() {
                 onPress={() => router.push({ pathname: '/transaction', params: { commitmentId: c.id } })}
               />
             )}
+            {gifts(c.id).map((gift) => (
+              <Row
+                key={gift.id}
+                label={t('giving.givenOn', { date: formatDate(gift.occurred_on) })}
+                right={<Money laari={gift.amount_laari} hidden={privacyMode} />}
+              />
+            ))}
             <Row label={t('giving.editTitle')} chevron onPress={() => router.push({ pathname: '/giving/commitment', params: { id: c.id } })} />
           </Group>
         );
       })}
+      <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('giving.howItWorks')}</Text>
       <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('giving.guidance')}</Text>
     </Screen>
   );

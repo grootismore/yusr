@@ -18,6 +18,13 @@ describe('short dates', () => {
     expect(result.current.month('2026-11')).toBe('Nov ’26');
   });
 
+  it('keeps the apostrophe before the digits in Dhivehi (right-to-left) by isolating the year', async () => {
+    i18n.changeLanguage('dv');
+    const { result } = await renderHook(() => ({ date: useFormatDate(), month: useMonthLabel() }));
+    expect(result.current.date('2026-11-01')).toContain('\u2066’26\u2069');
+    expect(result.current.month('2026-11')).toMatch(/\u2066’26\u2069$/);
+  });
+
   it('has a short month name for every month in both languages', () => {
     for (const language of ['en', 'dv']) {
       for (let m = 1; m <= 12; m++) {

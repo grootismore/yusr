@@ -582,6 +582,38 @@ describe('giving tab', () => {
     expect(screen.getByLabelText('Hidden')).toBeTruthy();
   });
 
+  it('titles a named plan by its name (type beside it), and private mode shows the type only', async () => {
+    state.commitments = [friday({ name: 'Friday at the masjid' })];
+    await render(<GivingScreen />);
+    expect(screen.getByText('Friday at the masjid')).toBeTruthy();
+    expect(screen.getByText('Sadaqah')).toBeTruthy();
+    await screen.unmount();
+
+    state.privacy = true;
+    await render(<GivingScreen />);
+    expect(screen.queryByText('Friday at the masjid')).toBeNull(); // a name can say who it is for
+    expect(screen.getByText('Sadaqah')).toBeTruthy();
+  });
+
+  it('lists the latest gifts logged against a plan, newest first, and hides their amounts in private mode', async () => {
+    state.commitments = [friday()];
+    state.transactions = [gave('2026-10-02', { id: 'a' }), gave('2026-10-23', { id: 'b' }), gave('2026-10-09', { id: 'c' }), gave('2026-09-25', { id: 'd' })];
+    await render(<GivingScreen />);
+    const given = screen.getAllByText(/^Given /).map((n) => n.props.children);
+    expect(given).toEqual(['Given 23 Oct ’26', 'Given 9 Oct ’26', 'Given 2 Oct ’26']); // three, newest first
+    await screen.unmount();
+
+    state.privacy = true;
+    await render(<GivingScreen />);
+    expect(screen.getAllByText('••••').length).toBeGreaterThanOrEqual(4); // plan amount and each gift
+  });
+
+  it('explains plans versus gifts under the list', async () => {
+    state.commitments = [friday()];
+    await render(<GivingScreen />);
+    expect(screen.getByText(/Mark done records the gift in Transactions/)).toBeTruthy();
+  });
+
   it('does not list a paused (inactive) commitment', async () => {
     state.commitments = [friday({ active: false })];
     await render(<GivingScreen />);
@@ -615,6 +647,22 @@ describe('commitment form', () => {
     await fireEvent.changeText(screen.getByLabelText('Day of month'), '27');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveCommitment).toHaveBeenCalledWith(expect.objectContaining({ schedule: 'monthly', day_of_month: 27, due_on: null }), undefined);
+  });
+
+  it('sends a name only when one is set', async () => {
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '100');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment.mock.calls[0][0]).not.toHaveProperty('name'); // saves exactly as before
+
+    mockSaveCommitment.mockClear();
+    mockBack.mockClear();
+    await screen.unmount();
+    await render(<CommitmentScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Name (optional)'), '  Friday at the masjid ');
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '100');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveCommitment).toHaveBeenCalledWith(expect.objectContaining({ name: 'Friday at the masjid' }), undefined);
   });
 
   it('stores a one-off with its date and clears fields that do not apply', async () => {
