@@ -3,7 +3,7 @@ import { i18n, initI18n } from '@/lib/i18n';
 import WelcomeScreen from '../../app/(auth)/welcome';
 
 const mockFinish = jest.fn();
-const mockSetLanguage = jest.fn(async () => false);
+const mockSetLanguage = jest.fn(async (_language: string) => false);
 
 jest.mock('expo-router', () => ({ Stack: { Screen: () => null } }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
