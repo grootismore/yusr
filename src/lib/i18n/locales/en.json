@@ -80,6 +80,33 @@
     "prompt": "Unlock Yusr",
     "failed": "Couldn't unlock. Try again."
   },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Yusr",
+      "body": "Budget, debts, Sadaqat and a Wasiyyah register, in one calm place."
+    },
+    "language": {
+      "title": "Choose your language",
+      "hint": "You can change it later in Settings."
+    },
+    "privacy": {
+      "title": "Your data stays yours",
+      "noTracking": "No ads, no tracking.",
+      "encrypted": "Debt references and notes are stored encrypted.",
+      "contacts": "Trusted contacts see nothing unless you share.",
+      "adults": "For adults, 18 and older."
+    },
+    "start": {
+      "title": "Ready when you are",
+      "record": "Add an account, then record spending in seconds.",
+      "offline": "Works offline and syncs when you are back online.",
+      "guidance": "Guidance only: Yusr gives no financial or religious rulings."
+    },
+    "next": "Next",
+    "skip": "Skip",
+    "getStarted": "Get started",
+    "stepOf": "Step {{current}} of {{total}}"
+  },
   "consent": {
     "title": "Updated terms",
     "intro": "We updated our Terms of Service and Privacy Policy. To keep using Yusr, please read and accept them.",
