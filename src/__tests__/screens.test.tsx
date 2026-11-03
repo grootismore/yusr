@@ -698,6 +698,37 @@ describe('marking a commitment done from the transaction sheet', () => {
   });
 });
 
+describe('swipe to delete a transaction', () => {
+  const food = { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense' as const,
+    occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp };
+
+  it('has a Delete button behind each row, and deletes only after asking', async () => {
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
+    state.transactions = [food];
+    await render(<TransactionsScreen />);
+    await fireEvent.press(screen.getByText('Delete')); // the button the swipe reveals
+    expect(mockRemove).not.toHaveBeenCalled(); // asks first
+    const [options, choose] = sheet.mock.calls[0];
+    expect(options).toMatchObject({ title: 'Delete this transaction?', options: ['Delete', 'Cancel'], destructiveButtonIndex: 0 });
+    choose(1);
+    expect(mockRemove).not.toHaveBeenCalled();
+    choose(0);
+    expect(mockRemove).toHaveBeenCalledWith('tx-food');
+    sheet.mockRestore();
+  });
+
+  it('offers the same as a screen-reader action on the row', async () => {
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
+    state.transactions = [food];
+    await render(<TransactionsScreen />);
+    const target = screen.getAllByRole('button').find((b) => b.props.accessibilityActions?.[0]?.name === 'delete');
+    expect(target).toBeTruthy(); // the row announces a Delete action to VoiceOver and TalkBack
+    await fireEvent(target as never, 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    expect(sheet).toHaveBeenCalledTimes(1);
+    sheet.mockRestore();
+  });
+});
+
 describe('private mode on other screens', () => {
   const givingTx = gave(today(), { id: 'tx-give', commitment_id: null, note: 'to Aminath' });
 

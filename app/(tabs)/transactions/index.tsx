@@ -3,9 +3,11 @@ import { Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { EmptyState, Money, ScreenTitle } from '@/components/ui';
+import { confirmAction } from '@/lib/confirm';
 import { useCategoryName, useFormatDate } from '@/features/transactions/format';
-import { useAccounts, useCategories, usePendingChanges, useProfile, useRefresh, useTransactions } from '@/features/transactions/hooks';
+import { useAccounts, useCategories, usePendingChanges, useProfile, useRefresh, useSoftDelete, useTransactions } from '@/features/transactions/hooks';
 import { useFormatHijri } from '@/features/giving/format';
 import { filterTransactions, groupByDay, signedAmount } from '@/features/transactions/logic';
 import { useColors } from '@/lib/theme';
@@ -23,6 +25,16 @@ export default function TransactionsScreen() {
   const categories = useCategories();
   const transactions = useTransactions();
   const refresh = useRefresh();
+  const remove = useSoftDelete('transactions');
+  // Same question as the Delete button on the edit sheet: ask first, then remove it from the list.
+  const askDelete = (id: string) =>
+    confirmAction({
+      title: t('transactions.deleteTitle'),
+      message: t('transactions.deleteBody'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: () => remove(id),
+    });
 
   const [query, setQuery] = useState('');
   const accountNames = useMemo(() => new Map(accounts.all.map((a) => [a.id, a.name])), [accounts.all]);
@@ -87,8 +99,23 @@ export default function TransactionsScreen() {
         </View>
       )}
       renderItem={({ item, index, section }) => (
+        <SwipeToDelete
+          label={t('common.delete')}
+          onDelete={() => askDelete(item.id)}
+          style={{
+            marginHorizontal: 16,
+            borderTopLeftRadius: index === 0 ? 16 : 0,
+            borderTopRightRadius: index === 0 ? 16 : 0,
+            borderBottomLeftRadius: index === section.data.length - 1 ? 16 : 0,
+            borderBottomRightRadius: index === section.data.length - 1 ? 16 : 0,
+          }}
+        >
         <Pressable
           accessibilityRole="button"
+          accessibilityActions={[{ name: 'delete', label: t('common.delete') }]}
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === 'delete') askDelete(item.id);
+          }}
           onPress={() => router.push({ pathname: '/transaction', params: { id: item.id } })}
           style={({ pressed }) => ({
             minHeight: 56,
@@ -99,13 +126,8 @@ export default function TransactionsScreen() {
             paddingVertical: 10,
             backgroundColor: colors.surface,
             opacity: pressed ? 0.6 : 1,
-            borderTopLeftRadius: index === 0 ? 16 : 0,
-            borderTopRightRadius: index === 0 ? 16 : 0,
-            borderBottomLeftRadius: index === section.data.length - 1 ? 16 : 0,
-            borderBottomRightRadius: index === section.data.length - 1 ? 16 : 0,
             borderBottomWidth: index === section.data.length - 1 ? 0 : StyleSheet.hairlineWidth,
             borderBottomColor: colors.separator,
-            marginHorizontal: 16,
           })}
         >
           <View style={{ flex: 1 }}>
@@ -116,6 +138,7 @@ export default function TransactionsScreen() {
           </View>
           <Money laari={signedAmount(item)} color={item.kind === 'income' ? colors.tint : undefined} hidden={privacyMode && item.kind === 'giving'} />
         </Pressable>
+        </SwipeToDelete>
       )}
     />
     </>
