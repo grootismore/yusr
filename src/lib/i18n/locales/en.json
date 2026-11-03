@@ -33,6 +33,7 @@
     "remindersHint": "Gentle reminders for payments, Sadaqat and bills. No amounts or names shown.",
     "remindersOffTitle": "Notifications are off",
     "remindersOffBody": "Turn on notifications for Yusr in Settings to get reminders.",
+    "legal": "Legal",
     "yourData": "Your data",
     "export": "Export my data",
     "exportHint": "Share a copy of everything in your account, including encrypted notes.",
@@ -77,6 +78,10 @@
     "unlock": "Unlock",
     "prompt": "Unlock Yusr",
     "failed": "Couldn't unlock. Try again."
+  },
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   },
   "common": {
     "discardTitle": "Discard changes?",
