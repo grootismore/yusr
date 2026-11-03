@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import { View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DEPTH, DepthCard } from '@/components/DepthCard';
-import { EmptyState, Field, Group, Money, Row, Screen, Segmented } from '@/components/ui';
+import { EmptyState, Field, Group, Money, Row, Screen, SectionTitle, Segmented } from '@/components/ui';
 import { parseNonNegativeAmount, toInputText, useMonthLabel } from '@/features/transactions/format';
 import { useDebts, useReceivables, useRefresh, useTransactions } from '@/features/transactions/hooks';
 import { currentBalance, planInput, totalOwed, totalReceivable } from '@/features/debts/logic';
@@ -72,14 +73,15 @@ export default function DebtsScreen() {
 
           {owed > 0 ? (
             <>
-              <Group title={t('debts.plan')}>
+              <View style={{ gap: 8 }}>
+                <SectionTitle>{t('debts.plan')}</SectionTitle>
                 <Segmented
                   options={STRATEGIES.map((value) => ({ value, label: t(`debts.strategies.${value}`) }))}
                   value={settings.strategy}
                   onChange={(strategy) => update({ strategy })}
                 />
-              </Group>
-              <Text style={note}>{t(`debts.strategyNote.${settings.strategy}`)}</Text>
+                <Text style={{ ...note, paddingHorizontal: 4 }}>{t(`debts.strategyNote.${settings.strategy}`)}</Text>
+              </View>
               <Group>
                 <Field
                   label={t('debts.monthly')}

@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { HeaderLogo } from '@/components/HeaderLogo';
 import { HeaderIconButton } from '@/components/ui';
 
 export default function GivingLayout() {
@@ -12,6 +13,7 @@ export default function GivingLayout() {
         options={{
           title: t('tabs.giving'),
           headerLargeTitle: true,
+          headerLeft: () => <HeaderLogo />,
           headerRight: () => <HeaderIconButton icon="add" label={t('giving.add')} onPress={() => router.push('/giving/commitment')} />,
         }}
       />

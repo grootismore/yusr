@@ -109,7 +109,7 @@
     "setAsideBills": "Bills",
     "upcoming": "Coming up",
     "upcomingEmpty": "Nothing due in the next 7 days.",
-    "overdue": "{{label}} · waiting since {{date}}",
+    "overdue": "{{label}} · due {{date}}, not marked done",
     "debtFree": "Debt-free by",
     "safeLead": "You can safely spend",
     "shortBy": "Short by {{amount}} this month",
@@ -206,7 +206,7 @@
     "emptyTitle": "No debts recorded",
     "emptyBody": "Add what you owe so it is all in one place.",
     "add": "Add debt",
-    "plan": "Payoff plan",
+    "plan": "Pay off first",
     "strategy": "Order",
     "monthly": "Monthly payment (MVR)",
     "monthlyHint": "Never less than your minimum payments.",
@@ -214,9 +214,9 @@
     "clearedBy": "Cleared by {{month}}",
     "assumptions": "Assumes the same payment each month from next month, at the rate you entered. Guidance, not advice.",
     "strategies": {
-      "snowball": "Smallest first",
-      "avalanche": "Highest rate first",
-      "riba_first": "Riba first"
+      "snowball": "Smallest",
+      "avalanche": "Highest rate",
+      "riba_first": "Riba"
     },
     "strategyNote": {
       "snowball": "Extra money goes to the smallest balance first.",
