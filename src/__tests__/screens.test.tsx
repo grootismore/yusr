@@ -221,7 +221,6 @@ describe('transaction sheet', () => {
     choose(1);
     expect(repeat).not.toHaveBeenCalled(); // keeps the form
     choose(0);
-    expect(mockDisable).toHaveBeenCalled();
     expect(repeat).toHaveBeenCalledTimes(1); // closes it
 
     mockDisable.mockClear();

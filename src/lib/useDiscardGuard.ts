@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { usePreventRemove } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { confirmAction } from './confirm';
@@ -12,18 +12,18 @@ import { confirmAction } from './confirm';
  */
 export function useDiscardGuard(values: readonly unknown[]): () => void {
   const { t } = useTranslation();
-  const initial = useRef(JSON.stringify(values));
-  const changed = JSON.stringify(values) !== initial.current;
-  const leave = usePreventRemove(changed, ({ repeat }) =>
+  const [initial] = useState(() => JSON.stringify(values));
+  const [discarded, setDiscarded] = useState(false);
+  const changed = !discarded && JSON.stringify(values) !== initial;
+  return usePreventRemove(changed, ({ repeat }) =>
     confirmAction({
       title: t('common.discardTitle'),
       confirmLabel: t('common.discard'),
       cancelLabel: t('common.keepEditing'),
       onConfirm: () => {
-        leave();
+        setDiscarded(true);
         repeat();
       },
     }),
   );
-  return leave;
 }
