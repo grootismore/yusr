@@ -3,6 +3,7 @@ import { useColorScheme } from 'react-native';
 import { Stack, ThemeProvider } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useConsentGate } from '@/features/account/hooks';
+import { useOnboarded } from '@/features/onboarding/state';
 import { AppLockGate } from '@/lib/auth/AppLock';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
 import { i18n, initI18n } from '@/lib/i18n';
@@ -42,6 +43,7 @@ function Layout() {
   const { t } = useTranslation();
   const { session, loading } = useAuth();
   const consent = useConsentGate();
+  const onboarded = useOnboarded();
   if (loading || (session && consent.checking)) return null;
   const mustAccept = !!session && consent.needed.length > 0;
   return (
@@ -60,6 +62,10 @@ function Layout() {
       </Stack.Protected>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="delete-account" options={{ title: t('settings.deleteAccount'), presentation: 'modal' }} />
+      </Stack.Protected>
+      {/* First launch on this device, before sign-in: a short, skippable intro. */}
+      <Stack.Protected guard={!session && !onboarded}>
+        <Stack.Screen name="(auth)/welcome" />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="(auth)/sign-in" options={{ title: t('auth.signIn'), headerLargeTitle: true }} />
