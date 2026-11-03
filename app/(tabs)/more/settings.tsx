@@ -122,7 +122,7 @@ export default function SettingsScreen() {
           onChange={(value) => updateProfile({ hijri_adjustment: Number(value) })}
         />
       </Group>
-      <Group title={t('settings.yourData')} footer={t('settings.exportHint')}>
+      <Group title={t('settings.yourData')} footer={`${t('settings.exportHint')}\n${t('settings.withdrawHint')}`}>
         <Row label={t('settings.export')} chevron onPress={exportData} />
         <Row label={t('settings.deleteAccount')} destructive chevron onPress={() => router.push('/delete-account')} />
       </Group>

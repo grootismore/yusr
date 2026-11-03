@@ -34,6 +34,7 @@
     "remindersOffTitle": "Notifications are off",
     "remindersOffBody": "Turn on notifications for Yusr in Settings to get reminders.",
     "legal": "Legal",
+    "withdrawHint": "You can withdraw your consent at any time by deleting your account.",
     "yourData": "Your data",
     "export": "Export my data",
     "exportHint": "Share a copy of everything in your account, including encrypted notes.",
