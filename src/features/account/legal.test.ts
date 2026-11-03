@@ -13,7 +13,14 @@ describe('legal', () => {
 
   it('turns the links off with an empty address and otherwise points at the hosted site', () => {
     expect(legalUrl('terms', '')).toBeNull();
-    expect(legalUrl('privacy', undefined)).toBe(`${DEFAULT_LEGAL_URL}/privacy/`);
+    // The address comes from EXPO_PUBLIC_LEGAL_URL when set (the build sets it), so test without it.
+    const before = process.env.EXPO_PUBLIC_LEGAL_URL;
+    delete process.env.EXPO_PUBLIC_LEGAL_URL;
+    try {
+      expect(legalUrl('privacy', undefined)).toBe(`${DEFAULT_LEGAL_URL}/privacy/`);
+    } finally {
+      if (before !== undefined) process.env.EXPO_PUBLIC_LEGAL_URL = before;
+    }
   });
 
   it('asks again only when a newer version is published', () => {
