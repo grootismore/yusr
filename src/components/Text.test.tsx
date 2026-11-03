@@ -22,6 +22,15 @@ describe('withTypeface', () => {
   });
 });
 
+describe('small Dhivehi text', () => {
+  it('is enlarged under 16 pt so Thaana stays readable, and left alone from 16 pt up', () => {
+    expect(withTypeface({ fontSize: 13 }, 'dv')).toMatchObject({ fontSize: 15 });
+    expect(withTypeface({ fontSize: 15, lineHeight: 20 }, 'dv')).toMatchObject({ fontSize: 17, lineHeight: 23 });
+    expect(withTypeface({ fontSize: 17 }, 'dv')).toMatchObject({ fontSize: 17 });
+    expect(withTypeface({ fontSize: 13 }, 'en')).toMatchObject({ fontSize: 13 }); // English unchanged
+  });
+});
+
 describe('Text and TextInput', () => {
   it('render with the family for their weight', async () => {
     await render(

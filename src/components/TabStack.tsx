@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Stack, useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { HeaderLogo } from './HeaderLogo';
+import { headerFontOptions } from '@/lib/headerFonts';
 import { HeaderIconButton } from './ui';
 
 /** One native stack per tab: gives each tab a collapsing large title. */
@@ -16,10 +17,10 @@ export function TabStack({
   addLabelKey?: string;
   children?: ReactNode;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   return (
-    <Stack>
+    <Stack screenOptions={headerFontOptions(i18n.language)}>
       <Stack.Screen
         name="index"
         options={{

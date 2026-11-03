@@ -1,13 +1,14 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { headerFontOptions } from '@/lib/headerFonts';
 import { HeaderLogo } from '@/components/HeaderLogo';
 import { HeaderIconButton } from '@/components/ui';
 
 export default function DebtsLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   return (
-    <Stack>
+    <Stack screenOptions={headerFontOptions(i18n.language)}>
       <Stack.Screen
         name="index"
         options={{

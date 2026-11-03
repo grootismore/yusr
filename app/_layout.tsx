@@ -6,6 +6,7 @@ import { useConsentGate } from '@/features/account/hooks';
 import { useOnboarded } from '@/features/onboarding/state';
 import { AppLockGate } from '@/lib/auth/AppLock';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
+import { headerFontOptions } from '@/lib/headerFonts';
 import { i18n, initI18n } from '@/lib/i18n';
 import { useAppFonts } from '@/lib/useAppFonts';
 import { navigationTheme } from '@/lib/navTheme';
@@ -47,7 +48,7 @@ function Layout() {
   if (loading || (session && consent.checking)) return null;
   const mustAccept = !!session && consent.needed.length > 0;
   return (
-    <Stack>
+    <Stack screenOptions={headerFontOptions(i18n.language)}>
       {/* The updated Terms or Privacy Policy come first: nothing else opens until they are accepted. */}
       <Stack.Protected guard={mustAccept}>
         <Stack.Screen name="accept-terms" />
