@@ -729,7 +729,7 @@ describe('settings', () => {
 
   it('links the privacy policy and terms once the legal site is set, and shows no dead rows before', async () => {
     const before = process.env.EXPO_PUBLIC_LEGAL_URL;
-    delete process.env.EXPO_PUBLIC_LEGAL_URL;
+    process.env.EXPO_PUBLIC_LEGAL_URL = '';
     const { unmount } = await render(<SettingsScreen />);
     expect(screen.queryByText('Privacy Policy')).toBeNull();
     await unmount();

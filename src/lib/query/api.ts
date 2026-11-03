@@ -25,6 +25,9 @@ export interface RowApi {
   fetchDeletionDate(): Promise<string | null>;
   requestAccountDeletion(): Promise<string>;
   cancelAccountDeletion(): Promise<void>;
+  /** The caller's own consent records, and adding the ones given now (a repeat of one already stored is fine). */
+  fetchConsents(): Promise<{ kind: string; version: string }[]>;
+  recordConsents(kinds: readonly string[], version: string): Promise<void>;
 }
 
 export interface DebtSecrets {
@@ -130,5 +133,16 @@ export const createRowApi = (getClient: () => SupabaseClient): RowApi => ({
   async cancelAccountDeletion() {
     const { error } = await getClient().rpc('cancel_account_deletion');
     if (error) throw error;
+  },
+  async fetchConsents() {
+    const { data, error } = await getClient().from('consents').select('kind, version');
+    if (error) throw error;
+    return data as { kind: string; version: string }[];
+  },
+  async recordConsents(kinds, version) {
+    for (const kind of kinds) {
+      const { error } = await getClient().from('consents').insert({ kind, version });
+      if (error && error.code !== '23505') throw error; // already recorded
+    }
   },
 });

@@ -1,10 +1,11 @@
 import { useRef, useState, type ComponentRef } from 'react';
-import { Image, Linking, Pressable, ScrollView, Switch, TextInput as RNTextInput, View } from 'react-native';
+import { Image, ScrollView, TextInput as RNTextInput, View, Pressable } from 'react-native';
 import { Text, TextInput } from '@/components/Text';
 import { Button } from '@/components/ui';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';
+import { ConsentList } from '@/features/account/ConsentList';
+import { CONSENT_KINDS, signUpConsentMetadata } from '@/features/account/legal';
 import { isValidEmail, MIN_PASSWORD_LENGTH } from '@/lib/auth/authErrors';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useColors } from '@/lib/theme';
@@ -116,38 +117,7 @@ export default function SignInScreen() {
       {mode === 'signUp' ? (
         <>
           <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('auth.passwordHint')}</Text>
-          <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden' }}>
-            {CONSENT_KINDS.map((kind, index) => {
-              const url = kind === 'age_18' ? null : legalUrl(kind);
-              return (
-                <View
-                  key={kind}
-                  style={{
-                    minHeight: 44,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderTopWidth: index === 0 ? 0 : 0.5,
-                    borderTopColor: colors.separator,
-                  }}
-                >
-                  <Text style={{ flex: 1, fontSize: 15, color: colors.text }}>{t(`auth.consent.${kind}`)}</Text>
-                  {url ? (
-                    <Pressable accessibilityRole="link" accessibilityLabel={t(`auth.consent.${kind}Read`)} onPress={() => void Linking.openURL(url)} style={{ minHeight: 44, justifyContent: 'center' }}>
-                      <Text style={{ fontSize: 15, color: colors.tint }}>{t('auth.consent.read')}</Text>
-                    </Pressable>
-                  ) : null}
-                  <Switch
-                    accessibilityLabel={t(`auth.consent.${kind}`)}
-                    value={agreed[kind] === true}
-                    onValueChange={(value) => setAgreed({ ...agreed, [kind]: value })}
-                  />
-                </View>
-              );
-            })}
-          </View>
+          <ConsentList kinds={CONSENT_KINDS} agreed={agreed} onChange={setAgreed} />
         </>
       ) : null}
       {errorKey ? (

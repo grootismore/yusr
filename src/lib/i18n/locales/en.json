@@ -80,6 +80,12 @@
     "prompt": "Unlock Yusr",
     "failed": "Couldn't unlock. Try again."
   },
+  "consent": {
+    "title": "Updated terms",
+    "intro": "We updated our Terms of Service and Privacy Policy. To keep using Yusr, please read and accept them.",
+    "accept": "Accept and continue",
+    "else": "If you do not accept, you can sign out or delete your account. Nothing about your data changes until you decide."
+  },
   "legal": {
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"

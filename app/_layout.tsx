@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { Stack, ThemeProvider } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useConsentGate } from '@/features/account/hooks';
 import { AppLockGate } from '@/lib/auth/AppLock';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
 import { i18n, initI18n } from '@/lib/i18n';
@@ -40,16 +41,24 @@ function NavigationTheme({ children }: { children: ReactNode }) {
 function Layout() {
   const { t } = useTranslation();
   const { session, loading } = useAuth();
-  if (loading) return null;
+  const consent = useConsentGate();
+  if (loading || (session && consent.checking)) return null;
+  const mustAccept = !!session && consent.needed.length > 0;
   return (
     <Stack>
-      <Stack.Protected guard={!!session}>
+      {/* The updated Terms or Privacy Policy come first: nothing else opens until they are accepted. */}
+      <Stack.Protected guard={mustAccept}>
+        <Stack.Screen name="accept-terms" />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session && !mustAccept}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {/* A resizable sheet (HIG: sheets): rests at three-quarters height, drags to full, grabber shown. */}
         <Stack.Screen
           name="transaction"
           options={{ presentation: 'formSheet', sheetAllowedDetents: [0.75, 1], sheetGrabberVisible: true }}
         />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session}>
         <Stack.Screen name="delete-account" options={{ title: t('settings.deleteAccount'), presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
