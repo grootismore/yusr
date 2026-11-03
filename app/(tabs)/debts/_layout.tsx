@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { HeaderLogo } from '@/components/HeaderLogo';
 import { HeaderIconButton } from '@/components/ui';
 
 export default function DebtsLayout() {
@@ -12,6 +13,7 @@ export default function DebtsLayout() {
         options={{
           title: t('tabs.debts'),
           headerLargeTitle: true,
+          headerLeft: () => <HeaderLogo />,
           headerRight: () => <HeaderIconButton icon="add" label={t('debts.add')} onPress={() => router.push('/debts/debt')} />,
         }}
       />

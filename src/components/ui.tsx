@@ -27,17 +27,23 @@ export function Screen({ children, refresh }: { children: ReactNode; refresh?: {
   );
 }
 
+/** Small green heading above a group or control. */
+export function SectionTitle({ children }: { children: string }) {
+  const colors = useColors();
+  return (
+    <Text accessibilityRole="header" style={{ fontSize: 14, fontWeight: '700', color: colors.tint, paddingHorizontal: 4 }}>
+      {children}
+    </Text>
+  );
+}
+
 /** iOS-style grouped inset list. */
 export function Group({ title, footer, children }: { title?: string; footer?: string; children: ReactNode }) {
   const colors = useColors();
   const items = Children.toArray(children);
   return (
     <View style={{ gap: 6 }}>
-      {title ? (
-        <Text accessibilityRole="header" style={{ fontSize: 14, fontWeight: '700', color: colors.tint, paddingHorizontal: 4 }}>
-          {title}
-        </Text>
-      ) : null}
+      {title ? <SectionTitle>{title}</SectionTitle> : null}
       <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth * 2, borderColor: colors.separator }}>
         {items.map((child, index) => (
           <Fragment key={index}>
