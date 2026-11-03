@@ -41,14 +41,14 @@ export default function GivingScreen() {
 
   if (rows.length === 0) {
     return (
-      <Screen refresh={refresh}>
+      <Screen title={t('giving.title')} refresh={refresh}>
         <EmptyState icon="heart-outline" title={t('giving.emptyTitle')} body={t('giving.emptyBody')} actionLabel={t('giving.add')} onAction={() => router.push('/giving/commitment')} />
       </Screen>
     );
   }
 
   return (
-    <Screen refresh={refresh}>
+    <Screen title={t('giving.title')} refresh={refresh}>
       {rows.map(({ commitment: c, status }) => {
         const o = status.occurrence;
         const seasonal = c.schedule === 'ramadan' || c.schedule === 'dhul_hijjah';

@@ -6,7 +6,7 @@ export default function MoreScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   return (
-    <Screen>
+    <Screen title={t('tabs.more')}>
       <Group>
         <Row label={t('more.wasiyyah')} chevron onPress={() => router.push('/more/wasiyyah')} />
       </Group>

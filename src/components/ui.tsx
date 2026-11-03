@@ -8,7 +8,23 @@ import { formatMVR } from '@/lib/money';
 import { selectionHaptic } from '@/lib/haptics';
 import { useColors } from '@/lib/theme';
 
-export function Screen({ children, refresh }: { children: ReactNode; refresh?: { refreshing: boolean; onRefresh: () => void } }) {
+/**
+ * The big page title, drawn by the app itself in right-to-left layouts only. The iPhone's own large
+ * title is not mirrored when the phone's language is left-to-right: it shows at the wrong edge and
+ * the Thaana comes out flipped. The app's own Text mirrors correctly, so in Dhivehi the native large
+ * title is switched off (see largeTitleOptions) and this takes its place. English keeps the native one.
+ */
+export function ScreenTitle({ children }: { children?: string }) {
+  const colors = useColors();
+  if (!I18nManager.isRTL || !children) return null;
+  return (
+    <Text accessibilityRole="header" style={{ fontSize: 34, fontWeight: '800', color: colors.text, paddingHorizontal: 4 }}>
+      {children}
+    </Text>
+  );
+}
+
+export function Screen({ children, refresh, title }: { children: ReactNode; refresh?: { refreshing: boolean; onRefresh: () => void }; title?: string }) {
   const colors = useColors();
   return (
     <ScrollView
@@ -22,6 +38,7 @@ export function Screen({ children, refresh }: { children: ReactNode; refresh?: {
       automaticallyAdjustKeyboardInsets
       keyboardDismissMode="interactive"
     >
+      <ScreenTitle>{title}</ScreenTitle>
       {children}
     </ScrollView>
   );
