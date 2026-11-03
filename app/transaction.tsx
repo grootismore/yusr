@@ -21,6 +21,7 @@ import { toISODate } from '@/features/transactions/logic';
 import { KINDS, type Kind } from '@/features/transactions/types';
 import { confirmAction } from '@/lib/confirm';
 import { successHaptic } from '@/lib/haptics';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 // Add / edit sheet. Built for speed: amount first, sensible defaults, one tap per choice.
@@ -97,6 +98,9 @@ export default function TransactionScreen() {
     return latest?.account_id ?? accounts.active[0]?.id ?? null;
   }, [transactions, accounts.active]);
 
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([kind, amountText, categoryId, accountId, date, note]);
+
   if (id && !existing) return null;
 
   const chosenAccountId = accountId ?? defaultAccountId;
@@ -144,6 +148,7 @@ export default function TransactionScreen() {
       );
     }
     successHaptic();
+    leave();
     router.back(); // saved on this device already; syncs in the background
   }
 
@@ -156,6 +161,7 @@ export default function TransactionScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           remove(existing.id);
+          leave();
           router.back();
         },
     });
@@ -193,6 +199,7 @@ export default function TransactionScreen() {
   return (
     <Screen>
       {header}
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {linkedKind ? null : (
         <Segmented options={KINDS.map((value) => ({ value, label: t(`kind.${value}`) }))} value={kind} onChange={setKind} />
       )}
@@ -224,7 +231,6 @@ export default function TransactionScreen() {
       <Group>
         <Field label={t('transactions.note')} value={note} onChangeText={setNote} maxLength={500} returnKeyType="done" />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('transactions.delete')} onPress={onDelete} /> : null}
     </Screen>
   );

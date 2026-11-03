@@ -26,6 +26,8 @@ import TransactionScreen from '../../app/transaction';
 import AccountScreen from '../../app/(tabs)/more/account';
 
 const mockBack = jest.fn();
+const mockDisable = jest.fn();
+const mockPrevent: { prevent: boolean; callback?: (o: { data: { action: unknown }; repeat: () => void }) => void } = { prevent: false };
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 let mockParams: Record<string, string> = {};
@@ -37,6 +39,12 @@ jest.mock('expo-router', () => {
   return {
     useRouter: () => ({ back: mockBack, push: mockPush, replace: mockReplace }),
     useLocalSearchParams: () => mockParams,
+    // Records the unsaved-changes guard so a test can see when it is armed and answer its question.
+    usePreventRemove: (prevent: boolean, callback: typeof mockPrevent.callback) => {
+      mockPrevent.prevent = prevent;
+      mockPrevent.callback = callback;
+      return mockDisable;
+    },
     // Render the header buttons so tests can press Save / Cancel like a user would.
     Stack: {
       Screen: ({ options }: { options?: { headerLeft?: () => unknown; headerRight?: () => unknown; headerSearchBarOptions?: unknown } }) => {
@@ -179,7 +187,49 @@ beforeEach(() => {
   i18n.changeLanguage('en');
 });
 
+describe('unsaved-changes guard on the other forms', () => {
+  it('is armed once a field of the account, giving or recurring form changes', async () => {
+    await render(<AccountScreen />);
+    expect(mockPrevent.prevent).toBe(false);
+    await fireEvent.changeText(screen.getByLabelText('Name'), 'Savings');
+    expect(mockPrevent.prevent).toBe(true);
+
+    await render(<CommitmentScreen />);
+    expect(mockPrevent.prevent).toBe(false);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '100');
+    expect(mockPrevent.prevent).toBe(true);
+
+    await render(<RecurringItemScreen />);
+    expect(mockPrevent.prevent).toBe(false);
+    await fireEvent.changeText(screen.getByLabelText('Name'), 'Rent');
+    expect(mockPrevent.prevent).toBe(true);
+  });
+});
+
 describe('transaction sheet', () => {
+  it('asks before a changed form is closed, and not when nothing changed or after saving', async () => {
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
+    await render(<TransactionScreen />);
+    expect(mockPrevent.prevent).toBe(false); // untouched: closes straight away
+
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
+    expect(mockPrevent.prevent).toBe(true);
+    const repeat = jest.fn();
+    mockPrevent.callback?.({ data: { action: {} }, repeat }); // Cancel, back or a swipe down
+    const [options, choose] = sheet.mock.calls[0];
+    expect(options).toMatchObject({ title: 'Discard changes?', options: ['Discard', 'Keep editing'], cancelButtonIndex: 1 });
+    choose(1);
+    expect(repeat).not.toHaveBeenCalled(); // keeps the form
+    choose(0);
+    expect(repeat).toHaveBeenCalledTimes(1); // closes it
+
+    mockDisable.mockClear();
+    await fireEvent.press(screen.getByText('Groceries'));
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockDisable).toHaveBeenCalled(); // saving closes without asking
+    sheet.mockRestore();
+  });
+
   it('saves an expense with the typed amount, chosen category and default account, then closes', async () => {
     await render(<TransactionScreen />);
     await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');

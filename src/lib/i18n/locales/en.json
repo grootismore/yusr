@@ -79,6 +79,9 @@
     "failed": "Couldn't unlock. Try again."
   },
   "common": {
+    "discardTitle": "Discard changes?",
+    "discard": "Discard",
+    "keepEditing": "Keep editing",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

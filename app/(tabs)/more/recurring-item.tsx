@@ -10,6 +10,7 @@ import { useAccounts, useCategories, useRecurringItems, useSaveRecurring, useSof
 import { toISODate } from '@/features/transactions/logic';
 import { nextDueAfter } from '@/features/transactions/recurring';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 type Kind = 'income' | 'expense';
@@ -39,6 +40,9 @@ export default function RecurringItemScreen() {
   const [nextDue, setNextDue] = useState(existing?.next_due_on ?? toISODate(new Date()));
   const [active, setActive] = useState(existing?.active ?? true);
   const [submitted, setSubmitted] = useState(false);
+
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([name, kind, amount, categoryId, accountId, schedule, dayOfMonth, weekday, nextDue, active]);
 
   if (id && !existing) return null;
 
@@ -84,7 +88,7 @@ export default function RecurringItemScreen() {
       },
       existing,
     );
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {
@@ -96,7 +100,7 @@ export default function RecurringItemScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
@@ -109,6 +113,7 @@ export default function RecurringItemScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Segmented
         options={[
           { value: 'expense' as Kind, label: t('kind.expense') },
@@ -146,7 +151,6 @@ export default function RecurringItemScreen() {
         {existing ? <DateField label={t('recurring.nextDue')} value={nextDue} text={formatDate(nextDue)} onChange={setNextDue} /> : null}
         <Row label={t('recurring.active')} right={<Switch accessibilityLabel={t('recurring.active')} value={active} onValueChange={setActive} />} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('recurring.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

@@ -5,6 +5,7 @@ import { Button, ErrorText, Field, Group, HeaderTextButton, Row, Screen, Segment
 import { useCategories, useSaveCategory, useSoftDelete } from '@/features/transactions/hooks';
 import { KINDS, type Kind } from '@/features/transactions/types';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function CategoryScreen() {
@@ -21,6 +22,9 @@ export default function CategoryScreen() {
   const [kind, setKind] = useState<Kind>(existing?.kind ?? 'expense');
   const [submitted, setSubmitted] = useState(false);
 
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([name, kind]);
+
   if (id && !existing) return null;
 
   const nameOk = name.trim().length > 0 && name.trim().length <= 100;
@@ -30,7 +34,7 @@ export default function CategoryScreen() {
     if (!nameOk) return;
     if (!claim()) return;
     save({ name: name.trim(), kind }, existing);
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {
@@ -42,7 +46,7 @@ export default function CategoryScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
@@ -55,6 +59,7 @@ export default function CategoryScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted && !nameOk ? <ErrorText>{t('categories.nameRequired')}</ErrorText> : null}
       <Group>
         <Field label={t('categories.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
       </Group>
@@ -68,7 +73,6 @@ export default function CategoryScreen() {
           <Segmented options={KINDS.map((value) => ({ value, label: t(`kind.${value}`) }))} value={kind} onChange={setKind} />
         </Group>
       )}
-      {submitted && !nameOk ? <ErrorText>{t('categories.nameRequired')}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('categories.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

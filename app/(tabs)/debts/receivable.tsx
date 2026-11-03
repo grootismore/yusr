@@ -8,6 +8,7 @@ import { parsePositiveAmount, toInputText, useFormatDate } from '@/features/tran
 import { useReceivables, useSaveReceivable, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function ReceivableScreen() {
@@ -28,6 +29,9 @@ export default function ReceivableScreen() {
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [submitted, setSubmitted] = useState(false);
 
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([debtor, amount, hasDate, dueOn, notes]);
+
   if (id && !existing) return null;
 
   const amountLaari = parsePositiveAmount(amount);
@@ -41,7 +45,7 @@ export default function ReceivableScreen() {
       { debtor: debtor.trim(), amount_laari: amountLaari, due_on: hasDate ? dueOn : null, notes: notes.trim() === '' ? null : notes.trim() },
       existing,
     );
-    router.back();
+    leave(); router.back();
   }
 
   function onReceived() {
@@ -54,7 +58,7 @@ export default function ReceivableScreen() {
       destructive: false,
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
@@ -67,6 +71,7 @@ export default function ReceivableScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group>
         <Field label={t('debts.debtor')} value={debtor} onChangeText={setDebtor} maxLength={100} />
         <Field label={t('debts.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
@@ -74,7 +79,6 @@ export default function ReceivableScreen() {
         {hasDate ? <DateField label={t('transactions.date')} value={dueOn} text={formatDate(dueOn)} onChange={setDueOn} /> : null}
         <Field label={t('debts.notes')} value={notes} onChangeText={setNotes} maxLength={500} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button title={t('debts.markReceived')} onPress={onReceived} /> : null}
     </Screen>
   );

@@ -7,6 +7,7 @@ import { useAccounts, useSaveAccount, useSoftDelete } from '@/features/transacti
 import { ACCOUNT_TYPES, type AccountType } from '@/features/transactions/types';
 import { parseMVR } from '@/lib/money';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function AccountScreen() {
@@ -23,6 +24,9 @@ export default function AccountScreen() {
   const [type, setType] = useState<AccountType>(existing?.type ?? 'cash');
   const [opening, setOpening] = useState(existing ? toInputText(existing.opening_balance_laari) : '0');
   const [submitted, setSubmitted] = useState(false);
+
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([name, type, opening]);
 
   if (id && !existing) return null;
 
@@ -48,7 +52,7 @@ export default function AccountScreen() {
     if (error || openingLaari === null) return;
     if (!claim()) return;
     save({ name: name.trim(), type, opening_balance_laari: openingLaari }, existing);
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {
@@ -60,7 +64,7 @@ export default function AccountScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
@@ -73,6 +77,7 @@ export default function AccountScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group>
         <Field label={t('accounts.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
         <Field
@@ -90,7 +95,6 @@ export default function AccountScreen() {
           onChange={setType}
         />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('accounts.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

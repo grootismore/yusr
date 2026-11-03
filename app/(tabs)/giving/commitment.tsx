@@ -9,6 +9,7 @@ import { useCommitments, useSaveCommitment, useSoftDelete } from '@/features/tra
 import { toISODate } from '@/features/transactions/logic';
 import { COMMITMENT_TYPES, SCHEDULES, type CommitmentType, type Schedule } from '@/features/giving/types';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function CommitmentScreen() {
@@ -31,6 +32,9 @@ export default function CommitmentScreen() {
   const [reminder, setReminder] = useState(existing?.reminder_enabled ?? true);
   const [active, setActive] = useState(existing?.active ?? true);
   const [submitted, setSubmitted] = useState(false);
+
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([type, amount, schedule, dueOn, dayOfMonth, recipient, reminder, active]);
 
   if (id && !existing) return null;
 
@@ -57,7 +61,7 @@ export default function CommitmentScreen() {
       },
       existing,
     );
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {
@@ -69,7 +73,7 @@ export default function CommitmentScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
@@ -82,6 +86,7 @@ export default function CommitmentScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group title={t('giving.type')}>
         <Chips options={COMMITMENT_TYPES.map((value) => ({ value, label: t(`giving.types.${value}`) }))} value={type} onChange={setType} />
       </Group>
@@ -105,7 +110,6 @@ export default function CommitmentScreen() {
         <Row label={t('giving.reminder')} right={<Switch accessibilityLabel={t('giving.reminder')} value={reminder} onValueChange={setReminder} />} />
         <Row label={t('giving.active')} right={<Switch accessibilityLabel={t('giving.active')} value={active} onValueChange={setActive} />} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('giving.archive')} onPress={onArchive} /> : null}
     </Screen>
   );
