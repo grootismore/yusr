@@ -9,7 +9,7 @@ import { Button } from '@/components/ui';
 import { finishOnboarding } from '@/features/onboarding/state';
 import { selectionHaptic } from '@/lib/haptics';
 import { LANGUAGES, LANGUAGE_NAMES, setLanguage, type Language } from '@/lib/i18n';
-import { useColors } from '@/lib/theme';
+import { BRAND, useColors } from '@/lib/theme';
 
 type Step = { key: 'welcome' | 'language' | 'privacy' | 'start'; icon: IconName; points: readonly string[] };
 
@@ -40,12 +40,12 @@ export default function WelcomeScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 72, gap: 20, alignItems: 'center' }}>
         <LinearGradient
-          colors={['#0D4E3A', '#13705F']}
+          colors={BRAND.gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ width: 96, height: 96, borderRadius: 28, alignItems: 'center', justifyContent: 'center' }}
         >
-          <AppIcon accessible={false} name={step.icon} size={44} color="#F3FBF7" />
+          <AppIcon accessible={false} name={step.icon} size={44} color={BRAND.onBrand} />
         </LinearGradient>
         <Text accessibilityRole="header" style={{ fontSize: 28, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
           {t(`onboarding.${step.key}.title`)}

@@ -70,3 +70,17 @@ Try it on a phone (new beta build), then re-run both skills. Dhivehi for the new
 
 
 If you agree, the order is: usability #1 and #2, then hooked-ux #1, then #2 and #3 of usability. I will plan each briefly and wait for approval, as CLAUDE.md asks.
+
+## Round 2: UI/UX Pro Max checklist and a shorter Home
+
+The skill's generated style (blue glassmorphism, handwriting font) did not fit Yusr's brand, the Faseyha Dhivehi font or contrast needs, so it was not applied; its minimal + accessible direction was kept. Its native checklist found:
+
+| Check | Result | Change |
+|-------|--------|--------|
+| Contrast AA, light and dark | Passed, but only by hand | `theme.test.ts` now checks every text colour on every surface in both themes (and text on the brand green). |
+| Pressed feedback | Missing on chips, segmented control, header buttons | Opacity feedback added (no layout shift). |
+| Reduced motion | Not handled | `useReducedMotion`; swipe-to-delete moves instantly when it is on. |
+| Large screens | Content ran edge to edge on iPad | Screens keep a 640pt centred column. |
+| Tokens | Brand gradient copied in 4 places | One `BRAND` token. |
+| Disclosure state | Open/closed not announced | Rows that open more rows are announced as expanded or collapsed. |
+| Home length | Seven sections before the end | Order is now: number, how it is worked out, coming up, accounts, this month; "Where it went" is closed until tapped. |

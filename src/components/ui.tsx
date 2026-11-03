@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { AppIcon, type IconName } from './AppIcon';
 import { formatMVR } from '@/lib/money';
 import { selectionHaptic } from '@/lib/haptics';
-import { useColors } from '@/lib/theme';
+import { BRAND, useColors } from '@/lib/theme';
 
 /**
  * The big page title, drawn by the app itself in right-to-left layouts only. The iPhone's own large
@@ -30,7 +30,8 @@ export function Screen({ children, refresh, title }: { children: ReactNode; refr
     <ScrollView
       refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 16, gap: 22 }}
+      // On an iPad or a landscape phone the content stays a readable column in the middle.
+      contentContainerStyle={{ padding: 16, gap: 22, width: '100%', maxWidth: 640, alignSelf: 'center' }}
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       // The keyboard never hides the field being edited: the content scrolls up to make room, and
@@ -86,11 +87,13 @@ interface RowProps {
   chevron?: boolean;
   destructive?: boolean;
   accessibilityHint?: string;
+  /** For a row that opens or closes more rows below it: announced as expanded or collapsed. */
+  expanded?: boolean;
   /** A short second line under the label saying what is behind the row. */
   detail?: string;
 }
 
-export function Row({ label, value, right, onPress, chevron, destructive, accessibilityHint, detail }: RowProps) {
+export function Row({ label, value, right, onPress, chevron, destructive, accessibilityHint, expanded, detail }: RowProps) {
   const colors = useColors();
   const content = (
     <View style={{ minHeight: 50, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
@@ -134,6 +137,7 @@ export function Row({ label, value, right, onPress, chevron, destructive, access
     <Pressable
       accessibilityRole="button"
       accessibilityHint={accessibilityHint}
+      accessibilityState={expanded === undefined ? undefined : { expanded }}
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
     >
@@ -229,7 +233,7 @@ export function Segmented<T extends string>({
               if (!selected) selectionHaptic();
               onChange(option.value);
             }}
-            style={{
+            style={({ pressed }) => ({
               flex: 1,
               minHeight: 44,
               paddingVertical: 6,
@@ -237,7 +241,8 @@ export function Segmented<T extends string>({
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: selected ? colors.tint : 'transparent',
-            }}
+              opacity: pressed ? 0.6 : 1,
+            })}
           >
             <Text
               numberOfLines={2}
@@ -275,13 +280,14 @@ export function Chips<T extends string>({
               if (!selected) selectionHaptic();
               onChange(option.value);
             }}
-            style={{
+            style={({ pressed }) => ({
               minHeight: 44,
               justifyContent: 'center',
               paddingHorizontal: 16,
               borderRadius: 22,
               backgroundColor: selected ? colors.tint : colors.surfaceMuted,
-            }}
+              opacity: pressed ? 0.6 : 1,
+            })}
           >
             <Text style={{ fontSize: 15, color: selected ? colors.background : colors.text }}>{option.label}</Text>
           </Pressable>
@@ -337,12 +343,12 @@ export function EmptyState({
   return (
     <View style={{ alignItems: 'center', gap: 12, padding: 32 }}>
       <LinearGradient
-        colors={['#0D4E3A', '#13705F']}
+        colors={BRAND.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}
       >
-        <AppIcon accessible={false} name={icon} size={34} color="#F3FBF7" />
+        <AppIcon accessible={false} name={icon} size={34} color={BRAND.onBrand} />
       </LinearGradient>
       <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center' }}>
         {title}
@@ -361,7 +367,7 @@ export function HeaderIconButton({ icon, label, onPress }: { icon: IconName; lab
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+      style={({ pressed }) => ({ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.5 : 1 })}
     >
       <AppIcon name={icon} size={26} color={colors.tint} />
     </Pressable>
@@ -376,7 +382,7 @@ export function HeaderTextButton({ label, onPress, disabled }: { label: string; 
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 8, opacity: disabled ? 0.4 : 1 }}
+      style={({ pressed }) => ({ minHeight: 44, justifyContent: 'center', paddingHorizontal: 8, opacity: disabled ? 0.4 : pressed ? 0.5 : 1 })}
     >
       <Text style={{ fontSize: 17, color: colors.tint }}>{label}</Text>
     </Pressable>

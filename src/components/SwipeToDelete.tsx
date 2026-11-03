@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, I18nManager, PanResponder, Pressable, View, type ViewStyle } from 'react-native';
 import { Text } from './Text';
+import { useReducedMotion } from '@/lib/useReducedMotion';
 import { useColors } from '@/lib/theme';
 
 export const ACTION_WIDTH = 88;
@@ -25,13 +26,15 @@ class Live {
   width = 0;
   start = 0;
   open = false;
+  reduced = false;
   onDelete: () => void;
   constructor(onDelete: () => void) {
     this.onDelete = onDelete;
   }
-  update(width: number, onDelete: () => void) {
+  update(width: number, onDelete: () => void, reduced: boolean) {
     this.width = width;
     this.onDelete = onDelete;
+    this.reduced = reduced;
   }
   setOpen(open: boolean) {
     this.open = open;
@@ -44,7 +47,7 @@ class Live {
 /** The gesture itself, kept outside the component: it reads and writes `live` only when a touch happens. */
 function makePan({ live, x, rtl, setOpen }: { live: Live; x: Animated.Value; rtl: boolean; setOpen: (open: boolean) => void }) {
   const settle = (to: number) => {
-    Animated.timing(x, { toValue: to, duration: 180, useNativeDriver: true }).start();
+    Animated.timing(x, { toValue: to, duration: live.reduced ? 0 : 180, useNativeDriver: true }).start();
     live.setOpen(to > 0);
     setOpen(to > 0);
     if (to > 0) {
@@ -90,10 +93,11 @@ export function SwipeToDelete({ children, label, onDelete, style }: { children: 
   const [x] = useState(() => new Animated.Value(0));
   const [width, setWidth] = useState(0);
   const [open, setOpen] = useState(false);
+  const reduced = useReducedMotion();
   // Read by the gesture when a touch happens; refreshed after each render.
   const [live] = useState(() => new Live(onDelete));
   useEffect(() => {
-    live.update(width, onDelete);
+    live.update(width, onDelete, reduced);
   });
 
   const [pan] = useState(() => makePan({ live, x, rtl, setOpen }));
@@ -115,7 +119,7 @@ export function SwipeToDelete({ children, label, onDelete, style }: { children: 
           <Pressable
             accessible={false}
             onPress={() => {
-              Animated.timing(x, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+              Animated.timing(x, { toValue: 0, duration: reduced ? 0 : 180, useNativeDriver: true }).start();
               setOpen(false);
               live.setOpen(false);
             }}
