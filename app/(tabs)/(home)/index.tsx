@@ -25,6 +25,7 @@ import {
 } from '@/features/transactions/hooks';
 import { accountBalance, categoryBreakdown, monthOf, monthSummary, shiftMonth, toISODate } from '@/features/transactions/logic';
 import { formatMVR } from '@/lib/money';
+import { GettingStarted } from '@/features/onboarding/GettingStarted';
 import { useColors } from '@/lib/theme';
 
 export default function HomeScreen() {
@@ -96,6 +97,7 @@ export default function HomeScreen() {
   return (
     <Screen title={t('tabs.home')} refresh={refresh}>
       <DeletionBanner />
+      <GettingStarted done={{ transaction: transactions.length > 0, debt: debts.length > 0, plan: commitments.length > 0 }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <HeaderIconButton
           icon={rtl ? 'chevron-forward' : 'chevron-back'}

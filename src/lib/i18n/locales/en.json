@@ -108,6 +108,13 @@
     "getStarted": "Get started",
     "stepOf": "Step {{current}} of {{total}}"
   },
+  "gettingStarted": {
+    "title": "Getting started",
+    "transaction": "Record your first spending or income",
+    "debt": "Add a debt you owe, if you have one",
+    "plan": "Plan a Sadaqat, if you want reminders",
+    "hide": "Hide this"
+  },
   "consent": {
     "title": "Updated terms",
     "intro": "We updated our Terms of Service and Privacy Policy. To keep using Yusr, please read and accept them.",
