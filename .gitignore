@@ -27,5 +27,6 @@ supabase/.temp/
 web/accept/dist/
 .netlify
 web/legal/dist/
+web/site/dist/
 web/copy/dist/
 web/copy/starter.json

@@ -31,8 +31,8 @@ concurrency:
 env:
   EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || 'https://losgicmxujuxsvbtehwu.supabase.co' }}
   EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
-  EXPO_PUBLIC_INVITE_URL: ${{ vars.EXPO_PUBLIC_INVITE_URL || 'https://yusr-invite.netlify.app' }}
-  EXPO_PUBLIC_LEGAL_URL: ${{ vars.EXPO_PUBLIC_LEGAL_URL }}
+  EXPO_PUBLIC_INVITE_URL: ${{ vars.EXPO_PUBLIC_INVITE_URL || 'https://yusrmv.netlify.app/invite' }}
+  EXPO_PUBLIC_LEGAL_URL: ${{ vars.EXPO_PUBLIC_LEGAL_URL || 'https://yusrmv.netlify.app' }}
 
 jobs:
   checks:

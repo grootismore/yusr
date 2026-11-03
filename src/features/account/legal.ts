@@ -26,7 +26,7 @@ export function consentsNeeded(records: readonly ConsentRecord[], version = LEGA
 }
 
 /** Where the public legal pages are hosted; EXPO_PUBLIC_LEGAL_URL overrides it (an empty value turns the links off). */
-export const DEFAULT_LEGAL_URL = 'https://yusr-legal.netlify.app';
+export const DEFAULT_LEGAL_URL = 'https://yusrmv.netlify.app';
 
 /** Public legal pages live on the static site; no link when the address is empty. */
 export function legalUrl(page: 'terms' | 'privacy' | 'delete-account', base = process.env.EXPO_PUBLIC_LEGAL_URL ?? DEFAULT_LEGAL_URL): string | null {
