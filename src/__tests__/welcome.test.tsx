@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('welcome flow', () => {
   it('walks four short screens and ends with Get started, with no way to get stuck', async () => {
     await render(<WelcomeScreen />);
-    expect(screen.getByText('Welcome to Yusr')).toBeTruthy();
+    expect(screen.getByText('Welcome to Yusr!')).toBeTruthy();
     await fireEvent.press(screen.getByText('Next'));
     expect(screen.getByText('Choose your language')).toBeTruthy();
     await fireEvent.press(screen.getByText('Next'));
