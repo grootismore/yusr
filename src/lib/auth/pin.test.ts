@@ -5,21 +5,21 @@ import { createHash } from 'node:crypto';
 const digest = async (text: string) => createHash('sha256').update(text).digest('hex'); // the app uses expo-crypto's SHA-256
 
 describe('PIN rules', () => {
-  it('accepts exactly six digits', () => {
-    expect(isValidPin('123456')).toBe(true);
-    for (const bad of ['', '12345', '1234567', '12345a', '12 456', '١٢٣٤٥٦']) expect(isValidPin(bad)).toBe(false);
+  it('accepts exactly four digits', () => {
+    expect(isValidPin('1234')).toBe(true);
+    for (const bad of ['', '123', '12345', '123a', '12 4', '١٢٣٤']) expect(isValidPin(bad)).toBe(false);
   });
 
   it('keeps only a salted hash, and recognises the right PIN only', async () => {
-    const record = await makePinRecord('246810', 'salt1', digest);
-    expect(JSON.stringify(record)).not.toContain('246810'); // the PIN itself is never in the record
-    expect(await pinMatches('246810', record, digest)).toBe(true);
-    expect(await pinMatches('246811', record, digest)).toBe(false);
-    expect(await pinMatches('24681', record, digest)).toBe(false); // not even tried if it is not six digits
+    const record = await makePinRecord('2468', 'salt1', digest);
+    expect(JSON.stringify(record)).not.toContain('2468'); // the PIN itself is never in the record
+    expect(await pinMatches('2468', record, digest)).toBe(true);
+    expect(await pinMatches('2469', record, digest)).toBe(false);
+    expect(await pinMatches('246', record, digest)).toBe(false); // not even tried if it is not four digits
   });
 
   it('the same PIN with a different salt gives a different hash', async () => {
-    expect(await hashPin('246810', 'a', digest)).not.toBe(await hashPin('246810', 'b', digest));
+    expect(await hashPin('2468', 'a', digest)).not.toBe(await hashPin('2468', 'b', digest));
   });
 });
 

@@ -8,19 +8,19 @@ jest.mock('expo-sqlite/kv-store', () => ({ __esModule: true, default: { getItemS
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 describe('PinPad', () => {
-  it('hands over the PIN on the sixth digit, then clears for the next try', async () => {
+  it('hands over the PIN on the fourth digit, then clears for the next try', async () => {
     const onComplete = jest.fn();
     await render(<PinPad title="Enter your PIN" onComplete={onComplete} />);
-    for (const d of ['1', '2', '3', '4', '5']) await fireEvent.press(screen.getByLabelText(d));
+    for (const d of ['1', '2', '3']) await fireEvent.press(screen.getByLabelText(d));
     expect(onComplete).not.toHaveBeenCalled();
-    await fireEvent.press(screen.getByLabelText('6'));
-    expect(onComplete).toHaveBeenCalledWith('123456');
+    await fireEvent.press(screen.getByLabelText('4'));
+    expect(onComplete).toHaveBeenCalledWith('1234');
   });
 
   it('ignores presses while disabled (waiting after wrong tries)', async () => {
     const onComplete = jest.fn();
     await render(<PinPad title="t" disabled onComplete={onComplete} />);
-    for (const d of ['1', '2', '3', '4', '5', '6']) await fireEvent.press(screen.getByLabelText(d));
+    for (const d of ['1', '2', '3', '4']) await fireEvent.press(screen.getByLabelText(d));
     expect(onComplete).not.toHaveBeenCalled();
   });
 });

@@ -1,12 +1,12 @@
 /**
  * The rules for Yusr's own PIN, kept free of storage and native code so they can be tested.
- * The PIN is 6 digits. Only a salted SHA-256 of it is ever stored, on this phone, in the system's
+ * The PIN is 4 digits. Only a salted SHA-256 of it is ever stored, on this phone, in the system's
  * secure storage; it is never sent anywhere. Ceiling: six digits can be guessed offline by anyone
  * who can read that storage, so the real protection is the phone's own secure storage plus the wait
  * after wrong tries (below). Face ID / fingerprint, when the person turns it on, is checked by the
  * phone itself.
  */
-export const PIN_LENGTH = 6;
+export const PIN_LENGTH = 4;
 
 export const isValidPin = (pin: string): boolean => new RegExp(`^\\d{${PIN_LENGTH}}$`).test(pin);
 

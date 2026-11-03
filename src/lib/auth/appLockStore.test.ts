@@ -30,39 +30,39 @@ describe('app lock storage', () => {
   it('is off until the person turns it on, and keeps only a hash of the PIN', async () => {
     const lock = fresh();
     await lock.loadLock();
-    expect(await lock.checkPin('123456')).toMatchObject({ ok: false }); // nothing set yet
-    await lock.enableLock('123456');
-    expect(JSON.stringify([...mockStorage.values()])).not.toContain('123456');
-    expect((await lock.checkPin('123456')).ok).toBe(true);
+    expect(await lock.checkPin('1234')).toMatchObject({ ok: false }); // nothing set yet
+    await lock.enableLock('1234');
+    expect(JSON.stringify([...mockStorage.values()])).not.toContain('1234');
+    expect((await lock.checkPin('1234')).ok).toBe(true);
     expect((await lock.checkPin('654321')).ok).toBe(false);
   });
 
   it('survives a restart: the saved choice is read back', async () => {
     const first = fresh();
-    await first.enableLock('123456');
+    await first.enableLock('1234');
     await first.setBiometrics(true);
     const second = fresh(); // a new launch
     await second.loadLock();
-    expect(await second.checkPin('123456')).toMatchObject({ ok: true });
+    expect(await second.checkPin('1234')).toMatchObject({ ok: true });
   });
 
   it('makes the person wait after five wrong tries, even for the right PIN', async () => {
     const lock = fresh();
-    await lock.enableLock('123456');
+    await lock.enableLock('1234');
     const t0 = 1_000_000;
     for (let i = 0; i < 4; i++) expect(await lock.checkPin('000000', t0)).toMatchObject({ ok: false, waitSeconds: 0 });
     expect(await lock.checkPin('000000', t0)).toMatchObject({ ok: false, waitSeconds: 30 });
-    expect(await lock.checkPin('123456', t0 + 5_000)).toMatchObject({ ok: false, waitSeconds: 25 }); // not even checked
-    expect(await lock.checkPin('123456', t0 + 31_000)).toMatchObject({ ok: true });
+    expect(await lock.checkPin('1234', t0 + 5_000)).toMatchObject({ ok: false, waitSeconds: 25 }); // not even checked
+    expect(await lock.checkPin('1234', t0 + 31_000)).toMatchObject({ ok: true });
     expect(await lock.waitSeconds(t0 + 31_000)).toBe(0);
   });
 
   it('turning it off forgets the PIN and every setting', async () => {
     const lock = fresh();
-    await lock.enableLock('123456');
+    await lock.enableLock('1234');
     await lock.clearLock();
     expect(mockStorage.size).toBe(0);
-    expect((await lock.checkPin('123456')).ok).toBe(false);
+    expect((await lock.checkPin('1234')).ok).toBe(false);
   });
 
   it('a lock whose PIN is missing counts as off, never as a lock nobody can open', async () => {

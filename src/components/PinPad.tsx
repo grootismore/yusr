@@ -10,8 +10,8 @@ import { Text } from './Text';
 const ROWS = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']] as const;
 
 /**
- * A 6-digit PIN entry with its own number pad (no system keyboard). The pad keeps the same layout
- * in right-to-left languages, like a phone's keypad. When the sixth digit is entered, `onComplete`
+ * A 4-digit PIN entry with its own number pad (no system keyboard). The pad keeps the same layout
+ * in right-to-left languages, like a phone's keypad. When the fourth digit is entered, `onComplete`
  * gets the PIN and the dots clear, ready for the next try.
  */
 export function PinPad({ title, message, error, disabled, onComplete }: { title: string; message?: string; error?: string | null; disabled?: boolean; onComplete: (pin: string) => void }) {
