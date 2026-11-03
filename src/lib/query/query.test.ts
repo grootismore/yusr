@@ -32,6 +32,8 @@ const fakeApi = () => ({
   fetchDeletionDate: jest.fn(async (): Promise<string | null> => null),
   requestAccountDeletion: jest.fn(async (): Promise<string> => '2026-11-08T00:00:00Z'),
   cancelAccountDeletion: jest.fn(async (): Promise<void> => undefined),
+  fetchConsents: jest.fn(async () => [] as { kind: string; version: string }[]),
+  recordConsents: jest.fn(async (): Promise<void> => undefined),
 });
 
 const upsertObserver = (client: QueryClient) =>

@@ -1,4 +1,4 @@
-import { CONSENT_KINDS, LEGAL_VERSION, legalUrl, signUpConsentMetadata } from './legal';
+import { CONSENT_KINDS, consentsNeeded, DEFAULT_LEGAL_URL, LEGAL_VERSION, legalUrl, signUpConsentMetadata } from './legal';
 
 describe('legal', () => {
   it('stamps every required consent with the current version', () => {
@@ -11,8 +11,18 @@ describe('legal', () => {
     expect(legalUrl('terms', 'https://example.test///')).toBe('https://example.test/terms/');
   });
 
-  it('gives no link until the site is configured', () => {
+  it('turns the links off with an empty address and otherwise points at the hosted site', () => {
     expect(legalUrl('terms', '')).toBeNull();
-    expect(legalUrl('terms', undefined)).toBeNull();
+    expect(legalUrl('privacy', undefined)).toBe(`${DEFAULT_LEGAL_URL}/privacy/`);
+  });
+
+  it('asks again only when a newer version is published', () => {
+    const all = CONSENT_KINDS.map((kind) => ({ kind, version: LEGAL_VERSION }));
+    expect(consentsNeeded(all)).toEqual([]); // up to date
+    expect(consentsNeeded([])).toEqual(['terms', 'privacy', 'age_18']); // never accepted
+    const old = CONSENT_KINDS.map((kind) => ({ kind, version: '2026-01-01' }));
+    expect(consentsNeeded(old)).toEqual(['terms', 'privacy']); // the age confirmation stays valid
+    expect(consentsNeeded(old, '2026-01-01')).toEqual([]);
+    expect(consentsNeeded([{ kind: 'terms', version: LEGAL_VERSION }, { kind: 'age_18', version: '2026-01-01' }])).toEqual(['privacy']);
   });
 });
