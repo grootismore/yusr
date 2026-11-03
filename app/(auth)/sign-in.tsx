@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, Switch, View } from 'react-native';
+import { useRef, useState, type ComponentRef } from 'react';
+import { Image, Linking, Pressable, ScrollView, Switch, TextInput as RNTextInput, View } from 'react-native';
 import { Text, TextInput } from '@/components/Text';
+import { Button } from '@/components/ui';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { CONSENT_KINDS, legalUrl, signUpConsentMetadata } from '@/features/account/legal';
@@ -18,6 +19,7 @@ export default function SignInScreen() {
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const passwordRef = useRef<ComponentRef<typeof RNTextInput>>(null);
   // Unticked by default, one per document (launch checklist 6).
   const [agreed, setAgreed] = useState<Record<string, boolean>>({});
 
@@ -56,6 +58,9 @@ export default function SignInScreen() {
       contentContainerStyle={{ padding: 16, gap: 16 }}
       keyboardShouldPersistTaps="handled"
       contentInsetAdjustmentBehavior="automatic"
+      // The keyboard never covers the field or the button below it; dragging down dismisses it.
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="interactive"
     >
       <LinearGradient
         colors={['#0D4E3A', '#13705F']}
@@ -73,7 +78,7 @@ export default function SignInScreen() {
           Yusr
         </Text>
       </LinearGradient>
-      <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
+      <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden' }}>
         <TextInput
           style={input}
           value={email}
@@ -87,9 +92,12 @@ export default function SignInScreen() {
           keyboardType="email-address"
           textContentType="emailAddress"
           returnKeyType="next"
+          submitBehavior="submit"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
         <View style={{ height: 0.5, backgroundColor: colors.separator, marginStart: 16 }} />
         <TextInput
+          ref={passwordRef}
           style={input}
           value={password}
           onChangeText={setPassword}
@@ -108,7 +116,7 @@ export default function SignInScreen() {
       {mode === 'signUp' ? (
         <>
           <Text style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('auth.passwordHint')}</Text>
-          <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden' }}>
             {CONSENT_KINDS.map((kind, index) => {
               const url = kind === 'age_18' ? null : legalUrl(kind);
               return (
@@ -153,28 +161,7 @@ export default function SignInScreen() {
         </Text>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy, busy }}
-        disabled={busy}
-        onPress={submit}
-        style={{
-          minHeight: 44,
-          borderRadius: 12,
-          backgroundColor: colors.tint,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: busy ? 0.7 : 1,
-        }}
-      >
-        {busy ? (
-          <ActivityIndicator accessibilityLabel={t('auth.loading')} color={colors.background} />
-        ) : (
-          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.background }}>
-            {t(mode === 'signIn' ? 'auth.signIn' : 'auth.signUp')}
-          </Text>
-        )}
-      </Pressable>
+      <Button title={t(mode === 'signIn' ? 'auth.signIn' : 'auth.signUp')} onPress={submit} busy={busy} />
 
       <Pressable
         accessibilityRole="button"

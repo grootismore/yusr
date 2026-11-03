@@ -38,7 +38,7 @@ export default function WasiyyahNoteScreen() {
         }}
       />
       <Text style={{ fontSize: 15, color: colors.secondaryText, paddingHorizontal: 16 }}>{t('wasiyyah.noteHint')}</Text>
-      <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 16, minHeight: 220 }}>
+      <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 16, minHeight: 220 }}>
         <TextInput
           accessibilityLabel={t('wasiyyah.noteTitle')}
           multiline

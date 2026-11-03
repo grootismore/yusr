@@ -63,7 +63,7 @@ export default function SettingsScreen() {
       <Text accessibilityRole="header" style={{ fontSize: 13, color: colors.secondaryText, paddingHorizontal: 16 }}>
         {t('settings.language')}
       </Text>
-      <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden' }}>
+      <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden' }}>
         {LANGUAGES.map((language, index) => {
           const selected = i18n.language === language;
           return (
@@ -125,7 +125,7 @@ export default function SettingsScreen() {
       <Group>
         <Row label={t('settings.about')} chevron onPress={() => router.push('/more/about')} />
       </Group>
-      <View style={{ backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginTop: 16 }}>
+      <View style={{ backgroundColor: colors.surface, borderRadius: 16, overflow: 'hidden', marginTop: 16 }}>
         <Pressable
           accessibilityRole="button"
           onPress={confirmSignOut}

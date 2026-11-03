@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DateField } from '@/components/DateField';

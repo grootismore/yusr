@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button, ErrorText, Field, Group, HeaderTextButton, Row, Screen, Segmented } from '@/components/ui';
