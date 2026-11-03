@@ -39,7 +39,7 @@
     .stack { display: grid; gap: 12px; }
     .gate-title { margin: 0; }
     .bar { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    @media (min-width: 700px) { .bar { grid-template-columns: 2fr 1fr 1fr auto; align-items: end; } .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } }
+    @media (min-width: 700px) { .bar { grid-template-columns: 2fr 1.3fr 1fr 1fr auto; align-items: end; } .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } }
     .pair { display: grid; gap: 12px; }
     .key { font: .82rem ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); word-break: break-all; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -54,6 +54,41 @@
     .ok { color: var(--ok); font-weight: 600; }
     .dirty { border-color: var(--tint); }
     .help { color: var(--muted); font-size: .92rem; margin: 0; }
+    .where { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 0 0 10px; }
+    .where .meta { margin-inline-end: 2px; }
+    .screen-chip { min-height: 34px; padding: 2px 12px; border-radius: 999px; font-size: .85rem; }
+    .pv { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
+    .pv .pv-box { background: #071a14; color: #e6f2ec; border-radius: 14px; padding: 12px; display: grid; align-content: center; min-height: 64px; font-size: 15px; }
+    .m-dv, .m-dv * { font-family: "MV Faseyha", "Noto Sans Thaana", "MV Boli", sans-serif; }
+    .m-dv { font-size: 17px; }
+    .m-title { font-size: 28px; font-weight: 800; line-height: 1.2; margin: 4px 0 2px; }
+    .m-heading { font-size: 20px; font-weight: 700; }
+    .m-section { color: #6fcba6; font-weight: 700; font-size: 14px; }
+    .m-row { background: #0e2a22; border: 1px solid #1f3f35; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .m-row .m-bar { height: 8px; width: 38%; border-radius: 4px; background: #1f3f35; }
+    .m-hint { color: #9dbbb0; font-size: 13px; }
+    .m-dv .m-hint { font-size: 15px; }
+    .m-text { font-size: 15px; }
+    .m-button { background: #6fcba6; color: #06231b; font-weight: 700; border-radius: 14px; padding: 12px; text-align: center; }
+    .m-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+    .m-choice { display: inline-block; background: #16372e; border-radius: 999px; padding: 8px 14px; }
+    .m-error { color: #ff8f7f; font-size: 15px; }
+    .m-ph { color: #9dbbb0; opacity: .75; }
+    .m-pill { color: #6fcba6; background: #0e2a22; border-radius: 999px; padding: 6px 14px; font-weight: 600; }
+    .m-popup { background: #16372e; border: 1px dashed #6fcba6; border-radius: 16px; padding: 12px; display: grid; gap: 8px; }
+    .m-tabs { display: flex; justify-content: space-around; gap: 4px; background: #0e2a22; border-radius: 20px; padding: 10px 6px; font-size: 12px; }
+    .m-top { display: flex; justify-content: space-between; gap: 8px; min-height: 34px; align-items: center; }
+    .m-note { color: #9dbbb0; font-size: 12px; border-top: 1px dashed #1f3f35; padding-top: 8px; }
+    .hl { outline: 3px solid #e0b260; outline-offset: 3px; border-radius: 10px; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 16px; z-index: 10; }
+    .sheet { background: var(--surface); border-radius: 20px; max-width: 940px; width: 100%; padding: 16px; display: grid; gap: 12px; }
+    .sheet h2 { margin: 0; flex: 1; font-size: 1.2rem; }
+    .sheet-head { display: flex; gap: 12px; align-items: center; }
+    .phones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 720px) { .phones, .pv { grid-template-columns: 1fr; } }
+    .phone { background: #071a14; color: #e6f2ec; border-radius: 30px; border: 7px solid #1f3f35; padding: 14px; min-height: 440px; display: grid; gap: 10px; align-content: start; }
+    .phone-label { text-align: center; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .legend { color: var(--muted); font-size: .88rem; margin: 0; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -77,6 +112,7 @@
       <div class="card bar">
         <label>Search<input id="q" type="search" placeholder="A word in English or Dhivehi, or part of a key"></label>
         <label>Where<select id="where"><option value="">App and invite page</option><option value="app">App</option><option value="invite">Invite page</option></select></label>
+        <label>Screen<select id="screen"><option value="">Every screen</option></select></label>
         <label>Show<select id="show"><option value="">Everything</option><option value="review">Not reviewed</option><option value="done">Reviewed</option></select></label>
         <button id="reload" type="button">Reload</button>
       </div>
@@ -89,13 +125,20 @@
       <button id="more" type="button" hidden>Show more</button>
     </section>
   </main>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="sheet">
+      <div class="sheet-head"><h2 id="modal-title"></h2><button id="modal-close" type="button">Close</button></div>
+      <p class="legend" id="modal-legend"></p>
+      <div class="phones" id="phones"></div>
+    </div>
+  </div>
 
   <script>
     'use strict';
     // Wording editor. The passcode is sent in a header to the copy-editor function and kept only for this browser tab.
     var FN = (document.querySelector('meta[name="yusr-function-url"]') || {}).content || '';
     var PAGE = 25;
-    var pass = '', who = '', rows = [], shown = PAGE;
+    var pass = '', who = '', rows = [], shown = PAGE, usage = null, draft = {};
     var el = function (id) { return document.getElementById(id); };
     var store = {
       get: function (k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } },
@@ -143,7 +186,17 @@
     }
     function start() {
       el('gate').hidden = true; el('app').hidden = false; el('signout').hidden = false; el('pass').value = '';
-      shown = PAGE; draw(); offerStarter();
+      shown = PAGE; draw(); offerStarter(); loadUsage();
+    }
+    // Where each string appears in the app (made from the app's code by `npm run copy:usage`). The editor works without it.
+    function loadUsage() {
+      fetch('usage.json', { cache: 'no-store' }).then(function (res) { return res.json(); }).then(function (u) {
+        usage = u;
+        var sel = el('screen');
+        u.screens.forEach(function (name) { var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
+        var none = document.createElement('option'); none.value = '\u0000unused'; none.textContent = 'Not found in the app\'s code'; sel.appendChild(none);
+        draw();
+      }, function () { usage = null; });
     }
     // First run, or after the app gains new strings: adds the ones the editor does not have. Edits are never overwritten.
     function offerStarter() {
@@ -168,9 +221,13 @@
       api({ action: 'list' }).then(function (r) { if (r.status === 200 && r.json.ok) { rows = r.json.rows; draw(); } else { el('count').textContent = explain(r); } });
     }
     function visible() {
-      var q = el('q').value.trim().toLowerCase(), where = el('where').value, show = el('show').value;
+      var q = el('q').value.trim().toLowerCase(), where = el('where').value, show = el('show').value, screen = el('screen').value;
       return rows.filter(function (r) {
         if (where && r.surface !== where) return false;
+        if (screen) {
+          var uses = usesOf(r);
+          if (screen === '\u0000unused' ? uses.length > 0 : !uses.some(function (u) { return u.screen === screen; })) return false;
+        }
         if (show === 'review' && !r.needs_review) return false;
         if (show === 'done' && r.needs_review) return false;
         if (!q) return true;
@@ -196,7 +253,37 @@
 
       var pair = make('div', 'pair');
       var en = field('English', r.en, 'en', ltr()); var dv = field('Dhivehi', r.dv, 'dv', 'dv');
+      var uses = usesOf(r);
+      if (usage) {
+        var where = make('div', 'where');
+        if (uses.length === 0) where.appendChild(make('span', 'meta', 'Not found in the app\'s code: it may not be shown anywhere.'));
+        else {
+          where.appendChild(make('span', 'meta', 'Shows up in:'));
+          uses.forEach(function (u) {
+            var b = make('button', 'screen-chip', u.screen + ' \u00b7 ' + u.role); b.type = 'button';
+            b.title = 'See this screen with the wording in place';
+            b.addEventListener('click', function () { openScreen(u.screen, r.surface, r.key); });
+            where.appendChild(b);
+          });
+        }
+        c.appendChild(where);
+        if (uses.length) {
+          var pv = make('div', 'pv'); c.appendChild(pv);
+          var paint = function () {
+            pv.textContent = '';
+            [['en', en.input.value], ['dv', dv.input.value]].forEach(function (x) {
+              var box = make('div', 'pv-box' + (x[0] === 'dv' ? ' m-dv' : '')); box.lang = x[0]; box.dir = x[0] === 'dv' ? 'rtl' : 'ltr';
+              box.appendChild(mockNode(uses[0].role, sample(x[1], x[0]), x[0])); pv.appendChild(box);
+            });
+          };
+          paint();
+          [en.input, dv.input].forEach(function (i) { i.addEventListener('input', paint); });
+        }
+      }
       pair.appendChild(en.label); pair.appendChild(dv.label); c.appendChild(pair);
+      [['en', en], ['dv', dv]].forEach(function (x) {
+        x[1].input.addEventListener('input', function () { var d = draft[r.surface + ':' + r.key] || (draft[r.surface + ':' + r.key] = {}); d[x[0]] = x[1].input.value; });
+      });
 
       var foot = make('div', 'row-foot');
       var rev = make('label', 'check'); var box = document.createElement('input'); box.type = 'checkbox'; rev.appendChild(box); rev.appendChild(make('span', '', 'Mark as reviewed'));
@@ -215,7 +302,7 @@
         save.disabled = true; status.textContent = 'Saving…'; status.className = 'meta';
         api({ action: 'save', surface: r.surface, key: r.key, en: en.input.value, dv: dv.input.value, reviewed: box.checked, editor: who }).then(function (res) {
           if (res.status === 200 && res.json.ok) {
-            r.en = en.input.value; r.dv = dv.input.value; if (box.checked) { r.needs_review = false; flag.hidden = true; box.checked = false; }
+            r.en = en.input.value; r.dv = dv.input.value; delete draft[r.surface + ':' + r.key]; if (box.checked) { r.needs_review = false; flag.hidden = true; box.checked = false; }
             r.updated_by = who; meta.textContent = 'Last edited by ' + who + ' just now';
             c.classList.remove('dirty'); status.textContent = 'Saved'; status.className = 'ok';
           } else { save.disabled = false; status.textContent = explain(res, r.tokens); status.className = 'error'; }
@@ -224,6 +311,88 @@
       return c;
     }
     function ltr() { return 'en'; }
+
+    // ---- Where it shows up: previews and the phone-style screen view -----------------------------
+    function usesOf(r) { return usage && usage[r.surface] && usage[r.surface][r.key] ? usage[r.surface][r.key] : []; }
+    // Made-up values for placeholders, so a preview reads like the real thing.
+    var SAMPLE = { date: '1 Nov \u201926', month: 'Nov \u201926', name: 'Aminath', email: 'you@example.com', count: '2', amount: 'MVR 3,400.00', label: 'Sadaqah', link: 'https://yusrmv.netlify.app/invite/\u2026', total: '4', current: '1', days: '7' };
+    // In Dhivehi each value is kept as one left-to-right unit (U+2066 ... U+2069), as the app does, so dates and amounts read in order.
+    function sample(text, lang) {
+      return String(text).replace(/\{\{\s*(\w+)\s*\}\}|\{\s*(\w+)\s*\}/g, function (m, a, b) {
+        var k = a || b; if (SAMPLE[k] === undefined) return m;
+        return lang === 'dv' ? '\u2066' + SAMPLE[k] + '\u2069' : SAMPLE[k];
+      });
+    }
+    // One piece of text drawn the way the app draws that kind of text.
+    function mockNode(role, text, lang) {
+      var n;
+      switch (role) {
+        case 'Screen title': n = make('div', 'm-title', text); break;
+        case 'Heading': case 'Title': case 'Empty-state title': n = make('div', 'm-heading', text); break;
+        case 'Section heading': n = make('div', 'm-section', text); break;
+        case 'Row label': case 'Row value': n = make('div', 'm-row'); n.appendChild(make('span', '', text)); break;
+        case 'Field label': n = make('div', 'm-row'); n.appendChild(make('span', '', text)); n.appendChild(make('span', 'm-bar')); break;
+        case 'Button': case 'Empty-state button': n = make('div', 'm-button', text); break;
+        case 'Header button': case 'Icon button': n = make('span', 'm-pill', text); break;
+        case 'Choice': n = make('span', 'm-choice', text); break;
+        case 'Hint': case 'Footnote': case 'Status': n = make('div', 'm-hint', text); break;
+        case 'Error message': n = make('div', 'm-error', text); break;
+        case 'Placeholder': n = make('div', 'm-row'); n.appendChild(make('span', 'm-ph', text)); break;
+        case 'Tab label': n = make('span', '', text); break;
+        case 'Pop-up title': n = make('strong', '', text); break;
+        case 'Pop-up text': case 'Pop-up button': n = make('div', role === 'Pop-up button' ? 'm-pill' : 'm-text', text); break;
+        default: n = make('div', 'm-text', text);
+      }
+      return n;
+    }
+    function textOf(surface, key, lang) {
+      var d = draft[surface + ':' + key]; if (d && d[lang] !== undefined) return d[lang];
+      for (var i = 0; i < rows.length; i++) if (rows[i].surface === surface && rows[i].key === key) return rows[i][lang];
+      return '';
+    }
+    function phone(screen, surface, hlKey, lang, items) {
+      var wrap = make('div'); wrap.appendChild(make('div', 'phone-label', lang === 'en' ? 'English' : 'Dhivehi (right to left)'));
+      var ph = make('div', 'phone' + (lang === 'dv' ? ' m-dv' : '')); ph.lang = lang; ph.dir = lang === 'dv' ? 'rtl' : 'ltr';
+      var top = make('div', 'm-top'), body = [], tabs = make('div', 'm-tabs'), popup = make('div', 'm-popup'), spoken = [], target = null;
+      var topUsed = false, tabsUsed = false, popupUsed = false;
+      items.forEach(function (it) {
+        var node = mockNode(it.role, sample(textOf(surface, it.key, lang), lang), lang);
+        if (it.key === hlKey) { node.classList.add('hl'); target = node; }
+        if (it.role === 'Spoken label (VoiceOver)') { spoken.push(node); node.className = (node.className + ' m-note').trim(); return; }
+        if (it.role === 'Header button' || it.role === 'Icon button') { top.appendChild(node); topUsed = true; }
+        else if (it.role === 'Screen title') { body.unshift(node); }
+        else if (it.role === 'Tab label') { tabs.appendChild(node); tabsUsed = true; }
+        else if (/^Pop-up/.test(it.role)) { popup.appendChild(node); popupUsed = true; }
+        else if (it.role === 'Choice') {
+          var last = body[body.length - 1];
+          if (!last || !last.classList || !last.classList.contains('m-choices')) { last = make('div', 'm-choices'); body.push(last); }
+          last.appendChild(node);
+        }
+        else body.push(node);
+      });
+      if (topUsed) ph.appendChild(top);
+      body.forEach(function (n) { ph.appendChild(n); });
+      if (popupUsed) { ph.appendChild(make('div', 'm-note', 'A pop-up on this screen:')); ph.appendChild(popup); }
+      if (tabsUsed) ph.appendChild(tabs);
+      if (spoken.length) { ph.appendChild(make('div', 'm-note', 'Read aloud by VoiceOver (not drawn):')); spoken.forEach(function (n) { ph.appendChild(n); }); }
+      wrap.appendChild(ph);
+      return { node: wrap, target: target };
+    }
+    function openScreen(screen, surface, hlKey) {
+      var items = [];
+      Object.keys(usage[surface] || {}).forEach(function (key) {
+        usage[surface][key].forEach(function (u) { if (u.screen === screen) items.push({ key: key, role: u.role, order: u.order }); });
+      });
+      items.sort(function (a, b) { return a.order - b.order; });
+      el('modal-title').textContent = screen;
+      el('modal-legend').textContent = 'Every piece of wording on this screen, drawn roughly the way the app draws it (the real layout differs a little). The one you opened is outlined. Placeholders show made-up values.';
+      var box = el('phones'); box.textContent = '';
+      var focus = null;
+      ['en', 'dv'].forEach(function (lang) { var p = phone(screen, surface, hlKey, lang, items); box.appendChild(p.node); if (!focus) focus = p.target; });
+      el('modal').hidden = false; el('modal-close').focus();
+      if (focus && focus.scrollIntoView) focus.scrollIntoView({ block: 'center' });
+    }
+    function closeModal() { el('modal').hidden = true; }
     function field(name, value, lang, cls) {
       var label = make('label'); label.appendChild(make('span', '', name));
       var t = document.createElement('textarea'); t.value = value; t.lang = lang; t.rows = Math.min(8, Math.max(2, Math.ceil(value.length / (lang === 'dv' ? 32 : 40))));
@@ -237,6 +406,10 @@
     el('q').addEventListener('input', function () { shown = PAGE; draw(); });
     el('where').addEventListener('change', function () { shown = PAGE; draw(); });
     el('show').addEventListener('change', function () { shown = PAGE; draw(); });
+    el('screen').addEventListener('change', function () { shown = PAGE; draw(); });
+    el('modal-close').addEventListener('click', closeModal);
+    el('modal').addEventListener('click', function (e) { if (e.target === el('modal')) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !el('modal').hidden) closeModal(); });
     el('more').addEventListener('click', function () { shown += PAGE; draw(); });
     el('reload').addEventListener('click', reload);
     el('starter').addEventListener('click', loadStarter);

@@ -30,6 +30,7 @@ build(legal);
 build(accept, process.env.INVITE_FUNCTION_URL);
 // The editor's "Add missing strings" button loads the app's current strings from starter.json.
 execFileSync(process.execPath, ['--no-warnings', '--experimental-strip-types', 'scripts/copy-sync.ts', 'starter'], { stdio: 'inherit', cwd: path.join(root, '..', '..') });
+execFileSync(process.execPath, ['--no-warnings', '--experimental-strip-types', 'scripts/copy-usage.ts'], { stdio: 'inherit', cwd: path.join(root, '..', '..') });
 build(copy, process.env.COPY_FUNCTION_URL);
 
 fs.rmSync(dist, { recursive: true, force: true });
