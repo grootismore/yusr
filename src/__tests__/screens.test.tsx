@@ -810,7 +810,7 @@ describe('home: safe to spend, coming up, debt-free', () => {
   it('shows an unlogged bill whose date has passed as waiting, calmly', async () => {
     state.recurring = [rent({ next_due_on: daysFromToday(-3) })];
     await render(<HomeScreen />);
-    expect(screen.getByText(/not marked done/)).toBeTruthy();
+    expect(screen.getByText(/was due/)).toBeTruthy();
   });
 
   it('says nothing is due when nothing is, and shows the debt-free month when there are debts', async () => {
