@@ -12,7 +12,7 @@ export default function GivingLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: t('tabs.giving'),
+          title: t('giving.title'), // the tab keeps the one word; the screen says what it holds
           headerLargeTitle: true,
           ...logoHeaderOptions,
           headerRight: () => <HeaderIconButton icon="add" label={t('giving.add')} onPress={() => router.push('/giving/commitment')} />,

@@ -327,6 +327,10 @@
     "stillOwed": "Still owed"
   },
   "giving": {
+    "title": "Sadaqat plans",
+    "name": "Name (optional)",
+    "givenOn": "Given {{date}}",
+    "howItWorks": "A plan reminds you and reserves the money. Mark done records the gift in Transactions.",
     "emptyTitle": "No Sadaqat set up",
     "emptyBody": "Plan your sadaqah or zakat and be reminded gently.",
     "add": "Add Sadaqat",

@@ -8,6 +8,8 @@ export interface Commitment {
   id: string;
   user_id: string;
   type: CommitmentType;
+  /** Optional name the owner gives the plan ("Friday at the masjid"). Added in migration 009. */
+  name?: string | null;
   amount_laari: number;
   schedule: Schedule;
   /** Required for `once`. */
