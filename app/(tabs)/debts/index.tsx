@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -81,6 +81,19 @@ export default function DebtsScreen() {
                   onChange={(strategy) => update({ strategy })}
                 />
                 <Text style={{ ...note, paddingHorizontal: 4 }}>{t(`debts.strategyNote.${settings.strategy}`)}</Text>
+                <Group>
+                  <Row
+                    label={t('debts.compare')}
+                    chevron
+                    onPress={() =>
+                      Alert.alert(
+                        t('debts.plan'),
+                        STRATEGIES.map((value) => `${t(`debts.strategies.${value}`)}: ${t(`debts.strategyNote.${value}`)}`).join('\n\n'),
+                        [{ text: t('settings.ok') }],
+                      )
+                    }
+                  />
+                </Group>
               </View>
               <Group>
                 <Field

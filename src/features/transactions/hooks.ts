@@ -218,7 +218,7 @@ function useSaveRow<T extends Row & { user_id: string }, I extends object>(table
 export type DebtInput = Pick<
   Debt,
   'lender' | 'kind' | 'original_laari' | 'balance_laari' | 'min_payment_laari' | 'due_day' | 'is_interest_bearing' | 'interest_rate_bps'
->;
+> & { started_on?: string | null };
 export type ReceivableInput = Pick<Receivable, 'debtor' | 'amount_laari' | 'due_on' | 'notes'>;
 export type CommitmentInput = Pick<
   Commitment,

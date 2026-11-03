@@ -48,6 +48,7 @@ export default function HomeScreen() {
   const [plan] = usePlanSettings();
   const today = toISODate(new Date());
   const [month, setMonth] = useState(() => monthOf(today));
+  const [showWorking, setShowWorking] = useState(false);
 
   const summary = useMemo(() => monthSummary(transactions, month), [transactions, month]);
   const breakdown = useMemo(() => categoryBreakdown(transactions, month).slice(0, 5), [transactions, month]);
@@ -145,6 +146,20 @@ export default function HomeScreen() {
               .join('. ')}
           />
           <Text style={note}>{t('home.safeHint')}</Text>
+          {/* The sum behind the big number, one tap away, so nobody has to guess where it comes from. */}
+          <Group>
+            <Row label={t('home.howTitle')} chevron onPress={() => setShowWorking(!showWorking)} accessibilityHint={showWorking ? undefined : t('home.safeHint')} />
+            {showWorking ? (
+              <>
+                <Row label={t('home.howIncome')} right={<Money laari={safe.income} />} />
+                <Row label={t('home.howSpent')} right={<Money laari={safe.spent} hidden={privacyMode} />} />
+                <Row label={t('home.howDebts')} right={<Money laari={safe.reservedDebts} />} />
+                <Row label={t('home.howGiving')} right={<Money laari={safe.reservedGiving} hidden={privacyMode} />} />
+                <Row label={t('home.howBills')} right={<Money laari={safe.reservedBills} />} />
+                <Row label={t('home.safeLead')} right={<Money laari={Math.max(safe.safeToSpend, 0)} bold />} />
+              </>
+            ) : null}
+          </Group>
 
           <Group title={t('home.upcoming')}>
             {upcoming.length === 0 ? (
