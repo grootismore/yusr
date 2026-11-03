@@ -41,3 +41,9 @@ When the code gains new strings, run `npm run copy:seed` (or `npm run copy:seed 
 - It is a **shared** passcode: anyone who has it can edit, and the name saved with a change is typed by the editor, not verified. Change the secret to lock everyone out and give the new one to whoever should have it.
 - Only the app and the invite page are covered. The legal pages' Dhivehi summaries are not in the editor yet.
 - No passcode is stored in the repo or in `.env.example`.
+
+## Seeing where a string shows up
+Each card shows **Shows up in:** with one button per screen (and what kind of text it is there: title, button, hint, row label ...), plus a live preview of the English and the Dhivehi wording drawn the way the app draws that kind of text. It updates as you type. Click a screen button to open a phone-style view of that whole screen, English and Dhivehi side by side (Dhivehi right to left, in its own font), with the string you opened outlined. Placeholders such as `{{date}}` show made-up values. The **Screen** filter lists only the strings of one screen, or the ones the code never uses.
+
+This is worked out from the app's source by `npm run copy:usage` (writes `web/copy/usage.json`; the site build runs it), so it stays right as the app changes. It is a guess from the code around each use: the kind of text and the order can occasionally be off, and the real layout differs a little. A test (`src/__tests__/copyUsage.test.ts`) guards the main cases.
+

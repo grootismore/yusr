@@ -42,6 +42,10 @@ fs.copyFileSync(path.join(__dirname, '../../assets/fonts/MV_Faseyha_Regular.ttf'
 const starter = path.join(__dirname, 'starter.json');
 if (!fs.existsSync(starter)) throw new Error('Run `npm run copy:starter` first: web/copy/starter.json is missing');
 fs.copyFileSync(starter, path.join(dist, 'starter.json'));
+// Where each string shows up in the app (made by `npm run copy:usage`); the editor works without it but is less helpful.
+const usage = path.join(__dirname, 'usage.json');
+if (!fs.existsSync(usage)) throw new Error('Run `npm run copy:usage` first: web/copy/usage.json is missing');
+fs.copyFileSync(usage, path.join(dist, 'usage.json'));
 for (const name of ['NunitoSans_400Regular', 'NunitoSans_700Bold']) {
   fs.copyFileSync(path.join(__dirname, `../../assets/fonts/${name}.ttf`), path.join(dist, `${name}.ttf`));
 }
