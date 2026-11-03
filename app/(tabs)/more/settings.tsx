@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
 import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { useLockState } from '@/lib/auth/appLockStore';
 import { useRouter } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
@@ -21,6 +22,7 @@ export default function SettingsScreen() {
   const colors = useColors();
   const { signOut } = useAuth();
   const router = useRouter();
+  const lock = useLockState();
   // The public pages live on the legal site; no rows until its address is set (same as sign-up).
   const privacyUrl = legalUrl('privacy');
   const termsUrl = legalUrl('terms');
@@ -94,6 +96,14 @@ export default function SettingsScreen() {
         <Row
           label={t('settings.reminders')}
           right={<Switch accessibilityLabel={t('settings.reminders')} value={remindersOn} onValueChange={toggleReminders} />}
+        />
+      </Group>
+      <Group>
+        <Row
+          label={t('lock.appLock')}
+          value={lock.enabled ? t('lock.on') : t('lock.off')}
+          chevron
+          onPress={() => router.push('/more/app-lock')}
         />
       </Group>
       <Group footer={t('settings.hapticsHint')}>

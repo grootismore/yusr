@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
-import { Stack, ThemeProvider } from 'expo-router';
+import { Alert, useColorScheme } from 'react-native';
+import { Stack, ThemeProvider, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { RestartGate } from '@/components/RestartGate';
 import { useConsentGate } from '@/features/account/hooks';
 import { useOnboarded } from '@/features/onboarding/state';
+import { lockNoticeSeen, markLockNoticeSeen } from '@/features/onboarding/lockNotice';
 import { AppLockGate } from '@/lib/auth/AppLock';
+import { useLockState } from '@/lib/auth/appLockStore';
 import { AuthProvider, useAuth } from '@/lib/auth/AuthProvider';
 import { headerFontOptions } from '@/lib/headerFonts';
 import { i18n, initI18n } from '@/lib/i18n';
@@ -47,6 +49,19 @@ function Layout() {
   const { session, loading } = useAuth();
   const consent = useConsentGate();
   const onboarded = useOnboarded();
+  const lock = useLockState();
+  const router = useRouter();
+  const needsConsent = consent.needed.length > 0;
+
+  // The app lock used to be on for everyone; it is now a choice. Tell people once, where to find it.
+  useEffect(() => {
+    if (!session || needsConsent || !lock.loaded || lock.enabled || lockNoticeSeen()) return;
+    markLockNoticeSeen();
+    Alert.alert(t('lock.noticeTitle'), t('lock.noticeBody'), [
+      { text: t('lock.notNow'), style: 'cancel' },
+      { text: t('lock.noticeOpen'), onPress: () => router.push('/more/app-lock') },
+    ]);
+  }, [session, needsConsent, lock.loaded, lock.enabled, t, router]);
   if (loading || (session && consent.checking)) return null;
   const mustAccept = !!session && consent.needed.length > 0;
   return (

@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { clearLocalData } from '@/lib/query/runtime';
 import { getSupabase } from '@/lib/supabase/client';
+import { clearLock } from './appLockStore';
 import { authErrorKey, type AuthErrorKey } from './authErrors';
 
 interface AuthResult {
@@ -39,7 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const { data: listener } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
-      if (event === 'SIGNED_OUT') void clearLocalData(); // never leave one user's data for the next
+      if (event === 'SIGNED_OUT') {
+        void clearLocalData(); // never leave one user's data for the next
+        void clearLock(); // the PIN belongs to the person who set it
+      }
     });
     // Only refresh tokens while the app is in the foreground.
     const appState = AppState.addEventListener('change', (state) => {
@@ -70,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async signOut() {
         await getSupabase().auth.signOut();
         await clearLocalData();
+        await clearLock();
       },
     }),
     [session, loading],

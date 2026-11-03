@@ -10,7 +10,7 @@ No advertising, analytics, attribution or crash-reporting SDK is installed. Sent
 | `@tanstack/react-query` (+ persist client) | Cache and offline queue | No (stored in local SQLite) |
 | `expo-sqlite` | Local cache of the user's data and queued changes | No |
 | `expo-secure-store` | Session tokens, language | No |
-| `expo-local-authentication` | Face ID / fingerprint lock | No (handled by the OS) |
+| `expo-local-authentication` | Optional Face ID / fingerprint unlock | No (handled by the OS) |
 | `expo-notifications` | Local reminders only; no push token is requested or sent. The config plugin is set with `enableRemoteNotifications: false`, so the iOS app has no push entitlement and the plugin only sets the Android notification icon and colour | No |
 | `expo-screen-capture` | Blocks screenshots on Wasiyyah screens (Android) | No |
 | `expo-crypto` | Random ids and invite tokens, SHA-256 | No |
