@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Stack, useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { headerFontOptions } from '@/lib/headerFonts';
 import { logoHeaderOptions } from './HeaderLogo';
 import { HeaderIconButton } from './ui';
 
@@ -16,10 +17,10 @@ export function TabStack({
   addLabelKey?: string;
   children?: ReactNode;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   return (
-    <Stack>
+    <Stack screenOptions={headerFontOptions(i18n.language)}>
       <Stack.Screen
         name="index"
         options={{
