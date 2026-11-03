@@ -59,7 +59,7 @@ The MVP ships the core money loop, the debt plan and the Wasiyyah register with 
 **3.1 Onboarding and security**
 
 - Email or phone sign-up with Supabase Auth, plus Sign in with Apple (required on iOS when other social logins exist).
-- Face ID, Touch ID or fingerprint app lock, with an auto-lock timeout.
+- Optional app lock (off by default, the person opts in after a consent screen): a separate 6-digit Yusr PIN, with Face ID, Touch ID or fingerprint as an extra they can add or remove. Biometrics are tried first and the PIN is the fallback. Only a salted hash of the PIN is kept, in secure storage on the phone; wrong tries slow down; forgetting the PIN means signing out and in again. Auto-lock timeout applies when on.
 - Language choice (Dhivehi or English) and currency (MVR default, USD optional) on first launch.
 
 **3.2 Accounts, income and expenses**

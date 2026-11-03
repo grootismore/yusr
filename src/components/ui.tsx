@@ -165,10 +165,11 @@ export function Button({
   onPress: () => void;
   disabled?: boolean;
   busy?: boolean;
-  variant?: 'primary' | 'destructive';
+  variant?: 'primary' | 'destructive' | 'secondary';
 }) {
   const colors = useColors();
-  const background = variant === 'destructive' ? colors.danger : colors.tint;
+  const secondary = variant === 'secondary';
+  const background = secondary ? 'transparent' : variant === 'destructive' ? colors.danger : colors.tint;
   return (
     <Pressable
       accessibilityRole="button"
@@ -179,6 +180,8 @@ export function Button({
         minHeight: 52,
         borderRadius: 14,
         backgroundColor: background,
+        borderWidth: secondary ? 1.5 : 0,
+        borderColor: colors.tint,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 20,
@@ -186,9 +189,9 @@ export function Button({
       })}
     >
       {busy ? (
-        <ActivityIndicator color={colors.background} />
+        <ActivityIndicator color={secondary ? colors.tint : colors.background} />
       ) : (
-        <Text style={{ fontSize: 17, fontWeight: '700', color: colors.background }}>{title}</Text>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: secondary ? colors.tint : colors.background }}>{title}</Text>
       )}
     </Pressable>
   );

@@ -36,7 +36,7 @@ Tests: pgTAP, 279 assertions (`supabase test db`). Every table is exercised by a
 ## 4. Client
 
 - Only the publishable key ships in the app; `assertClientSafeKey` throws on a secret key (unit test). No service-role key anywhere in the repo (secret scan of tracked files found only that test string).
-- Session in secure storage; biometric lock; screen-capture blocking on the Wasiyyah screens (Android).
+- Session in secure storage; optional PIN + biometric app lock (PIN hash in Keychain/Keystore is guessable offline by someone who can read secure storage; protection is the secure store plus slow-down after wrong tries); screen-capture blocking on the Wasiyyah screens (Android).
 - No bank passwords, PINs, card or ID numbers are collected. The only free-text sensitive fields (debt reference, debt notes, Wasiyyah note) are encrypted with Vault and decrypted only for their owner.
 - No analytics or crash-reporting SDK is installed (see `docs/SDK_INVENTORY.md`), and the app code contains no `console` logging, so amounts, lenders and notes cannot leak that way.
 
