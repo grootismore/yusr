@@ -51,10 +51,7 @@ export default function SettingsScreen() {
 
   async function choose(language: Language) {
     if (language === i18n.language) return;
-    const needsRestart = await setLanguage(language);
-    if (needsRestart) {
-      Alert.alert(t('settings.restartTitle'), t('settings.restartBody'), [{ text: t('settings.ok') }]);
-    }
+    await setLanguage(language); // a layout change covers the whole app with the restart screen
   }
 
   function exportData() {

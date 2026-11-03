@@ -44,13 +44,11 @@ describe('welcome flow', () => {
     expect(mockFinish).toHaveBeenCalledTimes(1);
   });
 
-  it('switches language, and says when a restart is needed for the new layout direction', async () => {
+  it('switches language from the second screen', async () => {
     await render(<WelcomeScreen />);
     await fireEvent.press(screen.getByText('Next'));
     expect(screen.getByText('You can change it later in Settings.')).toBeTruthy();
-    mockSetLanguage.mockResolvedValueOnce(true);
     await fireEvent.press(screen.getByText('ދިވެހި'));
-    expect(mockSetLanguage).toHaveBeenCalledWith('dv');
-    expect(await screen.findByText('Close and reopen Yusr to apply the new layout.')).toBeTruthy();
+    expect(mockSetLanguage).toHaveBeenCalledWith('dv'); // a layout change then covers the app with the restart screen
   });
 });
