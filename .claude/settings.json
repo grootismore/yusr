@@ -1,0 +1,15 @@
+{
+  "extraKnownMarketplaces": {
+    "privacy-data-protection-skills": {
+      "source": { "source": "github", "repo": "mukul975/Privacy-Data-Protection-Skills" }
+    }
+  },
+  "enabledPlugins": {
+    "consent-management-skills@privacy-data-protection-skills": true,
+    "children-privacy-skills@privacy-data-protection-skills": true,
+    "data-subject-rights-skills@privacy-data-protection-skills": true,
+    "data-retention-skills@privacy-data-protection-skills": true,
+    "privacy-by-design-skills@privacy-data-protection-skills": true,
+    "global-privacy-regulations-skills@privacy-data-protection-skills": true
+  }
+}
