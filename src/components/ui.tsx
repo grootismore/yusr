@@ -75,7 +75,22 @@ export function Row({ label, value, right, onPress, chevron, destructive, access
   const colors = useColors();
   const content = (
     <View style={{ minHeight: 50, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
-      <Text style={{ flex: 1, fontSize: 17, color: destructive ? colors.danger : colors.text }}>{label}</Text>
+      {/*
+        The label keeps its own width (up to half the row) so a long value can never squeeze it into
+        one letter per line; the value takes what is left and wraps. Without a value the label just
+        fills the row and wraps if it must.
+      */}
+      <Text
+        style={{
+          flexGrow: 1,
+          flexShrink: value ? 0 : 1,
+          maxWidth: value ? '50%' : undefined,
+          fontSize: 17,
+          color: destructive ? colors.danger : colors.text,
+        }}
+      >
+        {label}
+      </Text>
       {value ? <Text style={{ fontSize: 17, color: colors.secondaryText, flexShrink: 1 }}>{value}</Text> : null}
       {right}
       {chevron ? (

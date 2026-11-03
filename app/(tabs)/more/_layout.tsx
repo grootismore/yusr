@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { headerFontOptions } from '@/lib/headerFonts';
-import { HeaderLogo } from '@/components/HeaderLogo';
+import { logoHeaderOptions } from '@/components/HeaderLogo';
 import { HeaderIconButton } from '@/components/ui';
 
 export default function MoreLayout() {
@@ -9,7 +9,7 @@ export default function MoreLayout() {
   const router = useRouter();
   return (
     <Stack screenOptions={headerFontOptions(i18n.language)}>
-      <Stack.Screen name="index" options={{ title: t('tabs.more'), headerLargeTitle: true, headerLeft: () => <HeaderLogo /> }} />
+      <Stack.Screen name="index" options={{ title: t('tabs.more'), headerLargeTitle: true, ...logoHeaderOptions }} />
       <Stack.Screen
         name="accounts"
         options={{

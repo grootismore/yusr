@@ -11,3 +11,13 @@ export function HeaderLogo() {
     />
   );
 }
+
+/**
+ * Header options that put the logo in the top-left corner. On iOS 26 every bar item is drawn inside a
+ * Liquid Glass capsule by the system; the logo is a picture, not a button, so its glass is switched
+ * off (hidesSharedBackground). Android has no such capsule and uses the plain `headerLeft`.
+ */
+export const logoHeaderOptions = {
+  headerLeft: () => <HeaderLogo />,
+  unstable_headerLeftItems: () => [{ type: 'custom' as const, element: <HeaderLogo />, hidesSharedBackground: true }],
+};

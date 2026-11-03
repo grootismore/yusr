@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Stack, useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { HeaderLogo } from './HeaderLogo';
 import { headerFontOptions } from '@/lib/headerFonts';
+import { logoHeaderOptions } from './HeaderLogo';
 import { HeaderIconButton } from './ui';
 
 /** One native stack per tab: gives each tab a collapsing large title. */
@@ -26,7 +26,7 @@ export function TabStack({
         options={{
           title: t(titleKey),
           headerLargeTitle: true,
-          headerLeft: () => <HeaderLogo />,
+          ...logoHeaderOptions,
           headerRight:
             addHref && addLabelKey
               ? () => <HeaderIconButton icon="add" label={t(addLabelKey)} onPress={() => router.push(addHref)} />
