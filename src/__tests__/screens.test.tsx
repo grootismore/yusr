@@ -722,6 +722,11 @@ describe('settings', () => {
     expect(mockUpdateProfile).toHaveBeenCalledWith({ hijri_adjustment: 1 });
   });
 
+  it('says how to withdraw consent', async () => {
+    await render(<SettingsScreen />);
+    expect(screen.getByText(/withdraw your consent at any time by deleting your account/)).toBeTruthy();
+  });
+
   it('links the privacy policy and terms once the legal site is set, and shows no dead rows before', async () => {
     const before = process.env.EXPO_PUBLIC_LEGAL_URL;
     delete process.env.EXPO_PUBLIC_LEGAL_URL;
