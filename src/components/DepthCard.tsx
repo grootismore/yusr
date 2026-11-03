@@ -3,11 +3,12 @@ import { View } from 'react-native';
 import { Text } from '@/components/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { BRAND } from '@/lib/theme';
 import { formatMVR } from '@/lib/money';
 
 /** Colours of the water column. The card is always deep green, in light and dark appearance. */
 export const DEPTH = {
-  gradient: ['#0D4E3A', '#13705F'] as const,
+  gradient: BRAND.gradient,
   text: '#FFFFFF',
   spent: '#041F17',
   debts: '#5FC3B2',

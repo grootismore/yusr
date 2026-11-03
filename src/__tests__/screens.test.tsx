@@ -414,7 +414,19 @@ describe('home', () => {
     expect(screen.getAllByText('MVR 3,749.50').length).toBeGreaterThan(0); // net (and safe to spend, with nothing set aside)
     // Cash balance: 1,000.00 opening + 5,000.00 - 1,250.50
     expect(screen.getByText('MVR 4,749.50')).toBeTruthy();
+    // "Where it went" starts closed, so the first screen stays short; one tap opens it.
+    expect(screen.queryByText('Groceries · 100%')).toBeNull();
+    await fireEvent.press(screen.getByText('Where it went'));
     expect(screen.getByText('Groceries · 100%')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Where it went', expanded: true })).toBeTruthy(); // announced as open
+  });
+
+  it('lists the accounts straight after what is coming up, before the month totals', async () => {
+    await render(<HomeScreen />);
+    const headings = screen.getAllByRole('header').map((h) => h.props.children as string);
+    const at = ['Coming up', 'Accounts', 'This month'].map((title) => headings.indexOf(title));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
   });
 
   it('renders in Dhivehi without missing strings', async () => {

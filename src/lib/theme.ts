@@ -30,6 +30,11 @@ const dark = {
   danger: '#FF8F7F',
 } as const;
 
+/** The logo green, for the hero surfaces (sign-in, intro, empty states, the Home card). One place, both themes. */
+export const BRAND = { gradient: ['#0D4E3A', '#13705F'] as const, onBrand: '#F3FBF7' } as const;
+
+export const palettes = { light, dark } as const;
+
 export type Colors = { [K in keyof typeof light]: string };
 
 export function useColors(): Colors {

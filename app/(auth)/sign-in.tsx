@@ -8,7 +8,7 @@ import { ConsentList } from '@/features/account/ConsentList';
 import { CONSENT_KINDS, signUpConsentMetadata } from '@/features/account/legal';
 import { isValidEmail, MIN_PASSWORD_LENGTH } from '@/lib/auth/authErrors';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { useColors } from '@/lib/theme';
+import { BRAND, useColors } from '@/lib/theme';
 
 export default function SignInScreen() {
   const { t } = useTranslation();
@@ -65,7 +65,7 @@ export default function SignInScreen() {
       keyboardDismissMode="interactive"
     >
       <LinearGradient
-        colors={['#0D4E3A', '#13705F']}
+        colors={BRAND.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ borderRadius: 20, padding: 24, alignItems: 'center', gap: 12 }}

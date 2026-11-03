@@ -51,6 +51,7 @@ export default function HomeScreen() {
   const [plan] = usePlanSettings();
   const today = toISODate(new Date());
   const [month, setMonth] = useState(() => monthOf(today));
+  const [showWhere, setShowWhere] = useState(false);
   const [showWorking, setShowWorking] = useState(false);
 
   const summary = useMemo(() => monthSummary(transactions, month), [transactions, month]);
@@ -153,7 +154,7 @@ export default function HomeScreen() {
           <Text style={note}>{t('home.safeHint')}</Text>
           {/* The sum behind the big number, one tap away, so nobody has to guess where it comes from. */}
           <Group>
-            <Row label={t('home.howTitle')} chevron onPress={() => setShowWorking(!showWorking)} accessibilityHint={showWorking ? undefined : t('home.safeHint')} />
+            <Row label={t('home.howTitle')} chevron expanded={showWorking} onPress={() => setShowWorking(!showWorking)} accessibilityHint={showWorking ? undefined : t('home.safeHint')} />
             {showWorking ? (
               <>
                 <Row label={t('home.howIncome')} right={<Money laari={safe.income} />} />
@@ -186,6 +187,18 @@ export default function HomeScreen() {
         </>
       ) : null}
 
+      <Group title={t('home.accounts')}>
+        {accounts.active.map((account) => (
+          <Row
+            key={account.id}
+            label={account.name}
+            right={<Money laari={accountBalance(account, transactions)} />}
+            chevron
+            onPress={() => router.push({ pathname: '/more/account', params: { id: account.id } })}
+          />
+        ))}
+      </Group>
+
       <Group title={t('home.thisMonth')}>
         <Row label={t('home.income')} right={<Money laari={summary.income} />} />
         <Row label={t('home.expenses')} right={<Money laari={summary.expense} />} />
@@ -205,31 +218,31 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <Group title={t('home.whereItWent')}>
-        {hasActivity && breakdown.length > 0 ? (
-          breakdown.map((item) => (
-            <Row
-              key={item.categoryId}
-              label={`${categoryName(byId.get(item.categoryId))} · ${item.percent}%`}
-              right={<Money laari={item.total} hidden={privacyMode && byId.get(item.categoryId)?.kind === 'giving'} />}
-            />
-          ))
-        ) : (
-          <Row label={t('home.nothingYet')} />
-        )}
-      </Group>
-
-      <Group title={t('home.accounts')}>
-        {accounts.active.map((account) => (
+      {/* Closed until asked for, so the first screen is the number, what is coming and the balances. */}
+      {hasActivity && breakdown.length > 0 ? (
+        <Group>
           <Row
-            key={account.id}
-            label={account.name}
-            right={<Money laari={accountBalance(account, transactions)} />}
+            label={t('home.whereItWent')}
             chevron
-            onPress={() => router.push({ pathname: '/more/account', params: { id: account.id } })}
+            onPress={() => setShowWhere(!showWhere)}
+            expanded={showWhere}
           />
-        ))}
-      </Group>
+          {showWhere
+            ? breakdown.map((item) => (
+                <Row
+                  key={item.categoryId}
+                  label={`${categoryName(byId.get(item.categoryId))} · ${item.percent}%`}
+                  right={<Money laari={item.total} hidden={privacyMode && byId.get(item.categoryId)?.kind === 'giving'} />}
+                />
+              ))
+            : null}
+        </Group>
+      ) : (
+        <Group title={t('home.whereItWent')}>
+          <Row label={t('home.nothingYet')} />
+        </Group>
+      )}
+
     </Screen>
   );
 }
