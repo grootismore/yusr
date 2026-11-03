@@ -5,7 +5,7 @@
 ## One-time setup
 Repository → Settings → Secrets and variables → Actions → **Variables** tab:
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` = the publishable key (`sb_publishable_...`). The build refuses anything else. These values ship inside the app, so they are variables, not secrets.
-- Optional: `EXPO_PUBLIC_SUPABASE_URL` (defaults to yusr-dev), `EXPO_PUBLIC_INVITE_URL` (defaults to https://yusr-invite.netlify.app), `EXPO_PUBLIC_LEGAL_URL` (once the legal site is hosted).
+- Optional: `EXPO_PUBLIC_SUPABASE_URL` (defaults to yusr-dev), `EXPO_PUBLIC_INVITE_URL` (defaults to https://yusrmv.netlify.app/invite), `EXPO_PUBLIC_LEGAL_URL` (once the legal site is hosted).
 
 ## Android
 Download the `yusr-beta-apk` artifact, open `yusr-beta.apk` on the phone and allow installs from that source. It is signed with the standard debug key, so it installs directly. Not for the Play Store.
