@@ -98,6 +98,11 @@ const mockRemove = jest.fn();
 const mockSaveDebt = jest.fn((_input: unknown, existing?: { id: string }) => existing?.id ?? 'new-debt-id');
 const mockSaveSecrets = jest.fn();
 const mockSaveCommitment = jest.fn();
+const mockRemoveWithUndo = jest.fn();
+const mockAddCash = jest.fn();
+const mockSyncNow = jest.fn(async () => true);
+const mockShowNotice = jest.fn();
+const mockOfferReminders = jest.fn();
 const mockUpdateProfile = jest.fn();
 const mockInvite = jest.fn(async (_input: unknown) => 'TOKEN-FROM-SERVER');
 const mockRevoke = jest.fn(async (_id: string) => undefined);
@@ -121,6 +126,8 @@ const state = {
   ready: true,
   pending: 0,
 };
+jest.mock('@/lib/notice', () => ({ showNotice: (...args: unknown[]) => mockShowNotice(...args), hideNotice: jest.fn() }));
+jest.mock('@/features/reminders/offer', () => ({ offerReminders: (...args: unknown[]) => mockOfferReminders(...args) }));
 jest.mock('@/features/account/DeletionBanner', () => ({ DeletionBanner: () => null }));
 jest.mock('@/features/transactions/hooks', () => ({
   useRefresh: () => ({ refreshing: false, onRefresh: () => undefined }),
@@ -132,6 +139,9 @@ jest.mock('@/features/transactions/hooks', () => ({
   useSaveTransaction: () => mockSave,
   useSaveAccount: () => mockSaveAccount,
   useSoftDelete: () => mockRemove,
+  useDeleteTransactionWithUndo: () => mockRemoveWithUndo,
+  useAddCashAccount: () => mockAddCash,
+  useSyncNow: () => mockSyncNow,
   useDebts: () => ({ all: state.debts, active: state.debts.filter((d) => d.deleted_at === null) }),
   useReceivables: () => ({ all: state.receivables, active: state.receivables.filter((r) => r.deleted_at === null) }),
   useCommitments: () => ({ all: state.commitments, active: state.commitments.filter((c) => c.deleted_at === null) }),
@@ -266,6 +276,16 @@ describe('transaction sheet', () => {
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
 
+  it('tells the person what the new entry did to safe to spend, and does not for edits', async () => {
+    mockShowNotice.mockClear();
+    await render(<TransactionScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
+    await fireEvent.press(screen.getByText('Groceries'));
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockShowNotice).toHaveBeenCalledTimes(1);
+    expect(mockShowNotice.mock.calls[0][0]).toMatch(/^Saved\. (Safe to spend this month|Short by)/);
+  });
+
   it('saves once however many times Save is tapped (a double tap used to create duplicates)', async () => {
     await render(<TransactionScreen />);
     await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
@@ -343,7 +363,9 @@ describe('transaction sheet', () => {
     state.accounts = [];
     await render(<TransactionScreen />);
     expect(screen.getByText('Add an account first')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Add account'));
+    await fireEvent.press(screen.getByText('Use a Cash account')); // one tap, no form
+    expect(mockAddCash).toHaveBeenCalledTimes(1);
+    await fireEvent.press(screen.getByText('Add account')); // or a different one
     expect(mockReplace).toHaveBeenCalledWith('/more/account');
   });
 
@@ -371,6 +393,8 @@ describe('home', () => {
     state.accounts = [];
     await render(<HomeScreen />);
     expect(screen.getByText('Add your first account')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Use a Cash account'));
+    expect(mockAddCash).toHaveBeenCalledTimes(1);
     await fireEvent.press(screen.getByText('Add account'));
     expect(mockPush).toHaveBeenCalledWith('/more/account');
   });
@@ -528,6 +552,7 @@ describe('debt form', () => {
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveDebt).toHaveBeenCalled();
     expect(mockSaveSecrets).not.toHaveBeenCalled();
+    expect(mockOfferReminders).not.toHaveBeenCalled(); // only for something new
   });
 
   it('corrects the starting balance so the derived balance equals what the user typed', async () => {
@@ -684,6 +709,7 @@ describe('commitment form', () => {
     await fireEvent.changeText(screen.getByLabelText('Day of month'), '27');
     await fireEvent.press(screen.getByText('Save'));
     expect(mockSaveCommitment).toHaveBeenCalledWith(expect.objectContaining({ schedule: 'monthly', day_of_month: 27, due_on: null }), undefined);
+    expect(mockOfferReminders).toHaveBeenCalledTimes(1); // asked once a new plan with a reminder is saved
   });
 
   it('sends a name only when one is set', async () => {
@@ -763,30 +789,20 @@ describe('swipe to delete a transaction', () => {
   const food = { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense' as const,
     occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp };
 
-  it('has a Delete button behind each row, and deletes only after asking', async () => {
-    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
+  it('has a Delete button behind each row; deleting does not ask, Undo is offered instead', async () => {
     state.transactions = [food];
     await render(<TransactionsScreen />);
     await fireEvent.press(screen.getByText('Delete')); // the button the swipe reveals
-    expect(mockRemove).not.toHaveBeenCalled(); // asks first
-    const [options, choose] = sheet.mock.calls[0];
-    expect(options).toMatchObject({ title: 'Delete this transaction?', options: ['Delete', 'Cancel'], destructiveButtonIndex: 0 });
-    choose(1);
-    expect(mockRemove).not.toHaveBeenCalled();
-    choose(0);
-    expect(mockRemove).toHaveBeenCalledWith('tx-food');
-    sheet.mockRestore();
+    expect(mockRemoveWithUndo).toHaveBeenCalledWith(food);
   });
 
   it('offers the same as a screen-reader action on the row', async () => {
-    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
     state.transactions = [food];
     await render(<TransactionsScreen />);
     const target = screen.getAllByRole('button').find((b) => b.props.accessibilityActions?.[0]?.name === 'delete');
     expect(target).toBeTruthy(); // the row announces a Delete action to VoiceOver and TalkBack
     await fireEvent(target as never, 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
-    expect(sheet).toHaveBeenCalledTimes(1);
-    sheet.mockRestore();
+    expect(mockRemoveWithUndo).toHaveBeenCalledWith(food);
   });
 });
 
@@ -915,7 +931,7 @@ describe('home: safe to spend, coming up, debt-free', () => {
     for (const line of ['Income so far', '− Spent so far', '− Debt payments due this month', '− Sadaqat due this month', '− Bills due this month']) {
       expect(screen.getByText(line)).toBeTruthy();
     }
-    expect(screen.getAllByText('You can safely spend').length).toBeGreaterThan(1); // the result line, beside the card's own heading
+    expect(screen.getAllByText('Safe to spend').length).toBeGreaterThan(1); // the result line, beside the card's own heading
   });
 
   it('sets aside debt minimums, giving and bills, and shows the working', async () => {
@@ -936,10 +952,10 @@ describe('home: safe to spend, coming up, debt-free', () => {
     state.transactions = [income(10000)];
     state.recurring = [rent()]; // 300.00 bill against 100.00 of income
     await render(<HomeScreen />);
-    expect(screen.getByText('You can safely spend')).toBeTruthy();
+    expect(screen.getByText('Safe to spend')).toBeTruthy();
     expect(screen.getByText('Short by MVR 200.00 this month')).toBeTruthy();
     // VoiceOver hears one summary: nothing to spend, and by how much the month is short.
-    expect(screen.getByLabelText(/^You can safely spend MVR 0\.00\. Short by MVR 200\.00 this month/)).toBeTruthy();
+    expect(screen.getByLabelText(/^Safe to spend MVR 0\.00\. Short by MVR 200\.00 this month/)).toBeTruthy();
   });
 
   it('hides the set-aside giving amount in private mode', async () => {
@@ -1003,6 +1019,7 @@ describe('bills & income', () => {
       expect.objectContaining({ name: 'Rent', kind: 'expense', amount_laari: 700000, schedule: 'monthly', day_of_month: 1, weekday: null, account_id: 'a-cash', category_id: 'c-rent' }),
       undefined,
     );
+    expect(mockOfferReminders).toHaveBeenCalledTimes(1);
     const saved = mockSaveRecurring.mock.calls[0][0] as { next_due_on: string };
     expect(saved.next_due_on.endsWith('-01')).toBe(true);
     expect(saved.next_due_on >= daysFromToday(0).slice(0, 8) + '01').toBe(true);

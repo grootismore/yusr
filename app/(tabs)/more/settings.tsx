@@ -2,7 +2,8 @@ import { Alert, Linking, Pressable, Switch, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
-import { usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
+import { hideNotice, showNotice } from '@/lib/notice';
+import { useSyncNow, usePendingChanges, useProfile, useUpdateProfile } from '@/features/transactions/hooks';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useLockState } from '@/lib/auth/appLockStore';
 import { useRouter } from 'expo-router';
@@ -27,6 +28,7 @@ export default function SettingsScreen() {
   const privacyUrl = legalUrl('privacy');
   const termsUrl = legalUrl('terms');
   const pending = usePendingChanges();
+  const syncNow = useSyncNow();
   const { privacyMode, hijriAdjustment } = useProfile();
   const updateProfile = useUpdateProfile();
   const remindersOn = useRemindersEnabled();
@@ -39,15 +41,30 @@ export default function SettingsScreen() {
     else Alert.alert(t('settings.remindersOffTitle'), t('settings.remindersOffBody'));
   }
 
-  function confirmSignOut() {
-    if (pending === 0) return void signOut();
-    // Queued offline writes are wiped on sign-out, so make that explicit.
+  // Waiting writes are wiped on sign-out, so try to send them first and only warn if that does not work.
+  async function syncThenSignOut() {
+    showNotice(t('settings.syncing'), undefined, 12_000);
+    const synced = await syncNow();
+    hideNotice();
+    if (synced) return void signOut();
     confirmAction({
       title: t('settings.pendingTitle'),
       message: t('settings.pendingBody'),
       confirmLabel: t('settings.signOut'),
       cancelLabel: t('common.cancel'),
       onConfirm: () => void signOut(),
+    });
+  }
+
+  function confirmSignOut() {
+    if (pending === 0) return void signOut();
+    confirmAction({
+      title: t('settings.pendingTitle'),
+      message: t('settings.pendingTrySync'),
+      confirmLabel: t('settings.syncAndSignOut'),
+      cancelLabel: t('common.cancel'),
+      destructive: false,
+      onConfirm: () => void syncThenSignOut(),
     });
   }
 

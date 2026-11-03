@@ -11,6 +11,7 @@ import { COMMITMENT_TYPES, SCHEDULES, type CommitmentType, type Schedule } from 
 import { confirmAction } from '@/lib/confirm';
 import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
+import { offerReminders } from '@/features/reminders/offer';
 
 export default function CommitmentScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -65,6 +66,7 @@ export default function CommitmentScreen() {
       existing,
     );
     leave(); router.back();
+    if (!existing && reminder) offerReminders(t);
   }
 
   function onArchive() {

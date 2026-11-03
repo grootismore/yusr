@@ -35,7 +35,8 @@ export interface SoftDeleteVars {
   table: Table;
   userId: string;
   id: string;
-  at: string;
+  /** When it was deleted, or null to bring it back (Undo). */
+  at: string | null;
 }
 
 // The secret ids are written only by the server-side functions; clients are not allowed to set them.

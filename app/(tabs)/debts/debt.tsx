@@ -19,6 +19,7 @@ import { DEBT_KINDS, type DebtKind } from '@/features/debts/types';
 import { confirmAction } from '@/lib/confirm';
 import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
+import { offerReminders } from '@/features/reminders/offer';
 
 export default function DebtFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -99,6 +100,7 @@ export default function DebtFormScreen() {
       });
     }
     leave(); router.back();
+    if (!existing && day !== null) offerReminders(t);
   }
 
   function onArchive() {

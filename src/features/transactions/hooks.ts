@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { onlineManager, useIsMutating, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
+import { useTranslation } from 'react-i18next';
+import { showNotice } from '@/lib/notice';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { supabaseApi } from '@/lib/query/supabaseApi';
 import type { Row, Table } from '@/lib/query/cache';
@@ -59,6 +61,16 @@ export function useDataReady(): boolean {
   return accounts.data !== undefined;
 }
 
+/** Sends the waiting writes now and waits up to ~10 seconds for them. Resolves true when nothing is left waiting. */
+export function useSyncNow() {
+  const queryClient = useQueryClient();
+  return useCallback(async () => {
+    await queryClient.resumePausedMutations().catch(() => undefined);
+    for (let i = 0; i < 20 && queryClient.isMutating() > 0; i++) await new Promise((resolve) => setTimeout(resolve, 500));
+    return queryClient.isMutating() === 0;
+  }, [queryClient]);
+}
+
 /** Writes made on this device that the server has not confirmed yet (offline queue). */
 export const usePendingChanges = (): number => useIsMutating();
 
@@ -75,12 +87,40 @@ export function useSoftDelete(table: Table) {
   const userId = useUserId();
   const { mutate } = useMutation<unknown, unknown, SoftDeleteVars>({ mutationKey: ['softDelete'] });
   return useCallback(
-    (id: string) => mutate({ table, userId, id, at: new Date().toISOString() }),
+    (id: string, at: string | null = new Date().toISOString()) => mutate({ table, userId, id, at }),
     [mutate, table, userId],
   );
 }
 
 const stamp = () => new Date().toISOString();
+
+/** One tap to get started: a "Cash" account with nothing in it. Rename or add more later in More. */
+export function useAddCashAccount() {
+  const save = useSaveAccount();
+  const { t } = useTranslation();
+  return useCallback(() => save({ name: t('accounts.cashName'), type: 'cash', opening_balance_laari: 0 }), [save, t]);
+}
+
+/** Deletes a transaction and offers Undo for a few seconds (undo writes the same row back, not deleted). */
+export function useDeleteTransactionWithUndo() {
+  const remove = useSoftDelete('transactions');
+  const upsert = useUpsert('transactions');
+  const { t } = useTranslation();
+  return useCallback(
+    (row: Transaction) => {
+      remove(row.id);
+      showNotice(t('transactions.deleted'), {
+        label: t('common.undo'),
+        onPress: () => {
+          // Undelete on the server, then put the row back in the list (queued in this order, also offline).
+          remove(row.id, null);
+          upsert({ ...row, deleted_at: null, updated_at: stamp() } as unknown as Row & Record<string, unknown>);
+        },
+      });
+    },
+    [remove, upsert, t],
+  );
+}
 
 export interface AccountInput {
   name: string;

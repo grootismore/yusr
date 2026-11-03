@@ -49,7 +49,10 @@
     "deleteAccount": "Delete account",
     "haptics": "Haptic feedback",
     "hapticsHint": "A light tap when you choose, save or confirm.",
-    "about": "About"
+    "about": "About",
+    "pendingTrySync": "Some changes haven't synced yet. Yusr will try to send them before signing you out.",
+    "syncAndSignOut": "Sync, then sign out",
+    "syncing": "Syncing…"
   },
   "auth": {
     "signIn": "Sign in",
@@ -69,7 +72,7 @@
       "tooMany": "Too many attempts. Try again in a few minutes.",
       "network": "Check your connection and try again.",
       "generic": "Something went wrong. Please try again.",
-      "consentNeeded": "Please confirm all three to continue."
+      "consentNeeded": "Please tick: {{items}}."
     },
     "consent": {
       "terms": "I accept the Terms of Service",
@@ -178,7 +181,8 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "ok": "OK",
-    "hidden": "Hidden"
+    "hidden": "Hidden",
+    "undo": "Undo"
   },
   "home": {
     "howTitle": "How is this worked out?",
@@ -212,7 +216,7 @@
     "upcomingEmpty": "Nothing due in the next 7 days.",
     "overdue": "{{label}} · was due {{date}}",
     "debtFree": "Debt-free by",
-    "safeLead": "You can safely spend",
+    "safeLead": "Safe to spend",
     "shortBy": "Short by {{amount}} this month",
     "column": {
       "spent": "Spent",
@@ -221,7 +225,9 @@
       "bills": "Bills",
       "used": "Spent and set aside",
       "safe": "Safe to spend"
-    }
+    },
+    "reviewTitle": "How {{month}} went",
+    "reviewHide": "Hide this"
   },
   "kind": {
     "expense": "Expense",
@@ -249,7 +255,12 @@
     "syncPending": "Waiting to sync: {{count}}",
     "search": "Search transactions",
     "noMatchesTitle": "No matches",
-    "noMatchesBody": "Try a category, account, note or amount."
+    "noMatchesBody": "Try a category, account, note or amount.",
+    "deleted": "Transaction deleted",
+    "needAccountBody": "Pick Cash to start now. You can add banks and more accounts later.",
+    "saved": "Saved",
+    "savedSafe": "Saved. Safe to spend this month: {{amount}}",
+    "savedShort": "Saved. Short by {{amount}} this month."
   },
   "accounts": {
     "title": "Accounts",
@@ -272,7 +283,9 @@
       "mib": "Maldives Islamic Bank",
       "other": "Other"
     },
-    "nameTaken": "You already have an account with this name."
+    "nameTaken": "You already have an account with this name.",
+    "cashName": "Cash",
+    "useCash": "Use a Cash account"
   },
   "categories": {
     "title": "Categories",
@@ -453,7 +466,10 @@
     "title": "Yusr",
     "debt": "A payment is due today.",
     "giving": "A Sadaqat reminder is due today.",
-    "bill": "A bill is due today."
+    "bill": "A bill is due today.",
+    "offerTitle": "Remind you when this is due?",
+    "offerBody": "A gentle notification on the day. It never shows amounts or names.",
+    "offerYes": "Remind me"
   },
   "recurring": {
     "title": "Bills & income",

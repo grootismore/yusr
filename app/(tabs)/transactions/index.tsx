@@ -5,9 +5,8 @@ import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { EmptyState, Money, ScreenTitle } from '@/components/ui';
-import { confirmAction } from '@/lib/confirm';
 import { useCategoryName, useFormatDate } from '@/features/transactions/format';
-import { useAccounts, useCategories, usePendingChanges, useProfile, useRefresh, useSoftDelete, useTransactions } from '@/features/transactions/hooks';
+import { useAccounts, useCategories, usePendingChanges, useProfile, useDeleteTransactionWithUndo, useRefresh, useTransactions } from '@/features/transactions/hooks';
 import { useFormatHijri } from '@/features/giving/format';
 import { filterTransactions, groupByDay, signedAmount } from '@/features/transactions/logic';
 import { useColors } from '@/lib/theme';
@@ -25,16 +24,12 @@ export default function TransactionsScreen() {
   const categories = useCategories();
   const transactions = useTransactions();
   const refresh = useRefresh();
-  const remove = useSoftDelete('transactions');
-  // Same question as the Delete button on the edit sheet: ask first, then remove it from the list.
-  const askDelete = (id: string) =>
-    confirmAction({
-      title: t('transactions.deleteTitle'),
-      message: t('transactions.deleteBody'),
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      onConfirm: () => remove(id),
-    });
+  const removeWithUndo = useDeleteTransactionWithUndo();
+  // Swipe or pull to delete: no question, Undo is offered instead.
+  const askDelete = (id: string) => {
+    const row = transactions.find((x) => x.id === id);
+    if (row) removeWithUndo(row);
+  };
 
   const [query, setQuery] = useState('');
   const accountNames = useMemo(() => new Map(accounts.all.map((a) => [a.id, a.name])), [accounts.all]);

@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
 import { DEPTH, DepthCard } from '@/components/DepthCard';
-import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
+import { Button, EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/components/ui';
 import { planInput } from '@/features/debts/logic';
 import { planDebts } from '@/features/debts/plan';
 import { usePlanSettings } from '@/features/debts/settings';
@@ -14,6 +14,7 @@ import { safeToSpend, upcomingItems, waterColumn, type UpcomingItem } from '@/fe
 import { useCategoryName, useFormatDate, useMonthLabel } from '@/features/transactions/format';
 import {
   useAccounts,
+  useAddCashAccount,
   useCategories,
   useCommitments,
   useDataReady,
@@ -25,6 +26,7 @@ import {
 } from '@/features/transactions/hooks';
 import { accountBalance, categoryBreakdown, monthOf, monthSummary, shiftMonth, toISODate } from '@/features/transactions/logic';
 import { formatMVR } from '@/lib/money';
+import { MonthReview } from '@/features/transactions/MonthReview';
 import { GettingStarted } from '@/features/onboarding/GettingStarted';
 import { useColors } from '@/lib/theme';
 
@@ -40,6 +42,7 @@ export default function HomeScreen() {
   const ready = useDataReady();
   const refresh = useRefresh();
   const accounts = useAccounts();
+  const addCash = useAddCashAccount();
   const categories = useCategories();
   const transactions = useTransactions();
   const debts = useDebts().active;
@@ -76,9 +79,10 @@ export default function HomeScreen() {
         <EmptyState
           title={t('home.noAccountsTitle')}
           body={t('home.noAccountsBody')}
-          actionLabel={t('home.addAccount')}
-          onAction={() => router.push('/more/account')}
+          actionLabel={t('accounts.useCash')}
+          onAction={addCash}
         />
+        <Button title={t('home.addAccount')} variant="secondary" onPress={() => router.push('/more/account')} />
       </Screen>
     );
   }
@@ -98,6 +102,7 @@ export default function HomeScreen() {
   return (
     <Screen title={t('tabs.home')} refresh={refresh}>
       <DeletionBanner />
+      <MonthReview today={today} transactions={transactions} privacyMode={privacyMode} />
       <GettingStarted done={{ transaction: transactions.length > 0, debt: debts.length > 0, plan: commitments.length > 0 }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <HeaderIconButton
