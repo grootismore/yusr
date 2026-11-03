@@ -101,13 +101,28 @@ export default function TransactionScreen() {
   // Asks before a changed form is closed without saving.
   const leave = useDiscardGuard([kind, amountText, categoryId, accountId, date, note]);
 
+  // What this person usually picks for this kind: how often each category was used, and the latest one.
+  const usage = useMemo(() => {
+    const counts = new Map<string, number>();
+    let recent: { id: string; at: string } | null = null;
+    for (const x of transactions) {
+      if (x.kind !== kind || x.deleted_at !== null) continue;
+      counts.set(x.category_id, (counts.get(x.category_id) ?? 0) + 1);
+      if (!recent || x.created_at > recent.at) recent = { id: x.category_id, at: x.created_at };
+    }
+    return { counts, recent: recent?.id ?? null };
+  }, [transactions, kind]);
+
   if (id && !existing) return null;
 
   const chosenAccountId = accountId ?? defaultAccountId;
-  const categoryOptions = categories.all.filter(
-    (c) => c.kind === kind && (c.deleted_at === null || c.id === existing?.category_id),
-  );
-  const chosenCategoryId = categoryOptions.some((c) => c.id === categoryId) ? categoryId : null;
+  // Most used first, so the usual choice is at the start of the list (the order is otherwise unchanged).
+  const categoryOptions = categories.all
+    .filter((c) => c.kind === kind && (c.deleted_at === null || c.id === existing?.category_id))
+    .sort((a, b) => (usage.counts.get(b.id) ?? 0) - (usage.counts.get(a.id) ?? 0));
+  // A new transaction starts on the category used last time for this kind; one tap changes it.
+  const suggested = !existing && !prefill && categoryOptions.some((c) => c.id === usage.recent) ? usage.recent : null;
+  const chosenCategoryId = categoryOptions.some((c) => c.id === categoryId) ? categoryId : suggested;
   const amount = parsePositiveAmount(amountText);
 
   const error =

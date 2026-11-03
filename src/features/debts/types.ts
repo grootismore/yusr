@@ -11,6 +11,8 @@ export interface Debt {
   balance_laari: number;
   min_payment_laari: number;
   due_day: number | null;
+  /** When the debt began (optional). Added in migration 010. */
+  started_on?: string | null;
   is_interest_bearing: boolean;
   /** Annual rate in basis points (1250 = 12.5%), only for interest-bearing debt. */
   interest_rate_bps: number | null;

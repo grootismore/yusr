@@ -86,9 +86,11 @@ interface RowProps {
   chevron?: boolean;
   destructive?: boolean;
   accessibilityHint?: string;
+  /** A short second line under the label saying what is behind the row. */
+  detail?: string;
 }
 
-export function Row({ label, value, right, onPress, chevron, destructive, accessibilityHint }: RowProps) {
+export function Row({ label, value, right, onPress, chevron, destructive, accessibilityHint, detail }: RowProps) {
   const colors = useColors();
   const content = (
     <View style={{ minHeight: 50, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
@@ -97,17 +99,24 @@ export function Row({ label, value, right, onPress, chevron, destructive, access
         one letter per line; the value takes what is left and wraps. Without a value the label just
         fills the row and wraps if it must.
       */}
-      <Text
-        style={{
-          flexGrow: 1,
-          flexShrink: value ? 0 : 1,
-          maxWidth: value ? '50%' : undefined,
-          fontSize: 17,
-          color: destructive ? colors.danger : colors.text,
-        }}
-      >
-        {label}
-      </Text>
+      {detail ? (
+        <View style={{ flexGrow: 1, flexShrink: 1, gap: 2 }}>
+          <Text style={{ fontSize: 17, color: destructive ? colors.danger : colors.text }}>{label}</Text>
+          <Text style={{ fontSize: 13, color: colors.secondaryText }}>{detail}</Text>
+        </View>
+      ) : (
+        <Text
+          style={{
+            flexGrow: 1,
+            flexShrink: value ? 0 : 1,
+            maxWidth: value ? '50%' : undefined,
+            fontSize: 17,
+            color: destructive ? colors.danger : colors.text,
+          }}
+        >
+          {label}
+        </Text>
+      )}
       {value ? <Text style={{ fontSize: 17, color: colors.secondaryText, flexShrink: 1 }}>{value}</Text> : null}
       {right}
       {chevron ? (

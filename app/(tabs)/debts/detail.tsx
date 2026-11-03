@@ -41,6 +41,7 @@ export default function DebtDetailScreen() {
         <Row label={t('debts.current')} right={<Money laari={balance} bold />} />
         <Row label={t('debts.original')} right={<Money laari={debt.original_laari} />} />
         <Row label={t('debts.paid')} right={<Money laari={paidTotal(debt.id, transactions)} />} />
+        {debt.started_on ? <Row label={t('debts.started')} value={formatDate(debt.started_on)} /> : null}
         {debt.min_payment_laari > 0 ? <Row label={t('debts.minimum')} right={<Money laari={debt.min_payment_laari} />} /> : null}
         {due ? <Row label={t('debts.nextDue')} value={formatDate(due)} /> : null}
         {debt.is_interest_bearing && debt.interest_rate_bps != null ? (

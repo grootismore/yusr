@@ -7,6 +7,11 @@
     "more": "More"
   },
   "more": {
+    "wasiyyahDetail": "What your family needs to know, and who can see it",
+    "accountsDetail": "Cash and bank accounts, and their opening balances",
+    "categoriesDetail": "How your spending and income are grouped",
+    "recurringDetail": "Rent, bills and salary, with reminders",
+    "settingsDetail": "Language, private mode, reminders and your data",
     "settings": "Settings",
     "accounts": "Accounts",
     "categories": "Categories",
@@ -164,6 +169,8 @@
     "terms": "Terms of Service"
   },
   "common": {
+    "today": "Today",
+    "yesterday": "Yesterday",
     "discardTitle": "Discard changes?",
     "discard": "Discard",
     "keepEditing": "Keep editing?",
@@ -174,6 +181,12 @@
     "hidden": "Hidden"
   },
   "home": {
+    "howTitle": "How is this worked out?",
+    "howIncome": "Income so far",
+    "howSpent": "− Spent so far",
+    "howDebts": "− Debt payments due this month",
+    "howGiving": "− Sadaqat due this month",
+    "howBills": "− Bills due this month",
     "thisMonth": "This month",
     "income": "Income",
     "expenses": "Expenses",
@@ -302,6 +315,9 @@
     "m12": "Dec"
   },
   "debts": {
+    "compare": "What is the difference?",
+    "startedOn": "Started on (optional)",
+    "started": "Started",
     "totalOwed": "You owe",
     "debtFree": "Debt-free by {{month}}",
     "neverFree": "At this pace the debts won't clear. Try a higher monthly amount.",

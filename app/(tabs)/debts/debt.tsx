@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Switch } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { DateField } from '@/components/DateField';
 import { Button, Chips, ErrorText, Field, Group, HeaderTextButton, Row, Screen } from '@/components/ui';
-import { bpsToPercentText, parseNonNegativeAmount, parsePercentToBps, toInputText } from '@/features/transactions/format';
+import { bpsToPercentText, parseNonNegativeAmount, parsePercentToBps, toInputText, useFormatDate } from '@/features/transactions/format';
+import { toISODate } from '@/features/transactions/logic';
 import {
   useDebts,
   useDebtSecrets,
@@ -23,6 +25,7 @@ export default function DebtFormScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const claim = useSubmitOnce();
+  const formatDate = useFormatDate();
   const { all } = useDebts();
   const transactions = useTransactions();
   const existing = id ? all.find((d) => d.id === id) : undefined;
@@ -36,6 +39,8 @@ export default function DebtFormScreen() {
   const [original, setOriginal] = useState(existing ? toInputText(existing.original_laari) : '');
   const [current, setCurrent] = useState(existing ? toInputText(currentBalance(existing, transactions)) : '');
   const [minimum, setMinimum] = useState(existing && existing.min_payment_laari > 0 ? toInputText(existing.min_payment_laari) : '');
+  const [hasStart, setHasStart] = useState(!!existing?.started_on);
+  const [startedOn, setStartedOn] = useState(existing?.started_on ?? toISODate(new Date()));
   const [dueDay, setDueDay] = useState(existing?.due_day ? String(existing.due_day) : '');
   const [interest, setInterest] = useState(existing?.is_interest_bearing ?? false);
   const [rate, setRate] = useState(existing?.interest_rate_bps != null ? bpsToPercentText(existing.interest_rate_bps) : '');
@@ -46,7 +51,7 @@ export default function DebtFormScreen() {
   const [submitted, setSubmitted] = useState(false);
 
   // Asks before a changed form is closed without saving.
-  const leave = useDiscardGuard([lender, kind, original, current, minimum, dueDay, interest, rate, reference, notes]);
+  const leave = useDiscardGuard([lender, kind, original, current, minimum, hasStart, startedOn, dueDay, interest, rate, reference, notes]);
 
   if (id && !existing) return null;
 
@@ -82,6 +87,8 @@ export default function DebtFormScreen() {
         due_day: day,
         is_interest_bearing: interest,
         interest_rate_bps: interest ? rateBps : null,
+        // Sent only when there is a date to set or clear, so a debt without one saves exactly as before.
+        ...(hasStart || existing?.started_on ? { started_on: hasStart ? startedOn : null } : {}),
       },
       existing,
     );
@@ -128,6 +135,10 @@ export default function DebtFormScreen() {
         <Field label={t('debts.original')} latin value={original} onChangeText={setOriginal} placeholder="0.00" keyboardType="decimal-pad" />
         <Field label={t('debts.minimum')} latin value={minimum} onChangeText={setMinimum} placeholder="0.00" keyboardType="decimal-pad" />
         <Field label={t('debts.dueDay')} latin value={dueDay} onChangeText={setDueDay} placeholder="15" keyboardType="number-pad" maxLength={2} />
+      </Group>
+      <Group>
+        <Row label={t('debts.startedOn')} right={<Switch accessibilityLabel={t('debts.startedOn')} value={hasStart} onValueChange={setHasStart} />} />
+        {hasStart ? <DateField label={t('transactions.date')} value={startedOn} text={formatDate(startedOn)} onChange={setStartedOn} /> : null}
       </Group>
       <Group>
         <Row label={t('debts.interest')} right={<Switch accessibilityLabel={t('debts.interest')} value={interest} onValueChange={setInterest} />} />
