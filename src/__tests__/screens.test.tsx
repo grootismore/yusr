@@ -22,6 +22,7 @@ import SettingsScreen from '../../app/(tabs)/more/settings';
 import DebtFormScreen from '../../app/(tabs)/debts/debt';
 import DebtsScreen from '../../app/(tabs)/debts/index';
 import HomeScreen from '../../app/(tabs)/(home)/index';
+import MoreScreen from '../../app/(tabs)/more/index';
 import TransactionScreen from '../../app/transaction';
 import AccountScreen from '../../app/(tabs)/more/account';
 
@@ -207,6 +208,22 @@ describe('unsaved-changes guard on the other forms', () => {
 });
 
 describe('transaction sheet', () => {
+  it('starts a new transaction on the category used last time, and lists the most used first', async () => {
+    const spend = (id: string, category: string, created: string): Transaction => ({
+      id, user_id: 'u', account_id: 'a-cash', category_id: category, amount_laari: 1000, kind: 'expense', occurred_on: today(), note: null,
+      debt_id: null, commitment_id: null, ...stamp, created_at: created,
+    });
+    state.transactions = [spend('t1', 'c-groc', '2026-11-01T10:00:00Z'), spend('t2', 'c-groc', '2026-11-02T10:00:00Z'), spend('t3', 'c-sal-spend', '2026-11-03T10:00:00Z')];
+    state.categories = [...state.categories, cat('c-sal-spend', 'Fuel', 'expense')];
+    await render(<TransactionScreen />);
+    // Only an amount is needed: the category is already chosen (the last one used), and so is the account.
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '5');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSave).toHaveBeenCalledWith(expect.objectContaining({ category_id: 'c-sal-spend', amount_laari: 500 }), undefined);
+    // The most used category ("Groceries", twice) comes before "Fuel" (once) even though Fuel was used last.
+    expect(screen.getAllByText(/^(Groceries|Fuel)$/).map((n) => n.props.children)).toEqual(['Groceries', 'Fuel']);
+  });
+
   it('asks before a changed form is closed, and not when nothing changed or after saving', async () => {
     const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
     await render(<TransactionScreen />);
@@ -421,6 +438,26 @@ describe('debts tab', () => {
 });
 
 describe('debt form', () => {
+  it('saves a start date only when one is set, and lets it be back-dated', async () => {
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), 'Ali');
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), '100');
+    await fireEvent.press(screen.getByText('Save'));
+    expect(mockSaveDebt.mock.calls[0][0]).not.toHaveProperty('started_on'); // saves exactly as before
+
+    mockSaveDebt.mockClear();
+    await screen.unmount();
+    await render(<DebtFormScreen />);
+    await fireEvent.changeText(screen.getByLabelText('Lender'), 'Ali');
+    await fireEvent.changeText(screen.getByLabelText('Current balance (MVR)'), '100');
+    await fireEvent(screen.getByLabelText('Started on (optional)'), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Yesterday'));
+    await fireEvent.press(screen.getByText('Save'));
+    const yesterday = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1);
+    const iso = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    expect(mockSaveDebt).toHaveBeenCalledWith(expect.objectContaining({ started_on: iso }), undefined);
+  });
+
   it('saves the debt with amounts in laari and a rate in basis points', async () => {
     await render(<DebtFormScreen />);
     await fireEvent.changeText(screen.getByLabelText('Lender'), '  Ali  ');
@@ -698,6 +735,30 @@ describe('marking a commitment done from the transaction sheet', () => {
   });
 });
 
+describe('more screen', () => {
+  it('says what is behind each entry, so nothing is a mystery', async () => {
+    await render(<MoreScreen />);
+    for (const text of ['Wasiyyah & Amanah', 'What your family needs to know, and who can see it', 'Cash and bank accounts, and their opening balances', 'Rent, bills and salary, with reminders', 'Language, private mode, reminders and your data']) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
+  });
+});
+
+describe('payoff order help', () => {
+  it('explains all three orders in plain words from one tap', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    state.debts = [debt()];
+    await render(<DebtsScreen />);
+    await fireEvent.press(screen.getByText('What is the difference?'));
+    const [title, message] = alert.mock.calls[0];
+    expect(title).toBe('Pay off first');
+    expect(message).toMatch(/Smallest: .*smallest balance first/);
+    expect(message).toMatch(/Highest rate: .*highest interest rate first/);
+    expect(message).toMatch(/Riba: /);
+    alert.mockRestore();
+  });
+});
+
 describe('swipe to delete a transaction', () => {
   const food = { id: 'tx-food', user_id: 'u', account_id: 'a-cash', category_id: 'c-groc', amount_laari: 12500, kind: 'expense' as const,
     occurred_on: today(), note: 'weekly shop', debt_id: null, commitment_id: null, ...stamp };
@@ -847,6 +908,16 @@ const income = (amount: number): Transaction => ({
 });
 
 describe('home: safe to spend, coming up, debt-free', () => {
+  it('shows the sum behind the big number when asked, hiding what private mode hides', async () => {
+    await render(<HomeScreen />);
+    expect(screen.queryByText('Income so far')).toBeNull(); // folded away until asked
+    await fireEvent.press(screen.getByText('How is this worked out?'));
+    for (const line of ['Income so far', '− Spent so far', '− Debt payments due this month', '− Sadaqat due this month', '− Bills due this month']) {
+      expect(screen.getByText(line)).toBeTruthy();
+    }
+    expect(screen.getAllByText('You can safely spend').length).toBeGreaterThan(1); // the result line, beside the card's own heading
+  });
+
   it('sets aside debt minimums, giving and bills, and shows the working', async () => {
     state.transactions = [income(100000)];
     state.debts = [debt({ min_payment_laari: 10000 })];
