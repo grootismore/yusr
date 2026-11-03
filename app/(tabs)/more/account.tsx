@@ -73,6 +73,7 @@ export default function AccountScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group>
         <Field label={t('accounts.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
         <Field
@@ -90,7 +91,6 @@ export default function AccountScreen() {
           onChange={setType}
         />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('accounts.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

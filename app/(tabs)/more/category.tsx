@@ -55,6 +55,7 @@ export default function CategoryScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted && !nameOk ? <ErrorText>{t('categories.nameRequired')}</ErrorText> : null}
       <Group>
         <Field label={t('categories.name')} value={name} onChangeText={setName} maxLength={100} returnKeyType="done" />
       </Group>
@@ -68,7 +69,6 @@ export default function CategoryScreen() {
           <Segmented options={KINDS.map((value) => ({ value, label: t(`kind.${value}`) }))} value={kind} onChange={setKind} />
         </Group>
       )}
-      {submitted && !nameOk ? <ErrorText>{t('categories.nameRequired')}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('categories.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

@@ -67,6 +67,7 @@ export default function ReceivableScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group>
         <Field label={t('debts.debtor')} value={debtor} onChangeText={setDebtor} maxLength={100} />
         <Field label={t('debts.amount')} latin value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
@@ -74,7 +75,6 @@ export default function ReceivableScreen() {
         {hasDate ? <DateField label={t('transactions.date')} value={dueOn} text={formatDate(dueOn)} onChange={setDueOn} /> : null}
         <Field label={t('debts.notes')} value={notes} onChangeText={setNotes} maxLength={500} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button title={t('debts.markReceived')} onPress={onReceived} /> : null}
     </Screen>
   );

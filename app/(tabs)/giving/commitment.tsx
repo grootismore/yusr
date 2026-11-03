@@ -82,6 +82,7 @@ export default function CommitmentScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group title={t('giving.type')}>
         <Chips options={COMMITMENT_TYPES.map((value) => ({ value, label: t(`giving.types.${value}`) }))} value={type} onChange={setType} />
       </Group>
@@ -105,7 +106,6 @@ export default function CommitmentScreen() {
         <Row label={t('giving.reminder')} right={<Switch accessibilityLabel={t('giving.reminder')} value={reminder} onValueChange={setReminder} />} />
         <Row label={t('giving.active')} right={<Switch accessibilityLabel={t('giving.active')} value={active} onValueChange={setActive} />} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('giving.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

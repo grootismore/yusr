@@ -112,6 +112,7 @@ export default function DebtFormScreen() {
           headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
         }}
       />
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       <Group>
         <Field label={t('debts.lender')} value={lender} onChangeText={setLender} maxLength={100} returnKeyType="next" />
       </Group>
@@ -141,7 +142,6 @@ export default function DebtFormScreen() {
         />
         <Field label={t('debts.notes')} value={notes ?? secrets.data?.notes ?? ''} onChangeText={setNotes} multiline maxLength={2000} />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('debts.archive')} onPress={onArchive} /> : null}
     </Screen>
   );

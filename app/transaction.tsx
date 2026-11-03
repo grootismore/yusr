@@ -105,6 +105,15 @@ export default function TransactionScreen() {
   );
   const chosenCategoryId = categoryOptions.some((c) => c.id === categoryId) ? categoryId : null;
   const amount = parsePositiveAmount(amountText);
+  // Typed something (new) or changed something (edit): leaving would lose it, so ask first.
+  const dirty = existing
+    ? amountText !== toInputText(existing.amount_laari) ||
+      kind !== existing.kind ||
+      chosenCategoryId !== existing.category_id ||
+      chosenAccountId !== existing.account_id ||
+      date !== existing.occurred_on ||
+      note !== (existing.note ?? '')
+    : amountText.trim() !== '' || note.trim() !== '';
 
   const error =
     amount === null
@@ -161,9 +170,20 @@ export default function TransactionScreen() {
     });
   }
 
+  function onCancel() {
+    if (!dirty) return router.back();
+    confirmAction({
+      title: t('common.discardTitle'),
+      confirmLabel: t('common.discard'),
+      cancelLabel: t('common.keepEditing'),
+      onConfirm: () => router.back(),
+    });
+  }
+
   const header = (
     <Stack.Screen
       options={{
+        gestureEnabled: !dirty, // no accidental swipe-away of a half-filled form
         title: existing
           ? t('transactions.editTitle')
           : paymentDebt
@@ -171,7 +191,7 @@ export default function TransactionScreen() {
             : doneCommitment
               ? t('giving.markDone')
               : t('transactions.newTitle'),
-        headerLeft: () => <HeaderTextButton label={t('common.cancel')} onPress={() => router.back()} />,
+        headerLeft: () => <HeaderTextButton label={t('common.cancel')} onPress={onCancel} />,
         headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
       }}
     />
@@ -193,6 +213,7 @@ export default function TransactionScreen() {
   return (
     <Screen>
       {header}
+      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {linkedKind ? null : (
         <Segmented options={KINDS.map((value) => ({ value, label: t(`kind.${value}`) }))} value={kind} onChange={setKind} />
       )}
@@ -224,7 +245,6 @@ export default function TransactionScreen() {
       <Group>
         <Field label={t('transactions.note')} value={note} onChangeText={setNote} maxLength={500} returnKeyType="done" />
       </Group>
-      {submitted ? <ErrorText>{error}</ErrorText> : null}
       {existing ? <Button variant="destructive" title={t('transactions.delete')} onPress={onDelete} /> : null}
     </Screen>
   );

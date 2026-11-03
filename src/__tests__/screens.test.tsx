@@ -180,6 +180,26 @@ beforeEach(() => {
 });
 
 describe('transaction sheet', () => {
+  it('closes straight away when nothing was typed, and asks before throwing away what was', async () => {
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => undefined);
+    await render(<TransactionScreen />);
+    await fireEvent.press(screen.getByText('Cancel'));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(sheet).not.toHaveBeenCalled();
+
+    mockBack.mockClear();
+    await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
+    await fireEvent.press(screen.getByText('Cancel'));
+    expect(mockBack).not.toHaveBeenCalled(); // asked first
+    const [options, choose] = sheet.mock.calls[0];
+    expect(options).toMatchObject({ title: 'Discard changes?', options: ['Discard', 'Keep editing'], cancelButtonIndex: 1 });
+    choose(1);
+    expect(mockBack).not.toHaveBeenCalled();
+    choose(0);
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    sheet.mockRestore();
+  });
+
   it('saves an expense with the typed amount, chosen category and default account, then closes', async () => {
     await render(<TransactionScreen />);
     await fireEvent.changeText(screen.getByLabelText('Amount (MVR)'), '12.50');
