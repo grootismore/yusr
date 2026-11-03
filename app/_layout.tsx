@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { Stack, ThemeProvider } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { RestartGate } from '@/components/RestartGate';
 import { useConsentGate } from '@/features/account/hooks';
 import { useOnboarded } from '@/features/onboarding/state';
 import { AppLockGate } from '@/lib/auth/AppLock';
@@ -29,6 +30,7 @@ export default function RootLayout() {
           </AppLockGate>
         </QueryProvider>
       </AuthProvider>
+      <RestartGate />
     </NavigationTheme>
   );
 }

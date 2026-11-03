@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import { I18nManager } from 'react-native';
 import { getLocales } from 'expo-localization';
 import * as SecureStore from 'expo-secure-store';
+import { requireRestart } from '../restartGate';
 import dv from './locales/dv.json';
 import en from './locales/en.json';
 
@@ -51,14 +52,20 @@ export async function initI18n(): Promise<void> {
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
   });
-  applyDirection(language);
+  if (applyDirection(language)) requireRestart(); // e.g. first launch on a phone set to Dhivehi
 }
 
-/** Switch language, remember it, and report whether a restart is needed for RTL/LTR. */
+/**
+ * Switch language and remember it. When the layout direction changes, the app cannot show it until
+ * it is reopened, so the whole app is covered by the restart screen (RestartGate). Returns whether
+ * a restart is needed.
+ */
 export async function setLanguage(language: Language): Promise<boolean> {
   await i18n.changeLanguage(language);
   await SecureStore.setItemAsync(STORAGE_KEY, language).catch(() => undefined);
-  return applyDirection(language);
+  const needsRestart = applyDirection(language);
+  if (needsRestart) requireRestart();
+  return needsRestart;
 }
 
 export { i18n };

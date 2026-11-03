@@ -26,14 +26,13 @@ export default function WelcomeScreen() {
   const { t, i18n } = useTranslation();
   const colors = useColors();
   const [index, setIndex] = useState(0);
-  const [restart, setRestart] = useState(false);
   const step = STEPS[index];
   const last = index === STEPS.length - 1;
 
   async function choose(language: Language) {
     if (language === i18n.language) return;
     selectionHaptic();
-    setRestart(await setLanguage(language)); // true when the layout direction needs a restart
+    await setLanguage(language); // a layout change covers the app with the restart screen
   }
 
   return (
@@ -82,7 +81,7 @@ export default function WelcomeScreen() {
               );
             })}
             <Text style={{ fontSize: 15, color: colors.secondaryText, textAlign: 'center' }}>
-              {restart ? t('settings.restartBody') : t('onboarding.language.hint')}
+              {t('onboarding.language.hint')}
             </Text>
           </View>
         ) : null}
