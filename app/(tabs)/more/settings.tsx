@@ -1,4 +1,4 @@
-import { Alert, Pressable, Switch, View } from 'react-native';
+import { Alert, Linking, Pressable, Switch, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, LANGUAGE_NAMES, type Language, setLanguage } from '@/lib/i18n';
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { DeletionBanner } from '@/features/account/DeletionBanner';
 import { shareMyData } from '@/features/account/hooks';
+import { legalUrl } from '@/features/account/legal';
 import { Group, Row, Screen, Segmented } from '@/components/ui';
 import { requestReminderPermission } from '@/features/reminders/notifications';
 import { setRemindersEnabled, useRemindersEnabled } from '@/features/reminders/preference';
@@ -20,6 +21,9 @@ export default function SettingsScreen() {
   const colors = useColors();
   const { signOut } = useAuth();
   const router = useRouter();
+  // The public pages live on the legal site; no rows until its address is set (same as sign-up).
+  const privacyUrl = legalUrl('privacy');
+  const termsUrl = legalUrl('terms');
   const pending = usePendingChanges();
   const { privacyMode, hijriAdjustment } = useProfile();
   const updateProfile = useUpdateProfile();
@@ -122,6 +126,12 @@ export default function SettingsScreen() {
         <Row label={t('settings.export')} chevron onPress={exportData} />
         <Row label={t('settings.deleteAccount')} destructive chevron onPress={() => router.push('/delete-account')} />
       </Group>
+      {privacyUrl && termsUrl ? (
+        <Group title={t('settings.legal')}>
+          <Row label={t('legal.privacy')} chevron onPress={() => void Linking.openURL(privacyUrl)} />
+          <Row label={t('legal.terms')} chevron onPress={() => void Linking.openURL(termsUrl)} />
+        </Group>
+      ) : null}
       <Group>
         <Row label={t('settings.about')} chevron onPress={() => router.push('/more/about')} />
       </Group>

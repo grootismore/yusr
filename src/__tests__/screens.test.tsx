@@ -721,6 +721,25 @@ describe('settings', () => {
     await fireEvent.press(screen.getByText('+1 day'));
     expect(mockUpdateProfile).toHaveBeenCalledWith({ hijri_adjustment: 1 });
   });
+
+  it('links the privacy policy and terms once the legal site is set, and shows no dead rows before', async () => {
+    const before = process.env.EXPO_PUBLIC_LEGAL_URL;
+    delete process.env.EXPO_PUBLIC_LEGAL_URL;
+    const { unmount } = await render(<SettingsScreen />);
+    expect(screen.queryByText('Privacy Policy')).toBeNull();
+    await unmount();
+
+    process.env.EXPO_PUBLIC_LEGAL_URL = 'https://legal.example/';
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await render(<SettingsScreen />);
+    await fireEvent.press(screen.getByText('Privacy Policy'));
+    expect(open).toHaveBeenCalledWith('https://legal.example/privacy/');
+    await fireEvent.press(screen.getByText('Terms of Service'));
+    expect(open).toHaveBeenCalledWith('https://legal.example/terms/');
+    open.mockRestore();
+    if (before === undefined) delete process.env.EXPO_PUBLIC_LEGAL_URL;
+    else process.env.EXPO_PUBLIC_LEGAL_URL = before;
+  });
 });
 
 
