@@ -9,6 +9,7 @@ import { useCommitments, useSaveCommitment, useSoftDelete } from '@/features/tra
 import { toISODate } from '@/features/transactions/logic';
 import { COMMITMENT_TYPES, SCHEDULES, type CommitmentType, type Schedule } from '@/features/giving/types';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function CommitmentScreen() {
@@ -31,6 +32,9 @@ export default function CommitmentScreen() {
   const [reminder, setReminder] = useState(existing?.reminder_enabled ?? true);
   const [active, setActive] = useState(existing?.active ?? true);
   const [submitted, setSubmitted] = useState(false);
+
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([type, amount, schedule, dueOn, dayOfMonth, recipient, reminder, active]);
 
   if (id && !existing) return null;
 
@@ -57,7 +61,7 @@ export default function CommitmentScreen() {
       },
       existing,
     );
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {
@@ -69,7 +73,7 @@ export default function CommitmentScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }

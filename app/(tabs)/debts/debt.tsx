@@ -15,6 +15,7 @@ import {
 import { currentBalance, startingBalanceFor } from '@/features/debts/logic';
 import { DEBT_KINDS, type DebtKind } from '@/features/debts/types';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function DebtFormScreen() {
@@ -43,6 +44,9 @@ export default function DebtFormScreen() {
   const [reference, setReference] = useState<string | null>(null);
   const [notes, setNotes] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([lender, kind, original, current, minimum, dueDay, interest, rate, reference, notes]);
 
   if (id && !existing) return null;
 
@@ -87,7 +91,7 @@ export default function DebtFormScreen() {
         notes: notes ?? secrets.data?.notes ?? '',
       });
     }
-    router.back();
+    leave(); router.back();
   }
 
   function onArchive() {

@@ -21,6 +21,7 @@ import { toISODate } from '@/features/transactions/logic';
 import { KINDS, type Kind } from '@/features/transactions/types';
 import { confirmAction } from '@/lib/confirm';
 import { successHaptic } from '@/lib/haptics';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 // Add / edit sheet. Built for speed: amount first, sensible defaults, one tap per choice.
@@ -97,6 +98,9 @@ export default function TransactionScreen() {
     return latest?.account_id ?? accounts.active[0]?.id ?? null;
   }, [transactions, accounts.active]);
 
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([kind, amountText, categoryId, accountId, date, note]);
+
   if (id && !existing) return null;
 
   const chosenAccountId = accountId ?? defaultAccountId;
@@ -105,15 +109,6 @@ export default function TransactionScreen() {
   );
   const chosenCategoryId = categoryOptions.some((c) => c.id === categoryId) ? categoryId : null;
   const amount = parsePositiveAmount(amountText);
-  // Typed something (new) or changed something (edit): leaving would lose it, so ask first.
-  const dirty = existing
-    ? amountText !== toInputText(existing.amount_laari) ||
-      kind !== existing.kind ||
-      chosenCategoryId !== existing.category_id ||
-      chosenAccountId !== existing.account_id ||
-      date !== existing.occurred_on ||
-      note !== (existing.note ?? '')
-    : amountText.trim() !== '' || note.trim() !== '';
 
   const error =
     amount === null
@@ -153,6 +148,7 @@ export default function TransactionScreen() {
       );
     }
     successHaptic();
+    leave();
     router.back(); // saved on this device already; syncs in the background
   }
 
@@ -165,25 +161,15 @@ export default function TransactionScreen() {
       cancelLabel: t('common.cancel'),
       onConfirm: () => {
           remove(existing.id);
+          leave();
           router.back();
         },
-    });
-  }
-
-  function onCancel() {
-    if (!dirty) return router.back();
-    confirmAction({
-      title: t('common.discardTitle'),
-      confirmLabel: t('common.discard'),
-      cancelLabel: t('common.keepEditing'),
-      onConfirm: () => router.back(),
     });
   }
 
   const header = (
     <Stack.Screen
       options={{
-        gestureEnabled: !dirty, // no accidental swipe-away of a half-filled form
         title: existing
           ? t('transactions.editTitle')
           : paymentDebt
@@ -191,7 +177,7 @@ export default function TransactionScreen() {
             : doneCommitment
               ? t('giving.markDone')
               : t('transactions.newTitle'),
-        headerLeft: () => <HeaderTextButton label={t('common.cancel')} onPress={onCancel} />,
+        headerLeft: () => <HeaderTextButton label={t('common.cancel')} onPress={() => router.back()} />,
         headerRight: () => <HeaderTextButton label={t('common.save')} onPress={onSave} />,
       }}
     />

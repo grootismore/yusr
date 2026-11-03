@@ -8,6 +8,7 @@ import { parsePositiveAmount, toInputText, useFormatDate } from '@/features/tran
 import { useReceivables, useSaveReceivable, useSoftDelete } from '@/features/transactions/hooks';
 import { toISODate } from '@/features/transactions/logic';
 import { confirmAction } from '@/lib/confirm';
+import { useDiscardGuard } from '@/lib/useDiscardGuard';
 import { useSubmitOnce } from '@/lib/useSubmitOnce';
 
 export default function ReceivableScreen() {
@@ -28,6 +29,9 @@ export default function ReceivableScreen() {
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [submitted, setSubmitted] = useState(false);
 
+  // Asks before a changed form is closed without saving.
+  const leave = useDiscardGuard([debtor, amount, hasDate, dueOn, notes]);
+
   if (id && !existing) return null;
 
   const amountLaari = parsePositiveAmount(amount);
@@ -41,7 +45,7 @@ export default function ReceivableScreen() {
       { debtor: debtor.trim(), amount_laari: amountLaari, due_on: hasDate ? dueOn : null, notes: notes.trim() === '' ? null : notes.trim() },
       existing,
     );
-    router.back();
+    leave(); router.back();
   }
 
   function onReceived() {
@@ -54,7 +58,7 @@ export default function ReceivableScreen() {
       destructive: false,
       onConfirm: () => {
           archive(existing.id);
-          router.back();
+          leave(); router.back();
         },
     });
   }
