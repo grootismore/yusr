@@ -9,7 +9,7 @@ import { EmptyState, Group, HeaderIconButton, Money, Row, Screen } from '@/compo
 import { planInput } from '@/features/debts/logic';
 import { planDebts } from '@/features/debts/plan';
 import { usePlanSettings } from '@/features/debts/settings';
-import { useHijriMonthLabel } from '@/features/giving/format';
+import { useHijriRange } from '@/features/giving/format';
 import { safeToSpend, upcomingItems, waterColumn, type UpcomingItem } from '@/features/transactions/budget';
 import { useCategoryName, useFormatDate, useMonthLabel } from '@/features/transactions/format';
 import {
@@ -34,7 +34,7 @@ export default function HomeScreen() {
   const monthLabel = useMonthLabel();
   const formatDate = useFormatDate();
   const categoryName = useCategoryName();
-  const hijriMonth = useHijriMonthLabel();
+  const hijriRange = useHijriRange();
   const { privacyMode, hijriAdjustment } = useProfile();
   const ready = useDataReady();
   const refresh = useRefresh();
@@ -107,7 +107,7 @@ export default function HomeScreen() {
             {monthLabel(month)}
           </Text>
           <Text style={{ fontSize: 13, color: colors.secondaryText }}>
-            {[...new Set([hijriMonth(`${month}-01`, hijriAdjustment), hijriMonth(`${month}-28`, hijriAdjustment)])].join(' – ')}
+            {hijriRange(`${month}-01`, `${month}-28`, hijriAdjustment)}
           </Text>
         </View>
         <HeaderIconButton

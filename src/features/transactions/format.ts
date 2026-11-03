@@ -3,21 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { formatMVR, parseMVR } from '@/lib/money';
 import type { Category } from './types';
 
-/** "5 November 2026", with month names from the active language (Intl lacks Dhivehi on some devices). */
+/**
+ * "5 Nov ’26": short month and a two-digit year (the apostrophe keeps "Nov ’26" from reading as
+ * the 26th). Month names come from the active language (Intl lacks Dhivehi on some devices).
+ */
 export function useFormatDate() {
   const { t } = useTranslation();
   return useCallback(
     (iso: string) => {
       const [year, month, day] = iso.split('-');
-      return `${Number(day)} ${t(`months.m${month}`)} ${year}`;
+      return `${Number(day)} ${t(`monthsShort.m${month}`)} ’${year.slice(2)}`;
     },
     [t],
   );
 }
 
+/** "Nov ’26", for a "2026-11" month. */
 export function useMonthLabel() {
   const { t } = useTranslation();
-  return useCallback((month: string) => `${t(`months.m${month.slice(5, 7)}`)} ${month.slice(0, 4)}`, [t]);
+  return useCallback((month: string) => `${t(`monthsShort.m${month.slice(5, 7)}`)} ’${month.slice(2, 4)}`, [t]);
 }
 
 export function useCategoryName() {
