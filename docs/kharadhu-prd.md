@@ -20,7 +20,7 @@ Mainstream expense trackers are built English-first and know nothing about Maldi
 2. Ship a complete Dhivehi UI with correct RTL layout and Thaana input.
 3. Have most scanned receipts need at most one field edit before saving.
 
-**Non-goals:** business accounting or invoicing, bank API integrations, shared households and the Yusr modules (debt-free plan, sadaqah, register) in the MVP.
+**Non-goals:** business accounting or invoicing, bank API integrations and shared households in the MVP.
 
 ## Users and key scenarios
 
@@ -33,13 +33,13 @@ Mainstream expense trackers are built English-first and know nothing about Maldi
 
 ## Scope by phase
 
-The MVP ships manual tracking plus Raseedhu scanning; voice and bank SMS wait until the core loop is proven.
+The MVP ships manual tracking, Raseedhu scanning and the three Yusr modules (debt-free plan, sadaqah and zakat, Wasiyyah & Amanah register); voice and bank SMS wait until the core loop is proven.
 
 | Phase | Includes |
 | --- | --- |
-| MVP | Sign-in, manual expenses and income, Dhivehi and English categories, monthly budgets, charts, MVR plus foreign currencies, Raseedhu scan with confirm screen, share-into-app, free monthly scan limit |
-| v1.1 | Yusr modules, part 1: debt-free plan (snowball and avalanche, payment history) and sadaqah and zakat tracking; premium tier, PDF monthly summary, recurring expenses, receipt re-scan and edit, more currencies |
-| Later | Yusr modules, part 2: Wasiyyah & Amanah register with the trusted-contact release flow; Dhivehi voice logging, bank SMS parsing, shared household budgets |
+| MVP | Sign-in, manual expenses and income, Dhivehi and English categories, monthly budgets, charts, MVR plus foreign currencies, Raseedhu scan with confirm screen, share-into-app, free monthly scan limit, Yusr modules (debt-free plan, sadaqah and zakat, Wasiyyah & Amanah register; the register is built last) |
+| v1.1 | Premium tier, PDF monthly summary, recurring expenses, receipt re-scan and edit, more currencies |
+| Later | Dhivehi voice logging, bank SMS parsing, shared household budgets |
 | Out of scope | Bank APIs and invoicing |
 
 ## Core features
@@ -121,13 +121,13 @@ The app uses Supabase for accounts, data and image storage, and sends each scan 
 
 ## Yusr modules inside Kharadhu
 
-The Yusr functions join Kharadhu as three modules on the same account, database, money handling and Dhivehi UI. Spending and Raseedhu stay the core; the modules are phased so the MVP does not grow. The full Yusr spec (release flow, security and compliance checklist) carries over from the Yusr PRD, kept in `classic-yusr/docs/`.
+The Yusr functions join Kharadhu as three modules on the same account, database, money handling and Dhivehi UI. Spending and Raseedhu stay the core; the modules are part of the MVP but are built after the spending core, with the register last. The full Yusr spec (release flow, security and compliance checklist) carries over from the Yusr PRD, kept in `classic-yusr/docs/`.
 
 | Module | What it does | Phase |
 | --- | --- | --- |
-| Debt-free plan | Track debts (banks, loans, credit cards, personal), record payments, see snowball and avalanche payoff order and a projected debt-free date; interest-free (qard hasan) option | v1.1 |
-| Sadaqah and zakat | Log giving, set monthly sadaqah goals, zakat reminder with a Hijri date; Giving is already a spending category, so entries link to expenses | v1.1 |
-| Wasiyyah & Amanah register | Private register of debts owed, trusts and wishes; trusted contacts see it only after a confirmed passing | v1.2 |
+| Debt-free plan | Track debts (banks, loans, credit cards, personal), record payments, see snowball and avalanche payoff order and a projected debt-free date; interest-free (qard hasan) option | MVP |
+| Sadaqah and zakat | Log giving, set monthly sadaqah goals, zakat reminder with a Hijri date; Giving is already a spending category, so entries link to expenses | MVP |
+| Wasiyyah & Amanah register | Private register of debts owed, trusts and wishes; trusted contacts see it only after a confirmed passing | MVP (last) |
 
 **Navigation:** the bottom bar stays at five items: Home, Budget, Raseedhu (centre), Reports, More. Debts, Sadaqah and Register open from Home cards and from More, so the scan button keeps its place.
 
@@ -198,4 +198,4 @@ Kharadhu is free to use, and the paid tier exists mainly to cover AI scanning co
 **Still open**
 
 - [ ] Final app name and icon: Kharadhu with Yusr as a module name, or a new combined brand?
-- [ ] Confirm the phasing: debts and sadaqah in v1.1, register in v1.2.
+- [ ] Scope risk: the MVP now includes the register release flow, the most security-sensitive part. Keep it last in the build order, and cut it from the first release if it slips.
