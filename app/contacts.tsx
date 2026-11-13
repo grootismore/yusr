@@ -20,7 +20,7 @@ export default function Contacts() {
       <Card>
         {contacts.length === 0 ? <Text color={colors.inkMuted}>{t('contacts.none')}</Text> : contacts.map((c) => (
           <Row key={c.id} style={{ minHeight: 60 }}>
-            <Icon name={c.status === 'accepted' ? 'checkmark-circle' : 'time-outline'} color={c.status === 'accepted' ? colors.teal : colors.inkMuted} />
+            <Icon name={c.status === 'accepted' ? 'checkmark-circle' : 'time-outline'} color={c.status === 'accepted' ? colors.accent : colors.inkMuted} />
             <View style={{ flex: 1 }}>
               <Text>{c.name}</Text>
               <Text variant="small" color={colors.inkMuted}>{t(`contacts.status.${c.status}`)}</Text>

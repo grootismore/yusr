@@ -80,7 +80,7 @@ export default function DebtEdit() {
         <Card>
           <Row style={{ minHeight: 52 }}>
             <Text style={{ flex: 1 }}>{t('debts.hasInterest')}</Text>
-            <Switch accessibilityLabel={t('debts.hasInterest')} value={hasInterest} onValueChange={setHasInterest} trackColor={{ true: colors.teal, false: colors.control }} />
+            <Switch accessibilityLabel={t('debts.hasInterest')} value={hasInterest} onValueChange={setHasInterest} trackColor={{ true: colors.accent, false: colors.control }} />
           </Row>
           {interestOn ? <Field label={`${t('debts.rate')} (${t('common.optional')})`} value={rate} onChangeText={setRate} keyboardType="decimal-pad" error={errors.rate} /> : null}
         </Card>
@@ -92,7 +92,7 @@ export default function DebtEdit() {
             <Text>{t('debts.inRegister')}</Text>
             <Text variant="small" color={colors.inkMuted}>{t('debts.inRegisterNote')}</Text>
           </View>
-          <Switch accessibilityLabel={t('debts.inRegister')} value={inRegister} onValueChange={setInRegister} trackColor={{ true: colors.teal, false: colors.control }} />
+          <Switch accessibilityLabel={t('debts.inRegister')} value={inRegister} onValueChange={setInRegister} trackColor={{ true: colors.accent, false: colors.control }} />
         </Row>
       </Card>
 

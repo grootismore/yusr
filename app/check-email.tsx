@@ -35,8 +35,8 @@ export default function CheckEmail() {
   return (
     <Screen>
       <View style={{ alignItems: 'flex-start', gap: space.lg, paddingTop: space.xxl }}>
-        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="mail-outline" size={38} color={colors.teal} />
+        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="mail-outline" size={38} color={colors.accent} />
         </View>
         <Text variant="title">{t('checkEmail.title')}</Text>
         <Text>{t('checkEmail.body', { email: `⁦${email}⁩` })}</Text>
@@ -46,7 +46,7 @@ export default function CheckEmail() {
         <Button label={t('checkEmail.signIn')} onPress={() => router.replace({ pathname: '/sign-in', params: { email } })} />
         <Button kind="secondary" label={t('checkEmail.resend')} disabled={wait > 0} onPress={resend} />
         {wait > 0 ? <Text variant="small" color={colors.inkMuted}>{t('checkEmail.resendIn', { seconds: wait })}</Text> : null}
-        {msg ? <Text variant="small" color={msg.bad ? colors.coral : colors.teal} accessibilityLiveRegion="polite">{msg.text}</Text> : null}
+        {msg ? <Text variant="small" color={msg.bad ? colors.coral : colors.accent} accessibilityLiveRegion="polite">{msg.text}</Text> : null}
         <Button kind="ghost" label={t('checkEmail.change')} onPress={() => router.replace('/sign-up')} />
       </Card>
     </Screen>

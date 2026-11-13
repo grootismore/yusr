@@ -1,10 +1,11 @@
 import { Pressable, View, type ColorValue } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Tabs, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/ui';
 import { fontFor } from '@/theme/fonts';
-import { TOUCH, useColors } from '@/theme/tokens';
+import { TOUCH, useColors, useIsDark } from '@/theme/tokens';
 
 const tab = (name: IconName, active: IconName) =>
   function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
@@ -13,6 +14,7 @@ const tab = (name: IconName, active: IconName) =>
 
 export default function TabsLayout() {
   const colors = useColors();
+  const dark = useIsDark();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -20,10 +22,16 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.teal,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.inkMuted,
         tabBarLabelStyle: { fontFamily: fontFor(i18n.language, false), fontSize: 13, lineHeight: 22 },
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line, height: 64 + insets.bottom, paddingTop: 6 },
+        tabBarStyle: { backgroundColor: 'transparent', borderTopColor: colors.glassEdge, height: 64 + insets.bottom, paddingTop: 6 },
+        tabBarBackground: () => (
+          <View style={{ flex: 1, backgroundColor: colors.ground }}>
+            <BlurView intensity={dark ? 50 : 70} tint={dark ? 'dark' : 'light'} style={{ flex: 1 }} />
+            <View pointerEvents="none" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: colors.glass }} />
+          </View>
+        ),
         tabBarItemStyle: { minHeight: TOUCH },
       }}
     >
@@ -39,10 +47,10 @@ export default function TabsLayout() {
                 accessibilityRole="button"
                 accessibilityLabel={t('a11y.scanReceipt')}
                 onPress={() => router.push('/scan')}
-                style={({ pressed }) => ({ marginTop: -22, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
-                  borderWidth: 4, borderColor: colors.sand })}
+                style={({ pressed }) => ({ marginTop: -22, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
+                  borderWidth: 4, borderColor: colors.ground })}
               >
-                <Icon name="scan" size={28} color={colors.onTeal} />
+                <Icon name="scan" size={28} color={colors.onAccent} />
               </Pressable>
             </View>
           ),

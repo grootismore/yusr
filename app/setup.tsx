@@ -38,7 +38,7 @@ export default function Setup() {
   return (
     <Screen grow>
       <View style={{ gap: space.xs, paddingTop: space.md }}>
-        <Text variant="heading" color={colors.teal}>{t('app.name')}</Text>
+        <Text variant="heading" color={colors.accent}>{t('app.name')}</Text>
         <Text variant="title" accessibilityRole="header">{t('setup.title')}</Text>
         <Text color={colors.inkMuted}>{t('setup.body')}</Text>
       </View>
@@ -60,7 +60,7 @@ export default function Setup() {
         <Button label={t('setup.save')} onPress={submit} loading={save.isPending} />
         <Button kind="ghost" label={t('setup.skip')} onPress={() => void setFlag('setupDone', true)} />
         <Row style={{ justifyContent: 'center' }}>
-          <Icon name="scan" size={18} color={colors.teal} />
+          <Icon name="scan" size={18} color={colors.accent} />
           <Text variant="small" color={colors.inkMuted} style={{ flex: 1 }}>{t('setup.tip')}</Text>
         </Row>
       </View>

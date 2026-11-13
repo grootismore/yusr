@@ -43,7 +43,7 @@ export default function ResetPassword() {
           <Button label={t('reset.save')} onPress={save} loading={busy} />
         </Card>
       ) : null}
-      {state === 'done' ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('reset.done')}</Text></Row></Card> : null}
+      {state === 'done' ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.accent} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('reset.done')}</Text></Row></Card> : null}
       {state === 'expired' ? <Card tone="warn"><Text accessibilityLiveRegion="polite">{t('reset.expired')}</Text></Card> : null}
       {state === 'none' ? <Card><Text>{t('reset.none')}</Text></Card> : null}
     </AuthScreen>

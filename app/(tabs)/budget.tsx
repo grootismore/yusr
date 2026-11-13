@@ -31,8 +31,8 @@ function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: Ico
   return (
     <View style={{ gap: space.sm }}>
       <Row style={{ minHeight: 56 }}>
-        <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name={icon} color={colors.teal} />
+        <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name={icon} color={colors.accent} />
         </View>
         <View style={{ flex: 1 }}>
           <Text>{title}</Text>

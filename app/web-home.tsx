@@ -15,12 +15,12 @@ export default function WebHome() {
   const chevron = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
   return (
     <Screen>
-      <Text variant="display" color={colors.teal} style={{ paddingTop: space.xxl }}>{t('app.name')}</Text>
+      <Text variant="display" color={colors.accent} style={{ paddingTop: space.xxl }}>{t('app.name')}</Text>
       <Text color={colors.inkMuted}>{t('webHome.body')}</Text>
       <Card>
         {([['/contact', 'people-outline', t('contactSide.title')], ['/delete-account', 'trash-outline', t('deleteAccount.title')]] as const).map(([path, icon, label]) => (
           <Pressable key={path} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(path)} style={{ minHeight: 52, justifyContent: 'center' }}>
-            <Row><Icon name={icon} color={colors.teal} /><Text style={{ flex: 1 }}>{label}</Text><Icon name={chevron} color={colors.inkMuted} /></Row>
+            <Row><Icon name={icon} color={colors.accent} /><Text style={{ flex: 1 }}>{label}</Text><Icon name={chevron} color={colors.inkMuted} /></Row>
           </Pressable>
         ))}
       </Card>

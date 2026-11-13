@@ -41,15 +41,15 @@ export default function AddExpense() {
     return (
       <Screen>
         <View style={{ alignItems: 'center', gap: space.md, paddingTop: space.xxl }}>
-          <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="checkmark" size={36} color={colors.onTeal} />
+          <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="checkmark" size={36} color={colors.onAccent} />
             </View>
           </View>
           <Text variant="title" accessibilityLiveRegion="polite">{t(isIncome ? 'add.savedIncome' : 'add.savedExpense')}</Text>
         </View>
         <Card tone="hero" style={{ alignItems: 'center', padding: space.xl }}>
-          <Money laari={saved.amount_laari} currency={saved.currency} prefix={isIncome ? '+' : '−'} variant="display" color={colors.onTeal} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} />
+          <Money laari={saved.amount_laari} currency={saved.currency} prefix={isIncome ? '+' : '−'} variant="display" color={colors.onHero} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} />
         </Card>
         <Card>
           {isIncome ? null : <Row style={{ justifyContent: 'space-between' }}><Text color={colors.inkMuted}>{t('expense.category')}</Text><Text>{catName(cat)}</Text></Row>}
@@ -69,7 +69,7 @@ export default function AddExpense() {
           <Text variant="title" style={{ flex: 1 }}>{t('add.details')}</Text>
         </Row>
         <Card tone="hero" style={{ alignItems: 'center' }}>
-          <Money laari={laari} prefix={isIncome ? '+' : '−'} variant="display" color={colors.onTeal} />
+          <Money laari={laari} prefix={isIncome ? '+' : '−'} variant="display" color={colors.onHero} />
         </Card>
         <ExpenseForm
           key={mode}

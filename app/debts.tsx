@@ -41,7 +41,7 @@ export default function Debts() {
         {header}
         <Card tone="good"><Text>{t('debts.amanah')}</Text></Card>
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
-          <Icon name="leaf-outline" size={44} color={colors.teal} />
+          <Icon name="leaf-outline" size={44} color={colors.accent} />
           <Text variant="heading" style={{ textAlign: 'center' }}>{t('debts.noDebtsTitle')}</Text>
           <Text color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('debts.noDebtsBody')}</Text>
           <Button label={t('debts.add')} icon="add" onPress={() => router.push('/debt-edit')} />
@@ -61,7 +61,7 @@ export default function Debts() {
         <Money laari={view.total} variant="display" />
         {view.open.length === 0 ? <Text>{t('debts.settled')}</Text>
           : r.neverPaysOff ? <Row><Icon name="information-circle" color={colors.amberDeep} /><Text style={{ flex: 1 }}>{t('debts.neverPays')}</Text></Row>
-          : r.debtFreeMonth ? <Row><Icon name="flag" color={colors.teal} /><Text variant="heading" style={{ flex: 1 }}>{t('debts.debtFree', { month: monthLabel(r.debtFreeMonth) })}</Text></Row> : null}
+          : r.debtFreeMonth ? <Row><Icon name="flag" color={colors.accent} /><Text variant="heading" style={{ flex: 1 }}>{t('debts.debtFree', { month: monthLabel(r.debtFreeMonth) })}</Text></Row> : null}
       </Card>
 
       {view.open.length > 0 ? (
@@ -86,8 +86,8 @@ export default function Debts() {
             {view.open.map((v, i) => (
               <Pressable key={v.debt.id} accessibilityRole="button" accessibilityLabel={v.debt.lender} onPress={() => router.push({ pathname: '/debt', params: { id: v.debt.id } })} style={{ minHeight: 64, justifyContent: 'center', gap: 4 }}>
                 <Row>
-                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text variant="label" latin color={colors.teal}>{i + 1}</Text>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text variant="label" latin color={colors.accent}>{i + 1}</Text>
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text numberOfLines={1}>{v.debt.lender}</Text>
@@ -109,7 +109,7 @@ export default function Debts() {
 
       <Button label={t('debts.add')} icon="add" kind="secondary" onPress={() => router.push('/debt-edit')} />
       {view.paidOff.length > 0 ? (
-        <Card>{view.paidOff.map((d) => <Row key={d.id}><Icon name="checkmark-circle" color={colors.teal} /><Text style={{ flex: 1 }}>{d.lender}</Text><DueBadge state="paid" days={0} /></Row>)}</Card>
+        <Card>{view.paidOff.map((d) => <Row key={d.id}><Icon name="checkmark-circle" color={colors.accent} /><Text style={{ flex: 1 }}>{d.lender}</Text><DueBadge state="paid" days={0} /></Row>)}</Card>
       ) : null}
     </Screen>
   );

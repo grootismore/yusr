@@ -11,8 +11,8 @@ export function RestartGate() {
   const required = useRestartRequired();
   if (!required) return null;
   return (
-    <View accessibilityViewIsModal style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, backgroundColor: colors.sand, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 28 }}>
-      <Icon name="refresh" size={44} color={colors.teal} />
+    <View accessibilityViewIsModal style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 28 }}>
+      <Icon name="refresh" size={44} color={colors.accent} />
       {(['dv', 'en'] as const).map((language) => {
         const t = i18n.getFixedT(language);
         return (

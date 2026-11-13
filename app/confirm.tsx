@@ -59,7 +59,7 @@ export default function Confirm() {
       {checkable ? (
         <Card tone={check.match ? 'good' : 'warn'}>
           <Row>
-            <Icon name={check.match ? 'checkmark-circle' : 'warning'} color={check.match ? colors.teal : colors.amberDeep} />
+            <Icon name={check.match ? 'checkmark-circle' : 'warning'} color={check.match ? colors.accent : colors.amberDeep} />
             <Text variant="label" style={{ flex: 1 }} accessibilityLiveRegion="polite">{check.match ? t('confirm.matchOk') : t('confirm.mismatchTitle')}</Text>
           </Row>
           {!check.match ? <Msg k="confirm.mismatchBody" amounts={{ items: check.itemsSum, gst: toLaari(gst), expected: check.expected, total: total! }} /> : null}

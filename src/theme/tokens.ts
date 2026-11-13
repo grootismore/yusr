@@ -1,43 +1,55 @@
 import { useColorScheme } from 'react-native';
 
 // Design tokens. One source for colour, spacing and type; every screen uses these.
+// Look: "Pearl" in light, "Midnight" in dark. Frosted glass cards over a soft glow, one indigo accent,
+// a deep-indigo hero surface for the month's figure. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  sand: '#F5F1E8', // background
-  surface: '#FFFFFF',
-  sandDeep: '#E9E3D4', // tracks, unselected chips
-  ink: '#15211F', // text
-  inkMuted: '#4A5754', // secondary text (AA on sand and white)
-  line: '#D8D1BF', // hairlines and decorative borders
-  control: '#7B7664', // borders of inputs and buttons (3:1 against sand)
-  teal: '#0B6B68', // accent, primary actions
-  onTeal: '#FFFFFF',
-  coral: '#B8432A', // over budget, errors
+  ground: '#EDEFF6', // page background
+  groundDeep: '#DEE1EE', // tracks, unselected segments
+  surface: '#FFFFFF', // solid surfaces
+  glass: 'rgba(255,255,255,0.62)', // frosted card fill (over a blur)
+  glassEdge: 'rgba(255,255,255,0.95)', // light rim on glass
+  field: 'rgba(255,255,255,0.78)', // input and chip fill
+  ink: '#11142A', // text
+  inkMuted: '#4A5070', // secondary text (AA on ground and white)
+  line: 'rgba(17,20,42,0.10)', // hairlines
+  control: '#7A7F9C', // borders of inputs and buttons (3:1 against ground)
+  accent: '#4F46E5', // primary actions, links, selected states
+  onAccent: '#FFFFFF',
+  accentWash: '#E2E1FB', // tinted tiles behind icons
+  hero: '#1B1F4D', // the month's figure surface
+  onHero: '#FFFFFF',
+  coral: '#C23A3A', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
-  amberDeep: '#8A5A00', // warning icons and borders (3:1+ on sand and white)
+  amberDeep: '#8A5A00', // warning icons and borders (3:1+ on ground and white)
   amberWash: '#FBF0D2', // warning background; ink text on it
-  coralWash: '#FCEFEA',
-  tealWash: '#DCEBE8',
+  coralWash: '#FCEBEB',
 } as const;
 
 export type Palette = { [K in keyof typeof light]: string };
 
 /** The same roles in the dark theme: same hues, lifted for contrast on a dark ground (every text pair is tested). */
 export const dark: Palette = {
-  sand: '#101614',
-  surface: '#1A2321',
-  sandDeep: '#27312E',
-  ink: '#EEEBE2',
-  inkMuted: '#A9B4B0',
-  line: '#2E3A37',
-  control: '#7F8B87',
-  teal: '#4DBDB7',
-  onTeal: '#08201E',
-  coral: '#F2907A',
+  ground: '#0A0D18',
+  groundDeep: '#171C30',
+  surface: '#141A2C',
+  glass: 'rgba(255,255,255,0.07)',
+  glassEdge: 'rgba(255,255,255,0.14)',
+  field: 'rgba(255,255,255,0.07)',
+  ink: '#F1F2FA',
+  inkMuted: '#A6ABC6',
+  line: 'rgba(255,255,255,0.10)',
+  control: '#7E84A2',
+  accent: '#8E9BFF',
+  onAccent: '#0A0D18',
+  accentWash: '#1F2548',
+  hero: '#232A6B',
+  onHero: '#FFFFFF',
+  coral: '#FF8E8E',
   amber: '#E0A526',
   amberDeep: '#F0C45A',
-  amberWash: '#392F17',
-  coralWash: '#3A221C',
-  tealWash: '#18312F',
+  amberWash: '#3A3015',
+  coralWash: '#3A1E24',
 };
 
 export const palettes = { light, dark } as const;
@@ -47,9 +59,12 @@ export function useColors(): Palette {
   return useColorScheme() === 'dark' ? dark : light;
 }
 
+/** True when the dark theme is showing. */
+export const useIsDark = (): boolean => useColorScheme() === 'dark';
+
 /** 4-pt grid. */
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
-export const radius = { sm: 8, md: 14, lg: 20, pill: 999 } as const;
+export const radius = { sm: 8, md: 14, lg: 22, pill: 999 } as const;
 
 /** Minimum touch target in points (WCAG 2.5.8 and platform guidance). */
 export const TOUCH = 44;

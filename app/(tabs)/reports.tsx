@@ -113,7 +113,7 @@ export default function Reports() {
               return (
                 <View key={id ?? 'none'} style={{ gap: space.xs }}>
                   <Row>
-                    <Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.teal} />
+                    <Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.accent} />
                     <Text style={{ flex: 1 }}>{catName(c)}</Text>
                     <Money laari={amount} />
                   </Row>

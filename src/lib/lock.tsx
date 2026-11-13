@@ -43,8 +43,8 @@ export function LockGate({ children, active }: { children: ReactNode; active: bo
 
   if (!locked) return <>{children}</>;
   return (
-    <View accessibilityViewIsModal style={{ flex: 1, backgroundColor: colors.sand, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20 }}>
-      <Icon name="lock-closed" size={44} color={colors.teal} />
+    <View accessibilityViewIsModal style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20 }}>
+      <Icon name="lock-closed" size={44} color={colors.accent} />
       <Text variant="title">{t('lock.title')}</Text>
       <Button label={t('lock.unlock')} onPress={unlock} />
     </View>

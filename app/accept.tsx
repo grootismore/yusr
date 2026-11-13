@@ -49,7 +49,7 @@ export default function Accept() {
   return (
     <Screen>
       <View style={{ gap: space.sm, paddingTop: space.xxl }}>
-        <Text variant="display" color={colors.teal}>{t('app.name')}</Text>
+        <Text variant="display" color={colors.accent}>{t('app.name')}</Text>
         <Text variant="title">{t('accept.title')}</Text>
       </View>
       {phase.kind === 'checking' ? <Text color={colors.inkMuted}>{t('accept.checking')}</Text> : null}

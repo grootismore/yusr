@@ -12,7 +12,7 @@ function Step({ done, label }: { done: boolean; label: string }) {
   const colors = useColors();
   return (
     <Row accessible accessibilityLabel={`${label}, ${done ? '✓' : '○'}`}>
-      <Icon name={done ? 'checkmark-circle' : 'ellipse-outline'} color={done ? colors.teal : colors.inkMuted} />
+      <Icon name={done ? 'checkmark-circle' : 'ellipse-outline'} color={done ? colors.accent : colors.inkMuted} />
       <Text style={{ flex: 1 }}>{label}</Text>
     </Row>
   );
@@ -38,7 +38,7 @@ export default function Register() {
         <Step done={r.hasItems} label={t('register.stepItems')} />
         <Step done={r.hasContact} label={t('register.stepContact')} />
         <Step done={r.contactAccepted} label={t('register.stepAccepted')} />
-        {r.ready ? <Text color={colors.teal}>{t('register.ready')}</Text> : null}
+        {r.ready ? <Text color={colors.accent}>{t('register.ready')}</Text> : null}
       </Card>
 
       <Row style={{ justifyContent: 'space-between' }}>
@@ -63,7 +63,7 @@ export default function Register() {
       <Card>
         {([['/contacts', 'people-outline', t('register.contacts')], ['/release', 'shield-checkmark-outline', t('register.release')]] as const).map(([path, icon, label]) => (
           <Pressable key={path} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(path)} style={{ minHeight: 52, justifyContent: 'center' }}>
-            <Row><Icon name={icon} color={colors.teal} /><Text style={{ flex: 1 }}>{label}</Text><Icon name={chevron} color={colors.inkMuted} /></Row>
+            <Row><Icon name={icon} color={colors.accent} /><Text style={{ flex: 1 }}>{label}</Text><Icon name={chevron} color={colors.inkMuted} /></Row>
           </Pressable>
         ))}
       </Card>

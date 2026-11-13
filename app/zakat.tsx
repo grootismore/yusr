@@ -95,7 +95,7 @@ function ZakatForm({ initial, onClose }: { initial: api.ZakatSettings; onClose: 
             <Text>{t('zakat.reminder')}</Text>
             <Text variant="small" color={colors.inkMuted}>{t('zakat.reminderNote')}</Text>
           </View>
-          <Switch accessibilityLabel={t('zakat.reminder')} value={reminder && dayOk} disabled={!dayOk} onValueChange={toggleReminder} trackColor={{ true: colors.teal, false: colors.control }} />
+          <Switch accessibilityLabel={t('zakat.reminder')} value={reminder && dayOk} disabled={!dayOk} onValueChange={toggleReminder} trackColor={{ true: colors.accent, false: colors.control }} />
         </Row>
         {denied ? <Text variant="small" color={colors.inkMuted} accessibilityLiveRegion="polite">{t('zakat.permissionDenied')}</Text> : null}
       </Card>

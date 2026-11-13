@@ -70,7 +70,7 @@ export default function SignIn() {
     return (
       <AuthScreen title={t('auth.linkSentTitle')}>
         <Card tone="good">
-          <Row><Icon name="mail-outline" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.linkSentBody', { email: `⁦${linkSentTo}⁩` })}</Text></Row>
+          <Row><Icon name="mail-outline" color={colors.accent} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.linkSentBody', { email: `⁦${linkSentTo}⁩` })}</Text></Row>
         </Card>
         <Button kind="ghost" label={t('auth.useAnotherEmail')} onPress={() => setLinkSentTo(null)} />
       </AuthScreen>
@@ -79,7 +79,7 @@ export default function SignIn() {
 
   return (
     <AuthScreen title={t('auth.signInTitle')} subtitle={t('auth.signInSubtitle')}>
-      {confirmed ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.confirmed')}</Text></Row></Card> : null}
+      {confirmed ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.accent} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.confirmed')}</Text></Row></Card> : null}
       {failedLink ? <Card tone="warn"><Text accessibilityLiveRegion="polite">{t('auth.linkExpired')}</Text></Card> : null}
 
       <Card>

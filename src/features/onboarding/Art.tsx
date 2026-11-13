@@ -11,7 +11,7 @@ function Chip({ icon, label, style }: { icon: IconName; label?: string; style: o
   return (
     <View style={[{ position: 'absolute', flexDirection: 'row', alignItems: 'center', gap: space.xs, paddingVertical: space.sm, paddingHorizontal: space.md, borderRadius: radius.pill,
       backgroundColor: colors.surface, boxShadow: '0 6px 18px rgba(0,0,0,0.18)' }, style]}>
-      <Icon name={icon} size={18} color={colors.teal} />
+      <Icon name={icon} size={18} color={colors.accent} />
       {label ? <Text variant="small">{label}</Text> : null}
     </View>
   );
@@ -19,7 +19,7 @@ function Chip({ icon, label, style }: { icon: IconName; label?: string; style: o
 
 const Line = ({ w }: { w: `${number}%` }) => {
   const colors = useColors();
-  return <View style={{ height: 10, width: w, borderRadius: 5, backgroundColor: colors.sandDeep }} />;
+  return <View style={{ height: 10, width: w, borderRadius: 5, backgroundColor: colors.groundDeep }} />;
 };
 
 export function OnboardArt({ kind }: { kind: 'p1' | 'p2' | 'p3' }) {
@@ -31,7 +31,7 @@ export function OnboardArt({ kind }: { kind: 'p1' | 'p2' | 'p3' }) {
         {kind === 'p1' ? (
           <>
             <Row>
-              <View style={{ width: 44, height: 44, borderRadius: radius.md, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt-outline" color={colors.teal} /></View>
+              <View style={{ width: 44, height: 44, borderRadius: radius.md, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt-outline" color={colors.accent} /></View>
               <View style={{ flex: 1, gap: space.sm }}><Line w="80%" /><Line w="50%" /></View>
             </Row>
             <Money laari={12550} variant="heading" />
@@ -40,16 +40,16 @@ export function OnboardArt({ kind }: { kind: 'p1' | 'p2' | 'p3' }) {
         ) : null}
         {kind === 'p2' ? (
           <>
-            <Row><Icon name="leaf-outline" size={26} color={colors.teal} /><View style={{ flex: 1, gap: space.sm }}><Line w="70%" /></View></Row>
+            <Row><Icon name="leaf-outline" size={26} color={colors.accent} /><View style={{ flex: 1, gap: space.sm }}><Line w="70%" /></View></Row>
             <Money laari={5750000} variant="heading" />
             <ProgressBar percent={40} state="ok" label="" />
-            <Row>{[0, 1, 2, 3].map((i) => <View key={i} style={{ flex: 1, height: 28, borderRadius: 8, backgroundColor: i < 2 ? colors.teal : colors.sandDeep }} />)}</Row>
+            <Row>{[0, 1, 2, 3].map((i) => <View key={i} style={{ flex: 1, height: 28, borderRadius: 8, backgroundColor: i < 2 ? colors.accent : colors.groundDeep }} />)}</Row>
           </>
         ) : null}
         {kind === 'p3' ? (
           <>
-            <View style={{ alignItems: 'center' }}><View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}><Icon name="shield-checkmark" size={34} color={colors.teal} /></View></View>
-            {[0, 1, 2].map((i) => <Row key={i}><Icon name="checkmark-circle" size={20} color={colors.teal} /><Line w={i === 1 ? '60%' : '80%'} /></Row>)}
+            <View style={{ alignItems: 'center' }}><View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}><Icon name="shield-checkmark" size={34} color={colors.accent} /></View></View>
+            {[0, 1, 2].map((i) => <Row key={i}><Icon name="checkmark-circle" size={20} color={colors.accent} /><Line w={i === 1 ? '60%' : '80%'} /></Row>)}
           </>
         ) : null}
       </View>

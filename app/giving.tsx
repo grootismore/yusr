@@ -42,10 +42,10 @@ export default function Giving() {
         <Money laari={totals.goalCounted} variant="display" />
         {goal ? (
           <>
-            {/* Giving more than the goal is never an error: the bar is teal at any amount. */}
+            {/* Giving more than the goal is never an error: the bar is accent at any amount. */}
             <ProgressBar percent={Math.min(100, percent)} state="ok" label={t('a11y.progress', { percent })} />
             <Msg k="giving.goalOf" amounts={{ goal }} variant="small" color={colors.inkMuted} />
-            {percent >= 100 ? <Row><Icon name="heart" color={colors.teal} /><Text style={{ flex: 1 }}>{t('giving.goalReached')}</Text></Row> : null}
+            {percent >= 100 ? <Row><Icon name="heart" color={colors.accent} /><Text style={{ flex: 1 }}>{t('giving.goalReached')}</Text></Row> : null}
           </>
         ) : <Button kind="secondary" label={t('giving.goalSet')} onPress={() => router.push('/zakat')} />}
         <Text variant="small" color={colors.inkMuted}>{t('giving.countsNote')}</Text>
@@ -56,7 +56,7 @@ export default function Giving() {
 
       <Card>
         <Row>
-          <Icon name="moon-outline" color={colors.teal} />
+          <Icon name="moon-outline" color={colors.accent} />
           <Text variant="heading" style={{ flex: 1 }}>{t('zakat.dateTitle')}</Text>
         </Row>
         {next && hijri ? (

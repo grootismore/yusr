@@ -61,7 +61,7 @@ export default function ContactInvite() {
       <Card>
         <Row style={{ minHeight: 52 }}>
           <Text style={{ flex: 1 }}>{t('contacts.consent')}</Text>
-          <Switch accessibilityLabel={t('contacts.consent')} value={consent} onValueChange={setConsent} trackColor={{ true: colors.teal, false: colors.control }} />
+          <Switch accessibilityLabel={t('contacts.consent')} value={consent} onValueChange={setConsent} trackColor={{ true: colors.accent, false: colors.control }} />
         </Row>
         {errors.consent ? <Text variant="small" color={colors.coral} accessibilityLiveRegion="polite">{errors.consent}</Text> : null}
       </Card>
