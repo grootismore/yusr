@@ -18,11 +18,12 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
 };
 
 /** Page: sand background, safe area, optional scroll. Sets the web preview direction. */
-export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
-  /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode }) {
+export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
+  /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode;
+  /** Let the content fill the screen so a footer can sit at the bottom (marginTop: 'auto'). */ grow?: boolean }) {
   const colors = useColors();
   const { i18n } = useTranslation();
-  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl };
+  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl, ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.sand }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       {scroll ? (
