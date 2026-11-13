@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
@@ -13,7 +14,7 @@ import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
-import { monthStart, today } from '@/lib/dates';
+import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
 /** Round-cornered shortcut tile: icon over a short label. */
@@ -33,6 +34,7 @@ function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; 
 
 export default function Home() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
@@ -59,6 +61,11 @@ export default function Home() {
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
   const state = budgetState(spent, limit);
+  const recentGroups = useMemo(() => {
+    const groups = new Map<string, typeof expenses>();
+    for (const e of expenses.slice(0, 6)) groups.set(e.spent_at, [...(groups.get(e.spent_at) ?? []), e]);
+    return [...groups];
+  }, [expenses]);
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -80,15 +87,15 @@ export default function Home() {
   }
 
   return (
-    <Screen>
-      <ScreenTitle title={t('app.name')} />
-
-      <Card tone="hero" style={{ gap: space.lg, padding: space.xl, overflow: 'hidden' }}>
-        {/* Soft shapes give the card depth without an image or a gradient dependency. */}
-        <View pointerEvents="none" style={{ position: 'absolute', top: -60, end: -50, width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.10)' }} />
-        <View pointerEvents="none" style={{ position: 'absolute', bottom: -90, start: -40, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+    <Screen padded={false} bleed>
+      {/* Header band: runs under the status bar, carries the month's figure; the shortcut tiles overlap its lower edge. */}
+      <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
+        borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', top: -70, end: -60, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(255,255,255,0.10)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', bottom: -100, start: -50, width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+        <Text variant="heading" color={colors.onTeal} accessibilityRole="header">{t('app.name')}</Text>
         <Text color={colors.onTeal}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onTeal} style={{ fontSize: 40, lineHeight: 52 }} />
+        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onTeal} style={{ fontSize: 44, lineHeight: 56 }} />
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onTeal} /> : null}
         {limit ? (
           <>
@@ -110,15 +117,16 @@ export default function Home() {
             <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onTeal, borderColor: colors.onTeal }} />
           </>
         )}
-      </Card>
+      </View>
 
-      <Row style={{ alignItems: 'stretch', gap: space.sm }}>
+      <Row style={{ alignItems: 'stretch', gap: space.sm, marginTop: -48, paddingHorizontal: space.lg }}>
         <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
         <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
         <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} />
         <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} />
       </Row>
 
+      <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
       {debtPlan.open.length > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
           <Card>
@@ -176,7 +184,15 @@ export default function Home() {
           <Text variant="heading">{t('home.recent')}</Text>
           <Button kind="ghost" label={t('home.seeAll')} onPress={() => router.push('/reports')} />
         </Row>
-        <Card>{expenses.slice(0, 5).map((e) => <ExpenseRow key={e.id} expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} />)}</Card>
+        <Card>
+          {recentGroups.map(([day, rows]) => (
+            <View key={day} style={{ gap: space.xs }}>
+              <Text variant="small" color={colors.inkMuted}>{day === today() ? t('common.today') : day === addDays(today(), -1) ? t('common.yesterday') : <Text latin variant="small" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
+              {rows.map((e) => <ExpenseRow key={e.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} />)}
+            </View>
+          ))}
+        </Card>
+      </View>
       </View>
     </Screen>
   );

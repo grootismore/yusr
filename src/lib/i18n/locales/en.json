@@ -568,7 +568,15 @@
   },
   "add": {
     "expense": "Expense",
-    "income": "Income"
+    "income": "Income",
+    "backspace": "Delete last digit",
+    "point": "Decimal point",
+    "savedExpense": "Expense saved",
+    "savedIncome": "Income saved",
+    "another": "Add another",
+    "details": "Details",
+    "howMuch": "How much?",
+    "next": "Next"
   },
   "income": {
     "addTitle": "Add income",
