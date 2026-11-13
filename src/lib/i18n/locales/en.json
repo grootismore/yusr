@@ -152,7 +152,8 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "about": "Kharadhu helps you see where your money goes.",
-    "debts": "Debt-free plan"
+    "debts": "Debt-free plan",
+    "giving": "Giving"
   },
   "settings": {
     "title": "Settings",
@@ -266,5 +267,80 @@
     "paidSoFar": "Paid so far {{amount}}",
     "owedNowLabel": "Owed now {{amount}}",
     "settled": "This debt is cleared. Alhamdulillah."
-  }
+  },
+  "giving": {
+    "title": "Giving",
+    "intro": "Giving is a gentle habit. Every amount counts, and there is no pressure.",
+    "goal": "Monthly sadaqah goal",
+    "goalSet": "Set a monthly goal",
+    "given": "Given this month",
+    "goalReached": "You've reached your goal this month. May it be accepted.",
+    "goalOf": "of {{goal}} goal",
+    "log": "Log giving",
+    "logTitle": "Log giving",
+    "kind": {
+      "sadaqah": "Sadaqah",
+      "zakat": "Zakat",
+      "fitr": "Zakat al-fitr",
+      "fidya": "Fidya",
+      "kaffarah": "Kaffarah",
+      "jariyah": "Sadaqah jariyah"
+    },
+    "type": "Type",
+    "recipient": "Recipient or note",
+    "recipientHint": "Private. Only you can see this.",
+    "saved": "Giving logged",
+    "obligations": "Zakat and other obligations this month: {{amount}}",
+    "empty": "Nothing logged this month yet.",
+    "thisMonth": "This month",
+    "deleteTitle": "Delete this entry?",
+    "deleteBody": "The matching expense is removed too.",
+    "countsNote": "Sadaqah and sadaqah jariyah count toward your goal. Zakat and other obligations are kept separate.",
+    "homeCardGoal": "{{given}} of {{goal}}",
+    "homeCardGiven": "{{given}} given this month"
+  },
+  "zakat": {
+    "title": "Zakat date and goal",
+    "goalLabel": "Monthly sadaqah goal (optional)",
+    "dateTitle": "Your zakat date",
+    "dateHint": "The Hijri date your zakat year ends, if you keep one.",
+    "month": "Hijri month",
+    "day": "Day of the month",
+    "adjust": "Moon-sighting adjustment",
+    "adjustHint": "Moon sighting can differ by a day. Choose the date that matches yours.",
+    "adjustValue": {
+      "minus": "1 day earlier",
+      "zero": "No change",
+      "plus": "1 day later"
+    },
+    "next": "Next: {{date}}",
+    "daysLeft_one": "{{count}} day to go",
+    "daysLeft_other": "{{count}} days to go",
+    "today": "It's today",
+    "reminder": "Remind me",
+    "reminderNote": "A week before and on the day. The reminder never shows amounts.",
+    "permissionDenied": "Notifications are off for Kharadhu. You can allow them in your phone's settings.",
+    "guidance": "Zakat is a personal obligation that depends on your situation. Please ask a trusted scholar about your own case. Kharadhu only helps you remember.",
+    "notifTitle": "Kharadhu",
+    "notifWeek": "A gentle reminder: your zakat date is a week away.",
+    "notifDay": "A gentle reminder: your zakat date is today.",
+    "invalidDay": "Enter a day from 1 to 30.",
+    "saved": "Saved",
+    "setDate": "Set your zakat date",
+    "editDate": "Change"
+  },
+  "hijriMonths": [
+    "Muharram",
+    "Safar",
+    "Rabi al-Awwal",
+    "Rabi al-Thani",
+    "Jumada al-Ula",
+    "Jumada al-Thani",
+    "Rajab",
+    "Shaban",
+    "Ramadan",
+    "Shawwal",
+    "Dhul Qadah",
+    "Dhul Hijjah"
+  ]
 }

@@ -9,11 +9,13 @@ import { RestartGate } from '@/components/RestartGate';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { LockGate } from '@/lib/lock';
+import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
 function Routes() {
   const { signedIn, loading } = useAuth();
+  useZakatReminderSync(signedIn);
   if (loading) return null;
   return (
     <LockGate active={signedIn}>
@@ -24,6 +26,9 @@ function Routes() {
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="giving" />
+          <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
           <Stack.Screen name="debt" />
           <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />

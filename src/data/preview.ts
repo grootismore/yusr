@@ -6,6 +6,9 @@ import type { Category, Expense } from './types';
 // ---- debts (preview)
 import type { Debt, DebtPayment } from '@/features/debts/types';
 
+// ---- giving (preview)
+import type { GivingEntry } from '@/features/giving/logic';
+
 const cat = (slug: string, name_en: string, name_dv: string, icon: string): Category => ({ id: slug, user_id: null, slug, name_en, name_dv, icon });
 export const categories: Category[] = [
   cat('food-groceries', 'Food and groceries', 'ކާބޯތަކެތި', 'cart'), cat('transport', 'Transport', 'ދަތުރުފަތުރު', 'boat'),
@@ -39,4 +42,9 @@ export const debtPayments: DebtPayment[] = [
   { id: 'p1', debt_id: 'd1', amount_laari: 250_000, paid_on: '2026-10-10', note: null },
   { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_on: '2026-09-10', note: 'Salary day' },
   { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_on: '2026-10-28', note: null },
+];
+export const giving: GivingEntry[] = [
+  { id: 'g1', expense_id: 'e6', kind: 'sadaqah', recipient_note: 'Masjid fund', amount_laari: 20_000, spent_at: '2026-11-06' },
+  { id: 'g2', expense_id: 'e9', kind: 'jariyah', recipient_note: null, amount_laari: 10_000, spent_at: '2026-11-03' },
+  { id: 'g3', expense_id: 'e10', kind: 'zakat', recipient_note: 'ޢާއިލާ', amount_laari: 150_000, spent_at: '2026-11-02' },
 ];
