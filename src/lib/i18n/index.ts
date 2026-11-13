@@ -31,6 +31,9 @@ function applyDirection(): void {
   I18nManager.forceRTL(false);
 }
 
+// Run at import, before anything renders: a direction an older version forced is cleared even if a later step fails.
+applyDirection();
+
 export async function initI18n(): Promise<Language> {
   const language = resolveLanguage(await getItem(STORAGE_KEY));
   await i18n.use(initReactI18next).init({
