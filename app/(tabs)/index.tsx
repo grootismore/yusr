@@ -88,7 +88,7 @@ export default function Home() {
         <View pointerEvents="none" style={{ position: 'absolute', top: -60, end: -50, width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.10)' }} />
         <View pointerEvents="none" style={{ position: 'absolute', bottom: -90, start: -40, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,255,255,0.07)' }} />
         <Text color={colors.onTeal}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" color={colors.onTeal} style={{ fontSize: 40, lineHeight: 52 }} />
+        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onTeal} style={{ fontSize: 40, lineHeight: 52 }} />
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onTeal} /> : null}
         {limit ? (
           <>

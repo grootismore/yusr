@@ -1,8 +1,7 @@
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Chip, Icon, Row, Screen } from '@/components/ui';
+import { Button, Card, Chip, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useAudit, useCheckin, useWrite } from '@/data/hooks';
 import { eventKey } from '@/features/register/readiness';
@@ -14,7 +13,6 @@ import { space, useColors } from '@/theme/tokens';
 export default function Release() {
   const colors = useColors();
   const { t } = useTranslation();
-  const router = useRouter();
   const checkin = useCheckin().data;
   const audit = useAudit().data ?? [];
   const okay = useWrite(api.recordActivity);
@@ -24,10 +22,7 @@ export default function Release() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('release.title')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('release.title')} />
       <Card tone="good"><Text>{t('release.intro')}</Text></Card>
 
       {checkin ? (

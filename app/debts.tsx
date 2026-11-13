@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Chip, Field, Icon, Row, Screen } from '@/components/ui';
+import { Button, Card, Chip, Field, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useDebtPayments, useDebts, usePlanSettings, useWrite } from '@/data/hooks';
 import { computePlan } from '@/features/debts/compute';
@@ -31,12 +31,8 @@ export default function Debts() {
   const [typed, setTyped] = useState<string | null>(null);
   const budgetText = typed ?? formatNumber(settings.budgetLaari ?? view.minimums).replace(/,/g, '');
 
-  const rtlBack = <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />;
   const header = (
-    <Row style={{ justifyContent: 'space-between' }}>
-      <Text variant="title" style={{ flex: 1 }}>{t('debts.title')}</Text>
-      {rtlBack}
-    </Row>
+  <StackHeader title={t('debts.title')} />
   );
 
   if (!debtsQ.isLoading && debts.length === 0) {
