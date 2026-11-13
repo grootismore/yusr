@@ -6,6 +6,7 @@ import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import { useCategories, useExpenses, useIncome } from '@/data/hooks';
+import { money } from '@/lib/money';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
 
@@ -63,7 +64,10 @@ export default function Activity() {
                     <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon name="arrow-down" color={colors.accent} />
                     </View>
-                    <Text numberOfLines={1} style={{ flex: 1 }}>{i.note || t('add.income')}</Text>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text numberOfLines={1}>{i.note || t('add.income')}</Text>
+                      {i.currency !== 'MVR' ? <Text latin variant="small" color={colors.inkMuted}>{money(i.amount_laari, i.currency)}</Text> : null}
+                    </View>
                     <Money laari={i.mvr_laari} prefix="+" color={colors.accent} />
                   </Row>
                 );
