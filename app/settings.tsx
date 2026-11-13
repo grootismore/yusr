@@ -43,7 +43,7 @@ export default function Settings() {
 
   async function pickLanguage(l: Language) {
     if (l === i18n.language) return;
-    await setLanguage(l); // shows the restart screen if the direction changes
+    await setLanguage(l);
     updateProfile.mutate({ language: l });
   }
 

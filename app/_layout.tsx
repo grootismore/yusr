@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { I18nextProvider } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { RestartGate } from '@/components/RestartGate';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { applyAppearance, loadAppearance } from '@/lib/appearance';
@@ -94,6 +94,12 @@ function Routes() {
   );
 }
 
+/** Mirrors the whole app for Dhivehi at runtime, so changing language never needs a restart. */
+function Direction({ children }: { children: ReactNode }) {
+  const { i18n: instance } = useTranslation();
+  return <View style={{ flex: 1, direction: instance.language === 'dv' ? 'rtl' : 'ltr' }}>{children}</View>;
+}
+
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
   // Thaana Noor for Dhivehi, Nunito Sans for English and numbers. If a font fails to load the app carries on in the system font.
@@ -112,8 +118,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <StatusBar style="auto" />
-            <Routes />
-            <RestartGate />
+            <Direction><Routes /></Direction>
           </AuthProvider>
         </QueryClientProvider>
       </I18nextProvider>

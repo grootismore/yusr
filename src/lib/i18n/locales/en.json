@@ -206,9 +206,6 @@
     "biometricUnavailable": "Set up Face ID or a fingerprint on your phone first.",
     "keepPhotos": "Keep receipt photos",
     "keepPhotosNote": "By default the photo is deleted after we read it, and only the details are kept.",
-    "restartTitle": "Please reopen the app",
-    "restartBody": "The language changed, and the layout needs a fresh start.",
-    "restartHow": "Close Kharadhu completely and open it again.",
     "appearance": "Appearance",
     "appearanceChoice": {
       "system": "Match my phone",
