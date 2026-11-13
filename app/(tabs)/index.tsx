@@ -8,7 +8,9 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
+import { paydayValue } from '@/features/foreign/logic';
+import { money } from '@/lib/money';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -56,6 +58,7 @@ export default function Home() {
   const givingQ = useGiving(month);
   const giving = useMemo(() => monthGiving(givingQ.data ?? []), [givingQ.data]);
   const goal = useZakat().data?.sadaqah_goal_laari ?? null;
+  const { held } = useHoldings();
 
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
@@ -142,6 +145,21 @@ export default function Home() {
       </Row>
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
+      {held.length > 0 ? (
+        <Card>
+          <Text variant="heading">{t('foreign.held')}</Text>
+          {held.map((x) => (
+            <Row key={x.currency} style={{ minHeight: 56 }}>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text latin variant="heading" style={{ writingDirection: 'ltr' }}>{money(x.minor, x.currency)}</Text>
+                <Msg k="foreign.heldMvr" amounts={{ amount: paydayValue(x, x.minor) }} variant="small" color={colors.inkMuted} />
+              </View>
+              <Button kind="secondary" label={t('foreign.convert')} onPress={() => router.push({ pathname: '/convert', params: { currency: x.currency } })} />
+            </Row>
+          ))}
+        </Card>
+      ) : null}
+
       {debtPlan.open.length > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
           <Card>

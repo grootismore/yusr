@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
+import { SplitPay } from '@/features/foreign/SplitPay';
 import { Keypad } from '@/components/Keypad';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
@@ -25,16 +26,57 @@ export default function AddExpense() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
-  const [mode, setMode] = useState<'expense' | 'income'>('expense');
+  const [mode, setMode] = useState<'expense' | 'income' | 'split'>('expense');
+  const [splitDone, setSplitDone] = useState<number | null>(null);
   const [step, setStep] = useState<'amount' | 'details' | 'done'>('amount');
   const [typed, setTyped] = useState('');
   const [saved, setSaved] = useState<NewExpense | null>(null);
   const categories = useCategories().data ?? [];
   const addExpense = useWrite(api.addExpense);
   const addIncome = useWrite(api.addIncome);
+  const addSplit = useWrite(api.addIncomeSplit);
   const isIncome = mode === 'income';
+  const isSplit = mode === 'split';
   let laari = 0;
   try { laari = typed ? parseAmount(typed) : 0; } catch { laari = 0; }
+
+  if (isSplit && splitDone !== null) {
+    return (
+      <Screen>
+        <View style={{ alignItems: 'center', gap: space.md, paddingTop: space.xxl }}>
+          <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}><Icon name="checkmark" size={36} color={colors.onAccent} /></View>
+          </View>
+          <Text variant="title" accessibilityLiveRegion="polite">{t('foreign.saved')}</Text>
+          <Text color={colors.inkMuted}>{t('foreign.savedBody', { n: splitDone })}</Text>
+        </View>
+        <Button label={t('common.done')} onPress={() => router.back()} />
+        <Button kind="ghost" label={t('add.another')} onPress={() => { setSplitDone(null); }} />
+      </Screen>
+    );
+  }
+
+  if (isSplit) {
+    return (
+      <Screen>
+        <Row style={{ gap: space.xs }}>
+          <IconButton icon="close" label={t('common.cancel')} onPress={() => router.back()} />
+          <Text variant="title" style={{ flex: 1 }}>{t('foreign.salaryChip')}</Text>
+        </Row>
+        <Row style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Chip label={t('add.expense')} selected={false} onPress={() => setMode('expense')} />
+          <Chip label={t('add.income')} selected={false} onPress={() => setMode('income')} />
+          <Chip label={t('foreign.salaryChip')} selected onPress={() => setMode('split')} />
+        </Row>
+        <SplitPay busy={addSplit.isPending} onSave={async (rows, date, note) => {
+          await addSplit.mutateAsync({ rows, received_at: date, note });
+          const foreign = rows.filter((r) => r.currency !== 'MVR');
+          await Promise.all([...new Set(foreign.map((r) => r.currency))].map((c) => saveRate(c, foreign.find((r) => r.currency === c)!.fx_rate_to_mvr)));
+          success(); setSplitDone(rows.length);
+        }} />
+      </Screen>
+    );
+  }
 
   if (step === 'done' && saved) {
     const cat = categories.find((c) => c.id === saved.category_id);
@@ -96,9 +138,10 @@ export default function AddExpense() {
         <IconButton icon="close" label={t('common.cancel')} onPress={() => router.back()} />
         <Text variant="title" style={{ flex: 1 }}>{t(isIncome ? 'income.addTitle' : 'expense.addTitle')}</Text>
       </Row>
-      <Row style={{ justifyContent: 'center' }}>
+      <Row style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
         <Chip label={t('add.expense')} selected={!isIncome} onPress={() => setMode('expense')} />
         <Chip label={t('add.income')} selected={isIncome} onPress={() => setMode('income')} />
+        <Chip label={t('foreign.salaryChip')} selected={false} onPress={() => setMode('split')} />
       </Row>
       <View style={{ alignItems: 'center', gap: space.sm, paddingVertical: space.lg }}>
         <Text color={colors.inkMuted}>{t('add.howMuch')}</Text>

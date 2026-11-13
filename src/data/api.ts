@@ -8,6 +8,7 @@ import { getItem, setItem } from '@/lib/kv';
 import * as fx from './preview';
 import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
+import type { Conversion, KeptIncome, SplitIncome } from '@/features/foreign/logic';
 import { sumByMonth } from '@/features/trends/trend';
 import type { GivingEntry, GivingKind } from '@/features/giving/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
@@ -58,6 +59,35 @@ export async function addIncome(input: NewExpense): Promise<void> {
   must(await getSupabase().from('income').insert({
     user_id: await uid(), amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
   }));
+}
+
+/** Everything received in a foreign currency that was kept in it (all time), for the "held in USD" balance. */
+export async function listKeptIncome(): Promise<KeptIncome[]> {
+  if (PREVIEW) return fx.kept;
+  const rows = must(await getSupabase().from('income').select('currency,amount_laari,mvr_laari').eq('keep_in_currency', true));
+  return rows.map((r) => ({ currency: r.currency as string, amount_minor: r.amount_laari as number, mvr_laari: r.mvr_laari as number }));
+}
+
+export async function listConversions(): Promise<Conversion[]> {
+  if (PREVIEW) return fx.conversions;
+  return must(await getSupabase().from('conversions').select('id,currency,amount_minor,mvr_laari,converted_at,note').order('converted_at', { ascending: false }).order('created_at', { ascending: false }));
+}
+
+export async function addConversion(input: { currency: string; amount_minor: number; mvr_laari: number; converted_at: string; note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('conversions').insert({ ...input, user_id: await uid() }));
+}
+
+export async function deleteConversion(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('conversions').delete().eq('id', id));
+}
+
+/** A payday in more than one currency: one income row per line, all on the same day with the same note, saved together. */
+export async function addIncomeSplit(input: { rows: SplitIncome[]; received_at: string; note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  const user_id = await uid();
+  must(await getSupabase().from('income').insert(input.rows.map((r) => ({ user_id, amount_laari: r.amount_laari, currency: r.currency, fx_rate_to_mvr: r.fx_rate_to_mvr, keep_in_currency: r.keep_in_currency, received_at: input.received_at, note: input.note }))));
 }
 
 export async function deleteIncome(id: string): Promise<void> {

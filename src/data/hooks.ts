@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { effectiveBudgets } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
 import * as api from './api';
+import { holdings } from '@/features/foreign/logic';
 import type { Category } from './types';
 
 export const useCategories = () => useQuery({ queryKey: ['categories'], queryFn: api.listCategories, staleTime: 5 * 60_000 });
@@ -38,5 +40,12 @@ export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listA
 export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });
 
 export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });
+/** What is held in each foreign currency, and the exchanges made. */
+export function useHoldings() {
+  const kept = useQuery({ queryKey: ['kept-income'], queryFn: api.listKeptIncome });
+  const conversions = useQuery({ queryKey: ['conversions'], queryFn: api.listConversions });
+  const held = useMemo(() => holdings(kept.data ?? [], conversions.data ?? []), [kept.data, conversions.data]);
+  return { held, conversions: conversions.data ?? [], loading: kept.isLoading || conversions.isLoading };
+}
 export const useIncome = (month: string) => useQuery({ queryKey: ['income', month], queryFn: () => api.listIncome(month) });
 export const useTrend = (months: string[]) => useQuery({ queryKey: ['trend', months[0], months.length], queryFn: () => api.monthlyTotals(months) });

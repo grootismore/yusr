@@ -81,6 +81,9 @@ export const income: IncomeRow[] = [
   { id: 'i2', amount_laari: 250_000, currency: 'MVR', mvr_laari: 250_000, received_at: '2026-11-08', note: 'ޓިއުޝަން' },
 ];
 
+export const kept: import('@/features/foreign/logic').KeptIncome[] = [{ currency: 'USD', amount_minor: 100_000, mvr_laari: 1_546_000 }];
+export const conversions: import('@/features/foreign/logic').Conversion[] = [{ id: 'c1', currency: 'USD', amount_minor: 30_000, mvr_laari: 466_500, converted_at: '2026-11-09', note: null }];
+
 // ---- trend (preview): a plausible, uneven history
 export const trend = (months: string[]) => ({
   spend: months.map((_, i) => [820_000, 1_050_000, 960_000, 1_240_000, 1_103_000, 1_180_000][i % 6]),
