@@ -23,7 +23,7 @@ export function Keypad({ value, onChange }: { value: string; onChange: (v: strin
               accessibilityLabel={k === 'back' ? t('add.backspace') : k === '.' ? t('add.point') : k}
               onPress={() => { tick(); onChange(pressKey(value, k)); }}
               style={({ pressed }) => ({ flex: 1, height: 60, borderRadius: radius.md, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: k === 'back' ? colors.accentWash : colors.field, borderWidth: 1, borderColor: colors.glassEdge, opacity: pressed ? 0.55 : 1 })}
+                backgroundColor: k === 'back' ? colors.accentWash : colors.field, borderWidth: 1, borderColor: colors.cardEdge, opacity: pressed ? 0.55 : 1 })}
             >
               {k === 'back' ? <Icon name="backspace-outline" color={colors.accent} /> : <Text latin variant="heading">{k}</Text>}
             </Pressable>

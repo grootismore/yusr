@@ -17,14 +17,23 @@ import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
-/** Round-cornered shortcut tile: icon over a short label. */
+/** Pastel figure tile: a short label over one amount, dark text on lime or lilac. */
+function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
+  const colors = useColors();
+  return (
+    <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
+      <Text variant="small" color={colors.onTile}>{label}</Text>
+      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit color={colors.onTile} />
+    </View>
+  );
+}
+
+/** Round shortcut: an icon in a circle over a short label. */
 function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
   const colors = useColors();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
-      style={({ pressed }) => ({ flex: 1, minHeight: 88, alignItems: 'center', justifyContent: 'center', gap: space.xs, padding: space.sm, borderRadius: radius.lg, borderCurve: 'continuous',
-        backgroundColor: colors.field, borderWidth: 1, borderColor: colors.glassEdge, opacity: pressed ? 0.6 : 1 })}>
-      <View style={{ width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.6 : 1 })}>
+      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.field, borderWidth: 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={icon} color={colors.accent} />
       </View>
       <Text variant="small" numberOfLines={2} style={{ textAlign: 'center' }}>{label}</Text>
@@ -67,6 +76,7 @@ export default function Home() {
     for (const e of expenses.slice(0, 6)) groups.set(e.spent_at, [...(groups.get(e.spent_at) ?? []), e]);
     return [...groups];
   }, [expenses]);
+  const showTiles = (!!limit && state !== 'over') || incomeTotal > 0;
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -75,7 +85,7 @@ export default function Home() {
 
   if (expenses.length === 0 && !expensesQuery.isLoading) {
     return (
-      <Screen>
+      <Screen tabbed>
         <ScreenTitle title={t('app.name')} />
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
           <Icon name="receipt-outline" size={44} color={colors.accent} />
@@ -88,7 +98,7 @@ export default function Home() {
   }
 
   return (
-    <Screen padded={false} bleed scrollY={scrollY} overlay={
+    <Screen padded={false} bleed tabbed scrollY={scrollY} overlay={
       // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.hero, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
         opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
@@ -119,7 +129,6 @@ export default function Home() {
                   : <Text variant="small" color={colors.ink}>{t('home.nearLimit')}</Text>}
               </View>
             ) : null}
-            {state === 'over' ? null : <Msg k="home.left" amounts={{ amount: limit - spent }} color={colors.onHero} />}
             <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onHero} />
           </>
         ) : (
@@ -130,7 +139,14 @@ export default function Home() {
         )}
       </View>
 
-      <Row style={{ alignItems: 'stretch', gap: space.sm, marginTop: -48, paddingHorizontal: space.lg }}>
+      {showTiles ? (
+        <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
+          {limit && state !== 'over' ? <Tile color={colors.lime} label={t('home.leftLabel')} laari={limit - spent} /> : null}
+          {incomeTotal > 0 ? <Tile color={colors.lilac} label={t('add.income')} laari={incomeTotal} /> : null}
+        </Row>
+      ) : null}
+
+      <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
         <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
         <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
         <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} />

@@ -59,7 +59,7 @@ export default function Budget() {
   const limits = useBudgets(monthStart()).data;
   const categories = useCategories().data ?? [];
   return (
-    <Screen>
+    <Screen tabbed>
       <ScreenTitle title={t('budget.title')} subtitle={t('budget.hint')} />
       <Card>
         <LimitRow title={t('budget.overall')} icon="calendar" categoryId={null} limit={limits?.get(null)} />

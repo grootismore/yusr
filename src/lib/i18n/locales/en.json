@@ -93,7 +93,8 @@
     "emptyBody": "Add your first expense, or scan a receipt with Raseedhu.",
     "addExpense": "Add expense",
     "income": "Income",
-    "incomeLine": "Income {{amount}}"
+    "incomeLine": "Income {{amount}}",
+    "leftLabel": "Left"
   },
   "expense": {
     "addTitle": "Add expense",

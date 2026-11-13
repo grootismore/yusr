@@ -42,7 +42,7 @@ export default function Reports() {
   const rtl = i18n.language === 'dv';
 
   return (
-    <Screen>
+    <Screen tabbed>
       <ScreenTitle title={t('reports.title')} />
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />

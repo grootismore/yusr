@@ -1,7 +1,6 @@
 import { useEffect, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,12 +18,13 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
 };
 
 /** Page: ground background, safe area, optional scroll. Sets the web preview direction. */
-export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
+export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false, tabbed = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
   /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode;
-  /** Let the content fill the screen so a footer can sit at the bottom (marginTop: 'auto'). */ grow?: boolean }) {
+  /** Let the content fill the screen so a footer can sit at the bottom (marginTop: 'auto'). */ grow?: boolean;
+  /** A tab screen: leave room for the floating tab bar. */ tabbed?: boolean }) {
   const colors = useColors();
   const { i18n } = useTranslation();
-  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl, ...(grow ? { flexGrow: 1 } : {}) };
+  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
@@ -37,53 +37,37 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   );
 }
 
-/**
- * Frosted-glass card: a blurred, translucent fill with a light rim over the page's glow. iOS and the web blur what is behind;
- * Android shows the translucent fill without blur. Tones: warn / bad / good are tinted washes, hero is the solid deep-indigo surface.
- */
+/** A card: solid fill with a fine rim. Tones: warn / bad / good are tinted washes, hero is the deep-green panel. */
 export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good' | 'hero'; style?: ViewStyle }) => {
   const colors = useColors();
   const dark = useIsDark();
-  const solid = tone === 'hero' ? colors.hero : tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.accentWash : null;
-  const rim = tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : tone === 'hero' ? 'transparent' : colors.glassEdge;
+  const fill = tone === 'hero' ? colors.hero : tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.accentWash : colors.card;
+  const rim = tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : tone === 'hero' ? 'transparent' : colors.cardEdge;
   return (
     <View
-      style={{ borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 1, borderColor: rim,
-        boxShadow: dark ? '0 8px 24px rgba(0,0,0,0.35)' : '0 1px 2px rgba(17,20,42,0.04), 0 10px 28px rgba(60,66,140,0.10)' }}
+      style={{ borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 1, borderColor: rim, backgroundColor: fill,
+        ...(dark ? {} : { boxShadow: '0 1px 2px rgba(14,21,17,0.04), 0 8px 20px rgba(14,21,17,0.05)' }) }}
     >
-      {solid ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: solid }]} /> : (
-        <>
-          <BlurView pointerEvents="none" intensity={dark ? 40 : 55} tint={dark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.glass }]} />
-        </>
-      )}
       <View style={[{ padding: space.lg, gap: space.md }, style]}>{children}</View>
     </View>
   );
 };
 
-/** A soft coloured glow made of stacked translucent circles (no image, no blur needed). */
-function Glow({ color, size, opacity, style }: { color: string; size: number; opacity: number; style: ViewStyle }) {
-  const rings = 28;
-  const each = 1 - Math.pow(1 - opacity, 1 / rings); // stacked, the centre reaches `opacity` and the edge fades to nothing
-  return (
-    <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
-      {Array.from({ length: rings }, (_, i) => {
-        const d = size * (1 - i / rings);
-        return <View key={i} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: color, opacity: each }} />;
-      })}
-    </View>
-  );
-}
-
-/** The page behind every screen: the ground colour with two soft glows, so the glass cards have something to blur. */
+/** The page behind every screen: the ground colour, with a faint lime glow at the top in the dark theme. */
 export function Backdrop() {
   const colors = useColors();
   const dark = useIsDark();
+  const rings = 24;
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.ground, overflow: 'hidden' }]}>
-      <Glow color={colors.accent} size={460} opacity={dark ? 0.26 : 0.30} style={{ top: -170, end: -170 }} />
-      <Glow color={dark ? '#C9A66B' : '#F0C98B'} size={380} opacity={dark ? 0.12 : 0.34} style={{ bottom: -120, start: -150 }} />
+      {dark ? (
+        <View style={{ position: 'absolute', top: -200, end: -200, width: 440, height: 440, alignItems: 'center', justifyContent: 'center' }}>
+          {Array.from({ length: rings }, (_, i) => {
+            const d = 440 * (1 - i / rings);
+            return <View key={i} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: colors.lime, opacity: 1 - Math.pow(1 - 0.10, 1 / rings) }} />;
+          })}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -230,7 +214,7 @@ function Fill({ percent, color }: { percent: number; color: string }) {
 
 export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = onHero ? colors.onHero : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
+  const fill = onHero ? colors.lime : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
       style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.groundDeep, overflow: 'hidden' }}>

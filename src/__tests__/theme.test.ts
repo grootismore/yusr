@@ -9,7 +9,7 @@ const text: [string, keyof Palette, keyof Palette][] = [
   ['onAccent on accent', 'onAccent', 'accent'], ['coral on ground', 'coral', 'ground'], ['coral on surface', 'coral', 'surface'],
   ['ink on amberWash', 'ink', 'amberWash'], ['coral on coralWash', 'coral', 'coralWash'], ['ink on accentWash', 'ink', 'accentWash'],
   ['accent on accentWash', 'accent', 'accentWash'], ['ink on groundDeep', 'ink', 'groundDeep'], ['muted on groundDeep', 'inkMuted', 'groundDeep'],
-  ['ink on coralWash', 'ink', 'coralWash'], ['onHero on hero', 'onHero', 'hero'],
+  ['ink on coralWash', 'ink', 'coralWash'], ['onHero on hero', 'onHero', 'hero'], ['onTile on lime', 'onTile', 'lime'], ['onTile on lilac', 'onTile', 'lilac'], ['lime on hero', 'lime', 'hero'], ['ink on card', 'ink', 'card'],
 ];
 const parts: [string, keyof Palette, keyof Palette][] = [
   ['control on ground', 'control', 'ground'], ['control on surface', 'control', 'surface'],

@@ -93,7 +93,8 @@
     "emptyBody": "ފުރަތަމަ ޚަރަދު އިތުރުކުރައްވާ، ނުވަތަ ރަސީދު ސްކޭންކުރައްވާ.",
     "addExpense": "ޚަރަދު އިތުރުކުރޭ",
     "income": "އާމްދަނީ",
-    "incomeLine": "އާމްދަނީ {{amount}}"
+    "incomeLine": "އާމްދަނީ {{amount}}",
+    "leftLabel": "ބާކީ"
   },
   "expense": {
     "addTitle": "ޚަރަދު އިތުރުކުރޭ",
