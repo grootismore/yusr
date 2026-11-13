@@ -163,7 +163,8 @@
     "limit": "Monthly limit",
     "saved": "Budget saved",
     "clear": "Remove limit",
-    "hint": "Set a limit, and we'll show how you're doing. Limits are for this month and the months after."
+    "hint": "Set a limit, and we'll show how you're doing. Limits are for this month and the months after.",
+    "over": "Over the limit"
   },
   "reports": {
     "title": "Reports",
@@ -179,7 +180,8 @@
     "prev": "Previous month",
     "next": "Next month",
     "net": "Net (income minus spending)",
-    "incomeList": "Income this month"
+    "incomeList": "Income this month",
+    "netShort": "Net"
   },
   "more": {
     "title": "More",

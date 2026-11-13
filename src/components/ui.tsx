@@ -8,6 +8,7 @@ import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { fontFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
+import { Money } from './Money';
 import { Text } from './Text';
 
 export type IconName = keyof typeof Ionicons.glyphMap;
@@ -53,7 +54,7 @@ export const Card = ({ children, tone = 'plain', style }: { children: ReactNode;
   );
 };
 
-/** The page behind every screen: the ground colour, with a faint lime glow at the top in the dark theme. */
+/** The page behind every screen: the ground colour, with a faint mint glow at the top in the dark theme. */
 export function Backdrop() {
   const colors = useColors();
   const dark = useIsDark();
@@ -64,7 +65,7 @@ export function Backdrop() {
         <View style={{ position: 'absolute', top: -200, end: -200, width: 440, height: 440, alignItems: 'center', justifyContent: 'center' }}>
           {Array.from({ length: rings }, (_, i) => {
             const d = 440 * (1 - i / rings);
-            return <View key={i} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: colors.lime, opacity: 1 - Math.pow(1 - 0.10, 1 / rings) }} />;
+            return <View key={i} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: colors.mint, opacity: 1 - Math.pow(1 - 0.10, 1 / rings) }} />;
           })}
         </View>
       ) : null}
@@ -214,7 +215,7 @@ function Fill({ percent, color }: { percent: number; color: string }) {
 
 export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = onHero ? colors.lime : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
+  const fill = onHero ? colors.mint : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
       style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.groundDeep, overflow: 'hidden' }}>
@@ -296,6 +297,17 @@ export function SettingRow({ icon, title, subtitle, value, onValueChange, disabl
         {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
       </View>
       <Switch accessibilityLabel={title} value={value} disabled={disabled} trackColor={{ true: colors.accent, false: colors.control }} onValueChange={onValueChange} />
+    </View>
+  );
+}
+
+/** Pastel figure tile: a short label over one amount, dark text on mint or lilac. */
+export function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
+  const colors = useColors();
+  return (
+    <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
+      <Text variant="small" color={colors.onTile}>{label}</Text>
+      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit color={colors.onTile} />
     </View>
   );
 }

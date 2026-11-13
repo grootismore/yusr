@@ -20,9 +20,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // A floating pill: deep green, the active tab is lime.
-        tabBarActiveTintColor: colors.lime,
-        tabBarInactiveTintColor: '#8FA498',
+        // A floating pill: deep green, the active tab is mint.
+        tabBarActiveTintColor: colors.mint,
+        tabBarInactiveTintColor: '#A9C2B3',
         tabBarShowLabel: false,
         tabBarStyle: { position: 'absolute', start: space.lg, end: space.lg, bottom: Math.max(insets.bottom, space.sm) + space.xs, height: 64, borderRadius: 32, borderCurve: 'continuous',
           backgroundColor: colors.hero, borderTopWidth: 0, borderWidth: 1, borderColor: dark ? colors.cardEdge : 'transparent', paddingTop: 0, paddingBottom: 0, boxShadow: '0 10px 24px rgba(0,0,0,0.28)' },
@@ -41,7 +41,7 @@ export default function TabsLayout() {
                 accessibilityRole="button"
                 accessibilityLabel={t('a11y.scanReceipt')}
                 onPress={() => router.push('/scan')}
-                style={({ pressed }) => ({ marginTop: -26, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
+                style={({ pressed }) => ({ marginTop: -26, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
                   borderWidth: 4, borderColor: colors.hero })}
               >
                 <Icon name="scan" size={28} color={colors.onTile} />

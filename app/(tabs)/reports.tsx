@@ -6,13 +6,13 @@ import { TrendChart } from '@/components/TrendChart';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle } from '@/components/ui';
+import { Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, useTrend, useWrite } from '@/data/hooks';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
-import { addMonths, formatDate, monthStart } from '@/lib/dates';
-import { space, useColors } from '@/theme/tokens';
+import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
+import { radius, space, useColors } from '@/theme/tokens';
 
 export default function Reports() {
   const colors = useColors();
@@ -31,6 +31,11 @@ export default function Reports() {
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
     return [...m].sort((a, b) => b[1] - a[1]);
   }, [expenses]);
+  const days = useMemo(() => {
+    const g = new Map<string, typeof expenses>();
+    for (const e of expenses) g.set(e.spent_at, [...(g.get(e.spent_at) ?? []), e]);
+    return [...g].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [expenses]);
   const incomeQ = useIncome(month);
   const incomeRows = useMemo(() => incomeQ.data ?? [], [incomeQ.data]);
   const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0);
@@ -46,32 +51,37 @@ export default function Reports() {
       <ScreenTitle title={t('reports.title')} />
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
-        <Text variant="heading" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="heading">{month.slice(0, 4)}</Text></Text>
+        <View style={{ paddingVertical: space.sm, paddingHorizontal: space.xl, borderRadius: radius.pill, backgroundColor: colors.accentWash }}>
+          <Text variant="label" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="label">{month.slice(0, 4)}</Text></Text>
+        </View>
         <IconButton icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
       </Row>
 
-      <Card tone={overallState === 'over' ? 'bad' : overallState === 'near' ? 'warn' : 'plain'}>
-        <Text color={colors.inkMuted}>{t('reports.total')}</Text>
-        <Money laari={total} variant="display" />
-        {incomeTotal > 0 ? (
-          <View style={{ gap: 2 }}>
-            <Row><Text style={{ flex: 1 }} color={colors.inkMuted}>{t('reports.income')}</Text><Money laari={incomeTotal} /></Row>
-            <Row><Text style={{ flex: 1 }} color={colors.inkMuted}>{t('reports.net')}</Text><Money laari={incomeTotal - total} /></Row>
-          </View>
-        ) : null}
+      <Card tone="hero" style={{ gap: space.md, padding: space.xl }}>
+        <Text color={colors.onHero}>{t('reports.total')}</Text>
+        <Money laari={total} variant="display" color={colors.onHero} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} />
         {overall ? (
           <>
-            <ProgressBar percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
-            <Row>
-              {overallState !== 'ok' ? <Icon name={overallState === 'over' ? 'alert-circle' : 'warning'} color={overallState === 'over' ? colors.coral : colors.amberDeep} /> : null}
-              {overallState === 'over'
-                ? <Msg k="reports.overBy" amounts={{ amount: total - overall }} color={colors.coral} style={{ flex: 1 }} />
-                : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} style={{ flex: 1 }} />}
-            </Row>
-            {overallState === 'near' ? <Text>{t('reports.nearLimit')}</Text> : null}
+            <ProgressBar onHero percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
+            {overallState === 'over' || overallState === 'near' ? (
+              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.pill, backgroundColor: overallState === 'over' ? colors.coralWash : colors.amberWash }}>
+                <Icon name={overallState === 'over' ? 'alert-circle' : 'warning'} size={18} color={overallState === 'over' ? colors.coral : colors.amberDeep} />
+                {overallState === 'over'
+                  ? <Msg k="reports.overBy" amounts={{ amount: total - overall }} variant="small" color={colors.coral} />
+                  : <Text variant="small" color={colors.ink}>{t('reports.nearLimit')}</Text>}
+              </View>
+            ) : null}
+            {overallState === 'over' ? null : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} color={colors.onHero} />}
           </>
         ) : null}
       </Card>
+
+      {incomeTotal > 0 ? (
+        <Row style={{ alignItems: 'stretch', gap: space.md }}>
+          <Tile color={colors.lilac} label={t('reports.income')} laari={incomeTotal} />
+          <Tile color={colors.mint} label={t('reports.netShort')} laari={incomeTotal - total} />
+        </Row>
+      ) : null}
 
       {trend ? (
         <>
@@ -113,7 +123,7 @@ export default function Reports() {
               return (
                 <View key={id ?? 'none'} style={{ gap: space.xs }}>
                   <Row>
-                    <Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.accent} />
+                    <View style={{ width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}><Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.accent} /></View>
                     <Text style={{ flex: 1 }}>{catName(c)}</Text>
                     <Money laari={amount} />
                   </Row>
@@ -133,7 +143,12 @@ export default function Reports() {
               );
             })}
           </Card>
-          <Card>{expenses.map((e) => <ExpenseRow key={e.id} expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} />)}</Card>
+          {days.map(([day, list]) => (
+            <View key={day} style={{ gap: space.sm }}>
+              <Text variant="label" color={colors.inkMuted}>{day === today() ? t('common.today') : day === addDays(today(), -1) ? t('common.yesterday') : <Text latin variant="label" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
+              <Card>{list.map((e) => <ExpenseRow key={e.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} />)}</Card>
+            </View>
+          ))}
         </>
       )}
     </Screen>

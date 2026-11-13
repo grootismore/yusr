@@ -7,7 +7,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
+import { Button, Card, Icon, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
@@ -16,17 +16,6 @@ import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
-
-/** Pastel figure tile: a short label over one amount, dark text on lime or lilac. */
-function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
-  const colors = useColors();
-  return (
-    <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
-      <Text variant="small" color={colors.onTile}>{label}</Text>
-      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit color={colors.onTile} />
-    </View>
-  );
-}
 
 /** Round shortcut: an icon in a circle over a short label. */
 function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
@@ -141,7 +130,7 @@ export default function Home() {
 
       {showTiles ? (
         <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
-          {limit && state !== 'over' ? <Tile color={colors.lime} label={t('home.leftLabel')} laari={limit - spent} /> : null}
+          {limit && state !== 'over' ? <Tile color={colors.mint} label={t('home.leftLabel')} laari={limit - spent} /> : null}
           {incomeTotal > 0 ? <Tile color={colors.lilac} label={t('add.income')} laari={incomeTotal} /> : null}
         </Row>
       ) : null}
