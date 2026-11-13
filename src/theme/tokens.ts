@@ -4,23 +4,23 @@ import { useColorScheme } from 'react-native';
 // Look: "Ink and sky". A light page, a matte-black figure panel, one soft sky-blue accent for progress and the active tab.
 // Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  ground: '#F5F5F3', // page background
-  groundDeep: '#E8E8E4', // tracks, unselected segments
-  surface: '#FFFFFF', // solid surfaces
-  card: '#FFFFFF', // card fill
-  cardEdge: '#E6E6E1', // card rim
-  field: '#FFFFFF', // input and chip fill
+  ground: '#E1E6EA', // page background: dusty blue-grey
+  groundDeep: '#D2D9DF', // tracks, unselected segments
+  surface: '#EEF1F4', // solid surfaces: a light dusty tone, never pure white
+  card: '#EEF1F4', // card fill
+  cardEdge: '#D0D7DE', // card rim
+  field: '#EEF1F4', // input and chip fill
   ink: '#1E2023', // text and icons: matte black
   inkMuted: '#5B5E63', // secondary text (AA on ground and white)
-  line: '#E6E6E1', // hairlines
-  control: '#85888D', // borders of inputs and buttons (3:1 against ground)
+  line: '#D0D7DE', // hairlines
+  control: '#79818A', // borders of inputs and buttons (3:1 against ground)
   accent: '#1E2023', // primary actions, selected states
   onAccent: '#FFFFFF',
-  accentWash: '#ECECE8', // tinted tiles behind icons
+  accentWash: '#D6DDE4', // tinted tiles behind icons
   hero: '#222428', // the month's figure panel: matte black
   onHero: '#FFFFFF',
   sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
-  tile: '#ECECE8', // neutral figure tile
+  tile: '#EEF1F4', // neutral figure tile
   onTile: '#1E2023', // text on the tiles
   coral: '#B8362E', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
