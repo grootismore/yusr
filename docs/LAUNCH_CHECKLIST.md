@@ -4,12 +4,12 @@ Ported from the Yusr checklist and re-assessed against this app. Nothing ships t
 
 | # | Item | Status |
 | --- | --- | --- |
-| 1 | Privacy policy | **Gap.** Not written for Kharadhu. The Yusr draft (`classic-yusr/web/legal`) must be updated: Google Gemini (receipt photos are sent to it for extraction), Supabase, Resend, Expo push, the register and the owner-access limit, retention, deletion. Needs your business details and a Maldivian lawyer. In-app link reads `EXPO_PUBLIC_LEGAL_URL`. |
-| 2 | Terms of service | **Gap.** Same as 1 (guidance only, no fatwa; the release flow and its limits). |
-| 3 | Refund policy | **Gap** (small): state the app is free. |
+| 1 | Privacy policy | **Draft written** (`docs/legal/privacy.md`, matches the real data flows including Gemini and Resend, the owner-access limit and in-app deletion). **Gap:** your business details, lawyer review, a native Dhivehi version, and publishing it at `EXPO_PUBLIC_LEGAL_URL/privacy`. It also promises data export on request, which is by email only for now. |
+| 2 | Terms of service | **Draft written** (`docs/legal/terms.md`: guidance only, the register and its limits). **Gap:** same review and publishing at `/terms`. |
+| 3 | Refund policy | **Draft written** (`docs/legal/refunds.md`: the app is free). **Gap:** same review and publishing. |
 | 4 | Cookie policy | **Gap to verify.** The web build stores the sign-in session in localStorage (essential). List it, and confirm nothing else is stored. |
 | 5 | Cookie consent banner | Likely not needed if only essential storage is used (see 4). |
-| 6 | Form consents | **Partly done.** Inviting a trusted person needs its own unticked consent, and the database stamps the time. **Gap:** sign-up has no separate unticked consents for terms, privacy and 18+ yet, and none is recorded. Needs a small migration. |
+| 6 | Form consents | **Built (needs migration 008 approved and applied).** Everyone is asked, before using the app and again whenever `LEGAL_VERSION` changes, to switch on three separate, unticked consents (Terms, Privacy, 18+); the database records them with its own timestamp, add-only. Inviting a trusted person has its own unticked consent. |
 | 7 | Collect only needed data | Reviewed below. No bank passwords, card numbers or ID numbers are collected, and the UI says not to write them. Phone for a trusted person and notes are optional. |
 | 8 | Third-party SDKs | Supabase (auth, database, storage, functions), Expo modules (secure-store, local-authentication, image-picker, image-manipulator, notifications, haptics, crypto, apple-authentication), Google Gemini (server side, receipt images), Resend (ladder emails). No ad, analytics or crash SDK. Store privacy labels must match this list. |
 | 9 | Dark patterns | Copy reviewed: no streaks, guilt, fake urgency or pre-ticked boxes; cancel is always visible. Re-check when strings change. |
@@ -20,10 +20,10 @@ Ported from the Yusr checklist and re-assessed against this app. Nothing ships t
 | 14 | Colour contrast | Token contrast is tested (text 4.5:1, controls 3:1). **Gap:** Dhivehi text on a device, and dark mode does not exist yet. |
 | 15 | Keyboard navigation | **Gap.** Needs an external-keyboard and switch-control test. |
 | 16 | Business details | **Gap.** Name, address, contact and registration number are needed for the listings and legal pages. |
-| 17 | Age consent | **Gap.** 18+ confirmation at sign-up is not built; store age rating and audience are set in the consoles. |
+| 17 | Age consent | **Built (with item 6): the 18+ confirmation.** **Gap:** set the store age rating to adults and the Play audience to 18+ (not Kids) in the consoles. |
 | 18 | Unsubscribe | The only emails are ladder service emails (check-in, ask, release) and Supabase auth links; they only exist once the flow is enabled. No marketing email. |
 | 19 | Licences | `docs/LICENSES.md` created. App icon and splash are still to be designed. |
-| 20 | Data deletion | **Built, not live.** `delete-account` function plus Settings "Delete my account" (type DELETE). It needs migration 007 (the fix for deleting accounts that have register items) approved and applied, and the function deployed. **Gap:** a public web page to request deletion for Google Play. |
+| 20 | Data deletion | **Built.** Migration 007 (applied) fixes deleting accounts with register items; the `delete-account` function and the Settings button exist and are tested, and a public page `/delete-info` explains how to delete (for Google Play). **Gap:** deploy the function, host the web build, and set `EXPO_PUBLIC_SUPPORT_EMAIL`. |
 
 ## Other launch gaps
 - Real-device testing (RTL on iOS and Android, Thaana keyboard in every field, notifications, camera, Apple sign-in, biometrics).

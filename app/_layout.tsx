@@ -11,6 +11,9 @@ import { i18n, initI18n } from '@/lib/i18n';
 import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
+import { missingConsents } from '@/features/legal/consent';
+import { useConsents } from '@/data/hooks';
+import { PREVIEW } from '@/lib/supabase';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
@@ -18,11 +21,15 @@ function Routes() {
   const { signedIn, loading } = useAuth();
   useZakatReminderSync(signedIn);
   useActivity(signedIn);
-  if (loading) return null;
+  const consents = useConsents(signedIn && !PREVIEW);
+  if (loading || (signedIn && !PREVIEW && consents.isLoading)) return null;
+  // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
+  // itself fails (for example offline) we do not lock out someone who already agreed.
+  const needsConsent = signedIn && !PREVIEW && consents.isSuccess && missingConsents(consents.data).length > 0;
   return (
     <LockGate active={signedIn}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={signedIn}>
+        <Stack.Protected guard={signedIn && !needsConsent}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="add-expense" options={{ presentation: 'modal' }} />
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
@@ -42,8 +49,13 @@ function Routes() {
           <Stack.Screen name="debt" />
           <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />
         </Stack.Protected>
+        <Stack.Protected guard={needsConsent}>
+          <Stack.Screen name="consent" />
+        </Stack.Protected>
         {/* Public: the invited person says yes or no with the link alone, no account needed. */}
         <Stack.Screen name="accept" />
+        {/* Public: how to delete an account (a web address the stores ask for). */}
+        <Stack.Screen name="delete-info" />
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
