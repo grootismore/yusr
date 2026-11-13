@@ -4,7 +4,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { Button, Icon } from '@/components/ui';
 import { Text } from '@/components/Text';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 import { getItem, setItem } from './kv';
 
 const KEY = 'kharadhu.biometric';
@@ -19,6 +19,7 @@ export const setBiometricEnabled = (on: boolean): Promise<void> => setItem(KEY, 
 
 /** Optional app lock. Locks at launch and after 30 seconds in the background; no PIN fallback beyond the phone's own. */
 export function LockGate({ children, active }: { children: ReactNode; active: boolean }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const [locked, setLocked] = useState(false);
   const away = useRef<number | null>(null);

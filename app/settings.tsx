@@ -8,10 +8,11 @@ import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
 import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useProfile, useRates, useWrite } from '@/data/hooks';
+import { APPEARANCES, loadAppearance, saveAppearance, type AppearanceChoice } from '@/lib/appearance';
 import { LANGUAGES, LANGUAGE_NAMES, setLanguage, type Language } from '@/lib/i18n';
 import { biometricAvailable, biometricEnabled, setBiometricEnabled } from '@/lib/lock';
 import { ltr, parseRate } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 function RateField({ code, value }: { code: string; value: string }) {
   const { t } = useTranslation();
@@ -30,14 +31,16 @@ function RateField({ code, value }: { code: string; value: string }) {
 }
 
 export default function Settings() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const profile = useProfile().data;
   const rates = useRates().data ?? {};
   const updateProfile = useWrite(api.updateProfile);
+  const [appearance, setAppearance] = useState<AppearanceChoice>('system');
   const [bio, setBio] = useState(false);
   const [bioOk, setBioOk] = useState(true);
-  useEffect(() => { void biometricEnabled().then(setBio); void biometricAvailable().then(setBioOk); }, []);
+  useEffect(() => { void loadAppearance().then(setAppearance); void biometricEnabled().then(setBio); void biometricAvailable().then(setBioOk); }, []);
 
   async function pickLanguage(l: Language) {
     if (l === i18n.language) return;
@@ -66,6 +69,13 @@ export default function Settings() {
         <Text variant="heading">{t('settings.rates')}</Text>
         <Text variant="small" color={colors.inkMuted}>{t('settings.ratesNote')}</Text>
         {CURRENCIES.filter((c) => c !== 'MVR').map((c) => <RateField key={`${c}-${rates[c] ?? ''}`} code={c} value={rates[c] ?? ''} />)}
+      </Card>
+
+      <Card>
+        <Text variant="heading">{t('settings.appearance')}</Text>
+        <Row style={{ flexWrap: 'wrap' }}>
+          {APPEARANCES.map((a) => <Chip key={a} label={t(`settings.appearanceChoice.${a}`)} selected={appearance === a} onPress={() => { setAppearance(a); void saveAppearance(a); }} />)}
+        </Row>
       </Card>
 
       <DeleteAccountCard />

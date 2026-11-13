@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/ui';
 import { fontFor } from '@/theme/fonts';
-import { colors, TOUCH } from '@/theme/tokens';
+import { TOUCH, useColors } from '@/theme/tokens';
 
 const tab = (name: IconName, active: IconName) =>
   function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
@@ -12,6 +12,7 @@ const tab = (name: IconName, active: IconName) =>
   };
 
 export default function TabsLayout() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();

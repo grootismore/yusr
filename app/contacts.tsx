@@ -5,9 +5,10 @@ import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useContacts, useWrite } from '@/data/hooks';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 export default function Contacts() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const contacts = (useContacts().data ?? []).filter((c) => c.status !== 'revoked');

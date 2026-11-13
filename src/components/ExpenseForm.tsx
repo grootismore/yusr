@@ -6,7 +6,7 @@ import { useCategoryName, useRates } from '@/data/hooks';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { formatNumber, ltr, parseAmount, parseRate, toMvrLaari } from '@/lib/money';
 import { isLow, type Confidence } from '@/lib/receipt';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 import { Msg } from './Msg';
 import { Text } from './Text';
 import { Button, Chip, Field, Icon, Row, type IconName } from './ui';
@@ -26,6 +26,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
   initial?: FormInitial; categories: Category[]; confidence?: Confidence; onSubmit: (e: NewExpense) => void; submitLabel: string; busy?: boolean;
   children?: ReactNode; onTotalChange?: (laari: number | null) => void;
 }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const catName = useCategoryName();
   const { data: rates = {} } = useRates();

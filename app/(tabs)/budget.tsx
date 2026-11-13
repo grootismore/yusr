@@ -8,9 +8,10 @@ import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useWrite } from '@/data/hooks';
 import { monthStart } from '@/lib/dates';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: IconName; categoryId: string | null; limit?: number }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState('');
@@ -51,6 +52,7 @@ function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: Ico
 }
 
 export default function Budget() {
+  const colors = useColors();
   const { t } = useTranslation();
   const catName = useCategoryName();
   const limits = useBudgets(monthStart()).data;

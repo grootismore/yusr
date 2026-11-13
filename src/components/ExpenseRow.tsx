@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useCategoryName } from '@/data/hooks';
 import type { Category, Expense } from '@/data/types';
 import { formatDate } from '@/lib/dates';
-import { colors, radius, space } from '@/theme/tokens';
+import { radius, space, useColors } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
 import { Icon, Row, type IconName } from './ui';
 
 export function ExpenseRow({ expense, category }: { expense: Expense; category?: Category }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const catName = useCategoryName();
   const title = expense.merchant || catName(category);

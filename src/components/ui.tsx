@@ -5,17 +5,19 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { tick } from '@/lib/haptics';
 import { fontFor } from '@/theme/fonts';
-import { colors, radius, space, TOUCH } from '@/theme/tokens';
+import { radius, space, TOUCH, useColors } from '@/theme/tokens';
 import { Text } from './Text';
 
 export type IconName = keyof typeof Ionicons.glyphMap;
 // The database default icon "ellipsis" is not an Ionicons glyph; unknown names fall back to one that is.
-export const Icon = ({ name, size = 22, color = colors.ink }: { name: string; size?: number; color?: string }) => (
-  <Ionicons name={(name in Ionicons.glyphMap ? name : 'ellipsis-horizontal') as IconName} size={size} color={color} accessible={false} importantForAccessibility="no" />
-);
+export const Icon = ({ name, size = 22, color }: { name: string; size?: number; color?: string }) => {
+  const colors = useColors();
+  return <Ionicons name={(name in Ionicons.glyphMap ? name : 'ellipsis-horizontal') as IconName} size={size} color={color ?? colors.ink} accessible={false} importantForAccessibility="no" />;
+};
 
 /** Page: sand background, safe area, optional scroll. Sets the web preview direction. */
 export function Screen({ children, scroll = true, padded = true }: { children: ReactNode; scroll?: boolean; padded?: boolean }) {
+  const colors = useColors();
   const { i18n } = useTranslation();
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl };
   return (
@@ -25,7 +27,9 @@ export function Screen({ children, scroll = true, padded = true }: { children: R
   );
 }
 
-export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good'; style?: ViewStyle }) => (
+export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good'; style?: ViewStyle }) => {
+  const colors = useColors();
+  return (
   <View
     style={[
       { backgroundColor: tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.tealWash : colors.surface,
@@ -36,9 +40,11 @@ export const Card = ({ children, tone = 'plain', style }: { children: ReactNode;
     {children}
   </View>
 );
+};
 
 type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean };
 export function Button({ label, kind = 'primary', icon, loading, disabled, style, ...rest }: ButtonProps) {
+  const colors = useColors();
   const primary = kind === 'primary' || kind === 'danger';
   const bg = kind === 'danger' ? colors.coral : kind === 'primary' ? colors.teal : 'transparent';
   const fg = primary ? colors.onTeal : colors.teal;
@@ -63,6 +69,7 @@ export function Button({ label, kind = 'primary', icon, loading, disabled, style
 
 /** Round icon-only or text chip, at least 44 pt tall. */
 export function Chip({ label, selected, onPress, icon }: { label: string; selected?: boolean; onPress: () => void; icon?: IconName }) {
+  const colors = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -79,6 +86,7 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
 
 /** Labelled input. `flag` marks a field the scanner was unsure about: amber border plus words, never colour alone. */
 export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { label: string; error?: string | null; flag?: boolean; hint?: string }) {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const bad = !!error;
   return (
@@ -105,6 +113,7 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
 }
 
 export function ProgressBar({ percent, state, label }: { percent: number; state: 'ok' | 'near' | 'over'; label: string }) {
+  const colors = useColors();
   const fill = state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.teal;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}

@@ -9,9 +9,10 @@ import { eventKey } from '@/features/register/readiness';
 import { AWAY_CHOICES } from '@/features/register/types';
 import { formatDate } from '@/lib/dates';
 import { success } from '@/lib/haptics';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function Release() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const checkin = useCheckin().data;

@@ -9,9 +9,10 @@ import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/c
 import { useBudgets, useCategories, useCategoryName, useExpenses } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addMonths, monthStart } from '@/lib/dates';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function Reports() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const catName = useCategoryName();
   const [month, setMonth] = useState(monthStart());

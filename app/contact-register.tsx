@@ -7,10 +7,11 @@ import { Text } from '@/components/Text';
 import { Button, Card, Row, Screen } from '@/components/ui';
 import { registerForContact } from '@/data/api';
 import type { ContactRegister } from '@/features/register/types';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 /** Read-only view of a released register. The database re-checks everything on every call; nothing is cached or editable here. */
 export default function ContactRegisterScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const { owner, who } = useLocalSearchParams<{ owner: string; who?: string }>();

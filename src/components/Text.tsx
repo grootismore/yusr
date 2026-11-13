@@ -1,7 +1,7 @@
 import { Text as RNText, type TextProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { fontFor } from '@/theme/fonts';
-import { colors, LINE_HEIGHT, type, type TypeVariant } from '@/theme/tokens';
+import { LINE_HEIGHT, type, type TypeVariant, useColors } from '@/theme/tokens';
 
 export interface AppTextProps extends TextProps {
   variant?: TypeVariant;
@@ -15,7 +15,8 @@ export interface AppTextProps extends TextProps {
  * theme/fonts.ts); the system font is the automatic fallback if a font fails to load.
  * Thaana gets extra line height for its stacked vowel signs.
  */
-export function Text({ variant = 'body', color = colors.ink, latin, style, ...rest }: AppTextProps) {
+export function Text({ variant = 'body', color, latin, style, ...rest }: AppTextProps) {
+  const colors = useColors();
   const { i18n } = useTranslation();
   const dv = i18n.language === 'dv';
   const t = type[variant];
@@ -31,7 +32,7 @@ export function Text({ variant = 'body', color = colors.ink, latin, style, ...re
           fontFamily: fontFor(i18n.language, t.weight === 'bold', latin),
           fontSize: t.size,
           lineHeight: Math.round(t.size * LINE_HEIGHT[dv ? 'dv' : 'en']),
-          color,
+          color: color ?? colors.ink,
           writingDirection: dv ? 'rtl' : 'ltr',
         },
         style,

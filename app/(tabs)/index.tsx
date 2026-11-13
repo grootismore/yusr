@@ -14,9 +14,10 @@ import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { monthStart, today } from '@/lib/dates';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function Home() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();

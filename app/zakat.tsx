@@ -12,7 +12,7 @@ import { requestNotificationPermission } from '@/features/giving/reminders';
 import { formatDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function Zakat() {
   const { t } = useTranslation();
@@ -23,6 +23,7 @@ export default function Zakat() {
 }
 
 function ZakatForm({ initial, onClose }: { initial: api.ZakatSettings; onClose: () => void }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const save = useWrite(api.saveZakat);
   const [goal, setGoal] = useState(initial.sadaqah_goal_laari ? formatNumber(initial.sadaqah_goal_laari).replace(/,/g, '') : '');

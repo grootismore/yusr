@@ -13,9 +13,10 @@ import { dueStatus } from '@/features/debts/due';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 export default function DebtDetail() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();

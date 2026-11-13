@@ -11,9 +11,10 @@ import { useGiving, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { formatDate, monthStart, today } from '@/lib/dates';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 export default function Giving() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const month = monthStart();

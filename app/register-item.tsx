@@ -9,9 +9,10 @@ import { useRegisterItems, useWrite } from '@/data/hooks';
 import { REGISTER_KINDS, type RegisterKind } from '@/features/register/types';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function RegisterItemScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();

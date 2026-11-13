@@ -12,9 +12,10 @@ import { computePlan } from '@/features/debts/compute';
 import { InterestTag, DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { today } from '@/lib/dates';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function Debts() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const monthLabel = useMonthLabel();

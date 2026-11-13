@@ -11,12 +11,13 @@ import { useCategories, useWrite } from '@/data/hooks';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { checkTotals, type Draft } from '@/lib/receipt';
 import { success } from '@/lib/haptics';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 const field = (laari: number | null) => (laari == null ? '' : formatNumber(laari).replace(/,/g, ''));
 const toLaari = (s: string): number => { try { return parseAmount(s || '0'); } catch { return 0; } };
 
 export default function Confirm() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
