@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
+import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -49,6 +49,7 @@ export const Card = ({ children, tone = 'plain', style }: { children: ReactNode;
       style={{ borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 1, borderColor: rim, backgroundColor: fill,
         ...(dark ? {} : { boxShadow: '0 1px 2px rgba(14,21,17,0.04), 0 8px 20px rgba(14,21,17,0.05)' }) }}
     >
+      {tone === 'hero' ? <PanelArt /> : null}
       <View style={[{ padding: space.lg, gap: space.md }, style]}>{children}</View>
     </View>
   );
@@ -238,8 +239,7 @@ export function HeaderBand({ title, subtitle, eyebrow, onBack, children }: { tit
   const { t, i18n } = useTranslation();
   return (
     <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 44, gap: space.xs, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, borderCurve: 'continuous', overflow: 'hidden' }}>
-      <View pointerEvents="none" style={{ position: 'absolute', top: -70, end: -60, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(255,255,255,0.10)' }} />
-      <View pointerEvents="none" style={{ position: 'absolute', bottom: -100, start: -50, width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+      <PanelArt />
       {onBack ? (
         <View style={{ alignSelf: 'flex-start', marginStart: -space.sm }}>
           <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} color={colors.onHero} onPress={() => router.back()} />
@@ -295,6 +295,37 @@ export function Tile({ color, label, laari }: { color: string; label: string; la
     <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
       <Text variant="small" color={colors.onTile}>{label}</Text>
       <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit color={colors.onTile} />
+    </View>
+  );
+}
+
+/**
+ * Texture for the dark figure panels: a halftone dot grid fading out from the bottom corner, and a huge ghost "MVR" behind the numbers.
+ * Purely decorative, hidden from screen readers. Dots are plain views, rendered only where they are visible.
+ */
+export function PanelArt() {
+  const colors = useColors();
+  const { i18n } = useTranslation();
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const rtl = i18n.language === 'dv';
+  const dots = useMemo(() => {
+    const out: { x: number; y: number; o: number }[] = [];
+    const gap = 14;
+    const reach = Math.max(box.w, box.h) * 0.85;
+    for (let y = gap / 2; y < box.h; y += gap) {
+      for (let x = gap / 2; x < box.w; x += gap) {
+        const dx = rtl ? x : box.w - x; // distance from the bottom corner on the reading-end side
+        const d = Math.hypot(dx, box.h - y);
+        const o = Math.max(0, 1 - d / reach) * 0.28;
+        if (o > 0.03) out.push({ x, y, o });
+      }
+    }
+    return out;
+  }, [box.w, box.h, rtl]);
+  return (
+    <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
+      <Text latin allowFontScaling={false} style={{ position: 'absolute', bottom: -30, ...(rtl ? { left: -8 } : { right: -8 }), fontSize: 150, lineHeight: 160, fontFamily: 'NunitoSans_700Bold', color: colors.onHero, opacity: 0.07, letterSpacing: -4, writingDirection: 'ltr' }}>MVR</Text>
+      {dots.map((d, i) => <View key={i} style={{ position: 'absolute', left: d.x - 1.2, top: d.y - 1.2, width: 2.4, height: 2.4, borderRadius: 1.2, backgroundColor: colors.onHero, opacity: d.o }} />)}
     </View>
   );
 }
