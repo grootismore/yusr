@@ -6,7 +6,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#F5F1E8",
+    "backgroundColor": "#F5F5F3",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "mv.kharadhu.app",
@@ -22,7 +22,7 @@
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundColor": "#0B6B68"
+        "backgroundColor": "#222428"
       }
     },
     "web": {
@@ -50,9 +50,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F5F1E8",
+          "backgroundColor": "#F5F5F3",
           "dark": {
-            "backgroundColor": "#101614",
+            "backgroundColor": "#141517",
             "image": "./assets/images/splash-icon.png"
           },
           "image": "./assets/images/splash-icon.png",

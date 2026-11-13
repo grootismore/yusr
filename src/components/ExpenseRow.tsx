@@ -15,17 +15,17 @@ export function ExpenseRow({ expense, category, hideDate }: { expense: Expense; 
   const title = expense.merchant || catName(category);
   return (
     <Row accessible accessibilityLabel={`${title}, ${formatDate(expense.spent_at)}${expense.source === 'scan' ? `, ${t('common.scanned')}` : ''}`} style={{ minHeight: 56 }}>
-      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={(category?.icon ?? 'ellipsis') as IconName} color={colors.teal} />
+      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={(category?.icon ?? 'ellipsis') as IconName} color={colors.accent} />
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text numberOfLines={1}>{title}</Text>
         <Row style={{ gap: space.sm, flexWrap: 'wrap' }}>
           {hideDate ? null : <Text latin variant="small" color={colors.inkMuted}>{formatDate(expense.spent_at)}</Text>}
           {expense.source === 'scan' ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, borderRadius: radius.pill, backgroundColor: colors.tealWash }}>
-              <Icon name="scan" size={14} color={colors.teal} />
-              <Text variant="small" color={colors.teal}>{t('common.scanned')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, borderRadius: radius.pill, backgroundColor: colors.accentWash }}>
+              <Icon name="scan" size={14} color={colors.accent} />
+              <Text variant="small" color={colors.accent}>{t('common.scanned')}</Text>
             </View>
           ) : null}
         </Row>

@@ -21,9 +21,9 @@ export function TrendChart({ months, spend, income, selected, onSelect }: { mont
   return (
     <View style={{ gap: space.md }}>
       <View style={{ flexDirection: 'row', gap: space.lg, flexWrap: 'wrap' }}>
-        {([['trend.spending', colors.teal, 'solid'], ['trend.income', colors.teal, 'outline']] as const).map(([k, c, kind]) => (
+        {([['trend.spending', colors.accent, 'solid'], ['trend.income', colors.accent, 'outline']] as const).map(([k, c, kind]) => (
           <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
-            <View style={{ width: 14, height: 14, borderRadius: 4, borderCurve: 'continuous', backgroundColor: kind === 'solid' ? c : 'transparent', borderWidth: 2, borderColor: c }} />
+            <View style={{ width: 14, height: 14, borderRadius: 4, borderCurve: 'continuous', backgroundColor: kind === 'solid' ? c : colors.sky, borderWidth: 2, borderColor: c }} />
             <Text variant="small" color={colors.inkMuted}>{t(k)}</Text>
           </View>
         ))}
@@ -41,8 +41,8 @@ export function TrendChart({ months, spend, income, selected, onSelect }: { mont
               style={{ flex: 1, minHeight: 44, alignItems: 'center', gap: space.xs }}
             >
               <View style={{ height: HEIGHT, flexDirection: 'row', alignItems: 'flex-end', gap: 3, width: '100%', justifyContent: 'center' }}>
-                <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(spend[i], max)}%`, backgroundColor: colors.teal, borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
-                <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(income[i], max)}%`, borderWidth: income[i] > 0 ? 2 : 0, borderColor: colors.teal, borderBottomWidth: 0, backgroundColor: 'transparent', borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
+                <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(spend[i], max)}%`, backgroundColor: colors.accent, borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
+                <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(income[i], max)}%`, borderWidth: income[i] > 0 ? 2 : 0, borderColor: colors.accent, borderBottomWidth: 0, backgroundColor: colors.sky, borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
               </View>
               <Text latin variant="small" color={isSel ? colors.ink : colors.inkMuted} style={{ fontFamily: isSel ? 'NunitoSans_700Bold' : undefined, textDecorationLine: isSel ? 'underline' : 'none' }}>{`${m.slice(5, 7)}/${m.slice(2, 4)}`}</Text>
             </Pressable>

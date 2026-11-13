@@ -40,7 +40,7 @@ export default function Consent() {
   return (
     <Screen>
       <View style={{ gap: space.sm, paddingTop: space.xxl }}>
-        <Text variant="display" color={colors.teal}>{t('app.name')}</Text>
+        <Text variant="display" color={colors.accent}>{t('app.name')}</Text>
         <Text variant="title">{updated ? t('legal.updated') : t('legal.title')}</Text>
         <Text color={colors.inkMuted}>{t('legal.intro')}</Text>
       </View>
@@ -48,7 +48,7 @@ export default function Consent() {
         {rows.map(([k, label]) => (
           <Row key={k} style={{ minHeight: 52 }}>
             <Text style={{ flex: 1 }}>{label}</Text>
-            <Switch accessibilityLabel={label} value={on[k]} onValueChange={(v) => setOn({ ...on, [k]: v })} trackColor={{ true: colors.teal, false: colors.control }} />
+            <Switch accessibilityLabel={label} value={on[k]} onValueChange={(v) => setOn({ ...on, [k]: v })} trackColor={{ true: colors.accent, false: colors.control }} />
           </Row>
         ))}
         <Row style={{ flexWrap: 'wrap' }}>

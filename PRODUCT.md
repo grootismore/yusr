@@ -10,7 +10,7 @@ Everyday earners and families who want to see where money goes, stay inside a mo
 - Debt-free plan, sadaqah and zakat, and the Wasiyyah and Amanah register for someone who trusts you.
 
 ## Brand and tone
-Calm, trustworthy, unhurried. Teal and warm sand. Never alarmist: a budget warning is said in words, not by colour alone. Dhivehi copy is a draft until native-reviewed.
+Calm, trustworthy, unhurried. Forest green and lime; dark first. Never alarmist: a budget warning is said in words, not by colour alone. Dhivehi copy is a draft until native-reviewed.
 
 ## Platform
 Native iOS and Android (Expo / React Native). A small web build exists only for invite, account deletion and password-reset links. Surfaces are task-first (Operate).

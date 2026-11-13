@@ -46,7 +46,7 @@ export default function ForgotPassword() {
       {sentTo ? (
         <>
           <Card tone="good">
-            <Row><Icon name="mail-outline" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('forgot.sentBody', { email: `⁦${sentTo}⁩` })}</Text></Row>
+            <Row><Icon name="mail-outline" color={colors.accent} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('forgot.sentBody', { email: `⁦${sentTo}⁩` })}</Text></Row>
             <Text variant="small" color={colors.inkMuted}>{t('checkEmail.tip')}</Text>
           </Card>
           <Button kind="secondary" label={t('checkEmail.resend')} disabled={wait > 0 || busy} onPress={send} />

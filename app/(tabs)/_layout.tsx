@@ -3,8 +3,7 @@ import { Tabs, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/ui';
-import { fontFor } from '@/theme/fonts';
-import { TOUCH, useColors } from '@/theme/tokens';
+import { space, useColors, useIsDark } from '@/theme/tokens';
 
 const tab = (name: IconName, active: IconName) =>
   function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
@@ -13,18 +12,21 @@ const tab = (name: IconName, active: IconName) =>
 
 export default function TabsLayout() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const dark = useIsDark();
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.teal,
-        tabBarInactiveTintColor: colors.inkMuted,
-        tabBarLabelStyle: { fontFamily: fontFor(i18n.language, false), fontSize: 13, lineHeight: 22 },
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line, height: 64 + insets.bottom, paddingTop: 6 },
-        tabBarItemStyle: { minHeight: TOUCH },
+        // A floating pill: deep green, the active tab is sky.
+        tabBarActiveTintColor: colors.sky,
+        tabBarInactiveTintColor: '#A9C2B3',
+        tabBarShowLabel: false,
+        tabBarStyle: { position: 'absolute', start: space.lg, end: space.lg, bottom: Math.max(insets.bottom, space.sm) + space.xs, height: 64, borderRadius: 32, borderCurve: 'continuous',
+          backgroundColor: colors.hero, borderTopWidth: 0, borderWidth: 1, borderColor: dark ? colors.cardEdge : 'transparent', paddingTop: 0, paddingBottom: 0, boxShadow: '0 10px 24px rgba(0,0,0,0.28)' },
+        tabBarItemStyle: { justifyContent: 'center' },
       }}
     >
       <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: tab('home-outline', 'home') }} />
@@ -39,10 +41,10 @@ export default function TabsLayout() {
                 accessibilityRole="button"
                 accessibilityLabel={t('a11y.scanReceipt')}
                 onPress={() => router.push('/scan')}
-                style={({ pressed }) => ({ marginTop: -22, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
-                  borderWidth: 4, borderColor: colors.sand })}
+                style={({ pressed }) => ({ marginTop: -26, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.sky, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
+                  borderWidth: 4, borderColor: colors.hero })}
               >
-                <Icon name="scan" size={28} color={colors.onTeal} />
+                <Icon name="scan" size={28} color={colors.onTile} />
               </Pressable>
             </View>
           ),

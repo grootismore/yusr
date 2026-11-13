@@ -60,11 +60,11 @@ export default function Activity() {
                 if (!i) return null;
                 return (
                   <Row key={r.id} style={{ minHeight: 56 }}>
-                    <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="arrow-down" color={colors.teal} />
+                    <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon name="arrow-down" color={colors.accent} />
                     </View>
                     <Text numberOfLines={1} style={{ flex: 1 }}>{i.note || t('add.income')}</Text>
-                    <Money laari={i.mvr_laari} prefix="+" color={colors.teal} />
+                    <Money laari={i.mvr_laari} prefix="+" color={colors.accent} />
                   </Row>
                 );
               })}

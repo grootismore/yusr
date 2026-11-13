@@ -11,7 +11,7 @@ export default function More() {
   const router = useRouter();
   const { signOut } = useAuth();
   return (
-    <Screen>
+    <Screen tabbed>
       <ScreenTitle title={t('more.title')} />
       <Card style={{ paddingVertical: space.sm, gap: 0 }}>
         <ListRow icon="swap-vertical" title={t('activity.title')} onPress={() => router.push('/activity')} />

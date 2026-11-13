@@ -28,7 +28,7 @@ export default function Release() {
       {checkin ? (
         <Card tone={checkin.state === 'active' ? 'plain' : released ? 'bad' : 'warn'}>
           <Row>
-            <Icon name={checkin.state === 'active' ? 'shield-checkmark' : 'information-circle'} color={checkin.state === 'active' ? colors.teal : released ? colors.coral : colors.amberDeep} />
+            <Icon name={checkin.state === 'active' ? 'shield-checkmark' : 'information-circle'} color={checkin.state === 'active' ? colors.accent : released ? colors.coral : colors.amberDeep} />
             <Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t(`release.state.${checkin.state}`)}</Text>
           </Row>
           {!released ? <Button label={t('release.okay')} icon="heart-outline" loading={okay.isPending} onPress={async () => { await okay.mutateAsync(undefined); success(); }} /> : null}

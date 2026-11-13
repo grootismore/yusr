@@ -7,7 +7,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
+import { Button, Card, Icon, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
@@ -17,15 +17,13 @@ import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
-/** Round-cornered shortcut tile: icon over a short label. */
+/** Round shortcut: an icon in a circle over a short label. */
 function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
   const colors = useColors();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
-      style={({ pressed }) => ({ flex: 1, minHeight: 88, alignItems: 'center', justifyContent: 'center', gap: space.xs, padding: space.sm, borderRadius: radius.lg, borderCurve: 'continuous',
-        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.6 : 1 })}>
-      <View style={{ width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon} color={colors.teal} />
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.6 : 1 })}>
+      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.field, borderWidth: 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} color={colors.accent} />
       </View>
       <Text variant="small" numberOfLines={2} style={{ textAlign: 'center' }}>{label}</Text>
     </Pressable>
@@ -67,6 +65,7 @@ export default function Home() {
     for (const e of expenses.slice(0, 6)) groups.set(e.spent_at, [...(groups.get(e.spent_at) ?? []), e]);
     return [...groups];
   }, [expenses]);
+  const showTiles = (!!limit && state !== 'over') || incomeTotal > 0;
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -75,10 +74,10 @@ export default function Home() {
 
   if (expenses.length === 0 && !expensesQuery.isLoading) {
     return (
-      <Screen>
+      <Screen tabbed>
         <ScreenTitle title={t('app.name')} />
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
-          <Icon name="receipt-outline" size={44} color={colors.teal} />
+          <Icon name="receipt-outline" size={44} color={colors.accent} />
           <Text variant="heading" style={{ textAlign: 'center' }}>{t('home.emptyTitle')}</Text>
           <Text color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('home.emptyBody')}</Text>
           <Button label={t('home.addExpense')} icon="add" onPress={() => router.push('/add-expense')} />
@@ -88,26 +87,25 @@ export default function Home() {
   }
 
   return (
-    <Screen padded={false} bleed scrollY={scrollY} overlay={
+    <Screen padded={false} bleed tabbed scrollY={scrollY} overlay={
       // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
-      <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.teal, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
+      <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.hero, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
         opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
         transform: [{ translateY: scrollY.interpolate({ inputRange: [110, 190], outputRange: [-12, 0], extrapolate: 'clamp' }) }] }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Text color={colors.onTeal}>{t('app.name')}</Text>
-          <Money laari={spent} variant="heading" color={colors.onTeal} />
+          <Text color={colors.onHero}>{t('app.name')}</Text>
+          <Money laari={spent} variant="heading" color={colors.onHero} />
         </Row>
       </Animated.View>
     }>
       {/* Header band: runs under the status bar, carries the month's figure; the shortcut tiles overlap its lower edge. */}
-      <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
+      <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
         borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
-        <View pointerEvents="none" style={{ position: 'absolute', top: -70, end: -60, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(255,255,255,0.10)' }} />
-        <View pointerEvents="none" style={{ position: 'absolute', bottom: -100, start: -50, width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.07)' }} />
-        <Text variant="heading" color={colors.onTeal} accessibilityRole="header">{t('app.name')}</Text>
-        <Text color={colors.onTeal}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onTeal} style={{ fontSize: 44, lineHeight: 56 }} />
-        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onTeal} /> : null}
+        <PanelArt />
+        <Text variant="heading" color={colors.onHero} accessibilityRole="header">{t('app.name')}</Text>
+        <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
+        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
+        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
         {limit ? (
           <>
             <ProgressBar onHero percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
@@ -119,18 +117,24 @@ export default function Home() {
                   : <Text variant="small" color={colors.ink}>{t('home.nearLimit')}</Text>}
               </View>
             ) : null}
-            {state === 'over' ? null : <Msg k="home.left" amounts={{ amount: limit - spent }} color={colors.onTeal} />}
-            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onTeal} />
+            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onHero} />
           </>
         ) : (
           <>
-            <Text color={colors.onTeal}>{t('home.noBudget')}</Text>
-            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onTeal, borderColor: colors.onTeal }} />
+            <Text color={colors.onHero}>{t('home.noBudget')}</Text>
+            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onHero, borderColor: colors.onHero }} />
           </>
         )}
       </View>
 
-      <Row style={{ alignItems: 'stretch', gap: space.sm, marginTop: -48, paddingHorizontal: space.lg }}>
+      {showTiles ? (
+        <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
+          {limit && state !== 'over' ? <Tile color={colors.sky} label={t('home.leftLabel')} laari={limit - spent} /> : null}
+          {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} /> : null}
+        </Row>
+      ) : null}
+
+      <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
         <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
         <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
         <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} />
@@ -142,7 +146,7 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
           <Card>
             <Row>
-              <Icon name="leaf-outline" color={colors.teal} />
+              <Icon name="leaf-outline" color={colors.accent} />
               <Text variant="heading" style={{ flex: 1 }}>{t('debts.title')}</Text>
               <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
             </Row>
@@ -157,7 +161,7 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={t('giving.title')} onPress={() => router.push('/giving')}>
           <Card>
             <Row>
-              <Icon name="heart-outline" color={colors.teal} />
+              <Icon name="heart-outline" color={colors.accent} />
               <Text variant="heading" style={{ flex: 1 }}>{t('giving.title')}</Text>
               <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
             </Row>
@@ -179,7 +183,7 @@ export default function Home() {
             return (
               <View key={id ?? 'none'} style={{ gap: space.xs }}>
                 <Row>
-                  <Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.teal} />
+                  <Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.accent} />
                   <Text style={{ flex: 1 }}>{catName(c)}</Text>
                   <Money laari={amount} />
                 </Row>

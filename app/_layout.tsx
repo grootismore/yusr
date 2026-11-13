@@ -108,6 +108,7 @@ export default function RootLayout() {
     ThaanaNoor_Bold: require('../assets/fonts/ThaanaNoor-Bold.ttf'),
     NunitoSans_400Regular: require('../assets/fonts/NunitoSans_400Regular.ttf'),
     NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
+    SpaceGrotesk_700Bold: require('../assets/fonts/SpaceGrotesk_700Bold.ttf'), // only for the outlined MVR on the panels
   });
   useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n()]).finally(() => setReady(true)); }, []);
   if (!ready || !(fontsLoaded || fontError)) return null;

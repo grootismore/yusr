@@ -60,7 +60,7 @@ export default function Scan() {
 
       <Card tone={left === 0 ? 'warn' : 'plain'}>
         <Row>
-          <Icon name="scan" color={colors.teal} />
+          <Icon name="scan" color={colors.accent} />
           <Text variant="heading" accessibilityLiveRegion="polite">{t('scan.left', { left, limit: LIMIT })}</Text>
         </Row>
         {left === 0 ? <Text>{t('scan.noScans', { limit: LIMIT })}</Text> : null}
@@ -68,7 +68,7 @@ export default function Scan() {
 
       {busy ? (
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
-          <Icon name="hourglass-outline" size={36} color={colors.teal} />
+          <Icon name="hourglass-outline" size={36} color={colors.accent} />
           <Text variant="heading" accessibilityLiveRegion="polite">{step === 'uploading' ? t('scan.uploading') : t('scan.working')}</Text>
         </Card>
       ) : (

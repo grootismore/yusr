@@ -17,7 +17,7 @@ export function AuthScreen({ title, subtitle, children }: { title: string; subti
     <Screen grow>
       <View style={{ alignItems: 'center', gap: space.sm, paddingTop: space.lg }}>
         <Image source={require('../../../assets/images/icon.png')} accessible={false} style={{ width: 64, height: 64, borderRadius: 16, borderCurve: 'continuous' }} />
-        <Text variant="heading" color={colors.teal}>{t('app.name')}</Text>
+        <Text variant="heading" color={colors.accent}>{t('app.name')}</Text>
       </View>
       <View style={{ gap: space.xs, alignItems: 'center' }}>
         <Text variant="title" accessibilityRole="header" style={{ textAlign: 'center' }}>{title}</Text>
@@ -51,7 +51,7 @@ function Rule({ ok, text }: { ok: boolean; text: string }) {
   const { t } = useTranslation();
   return (
     <Row style={{ gap: space.sm }} accessible accessibilityLabel={`${text}, ${ok ? t('auth.met') : t('auth.notYet')}`}>
-      <Icon name={ok ? 'checkmark-circle' : 'ellipse-outline'} size={18} color={ok ? colors.teal : colors.inkMuted} />
+      <Icon name={ok ? 'checkmark-circle' : 'ellipse-outline'} size={18} color={ok ? colors.accent : colors.inkMuted} />
       <Text variant="small" color={ok ? colors.ink : colors.inkMuted} style={{ flex: 1 }}>{text}</Text>
     </Row>
   );
