@@ -499,5 +499,30 @@
     "failed": "We couldn't delete your account. Please try again, or contact us.",
     "privacy": "Privacy policy",
     "privacyMissing": "The privacy policy address isn't set up yet."
+  },
+  "legal": {
+    "title": "Before you start",
+    "updated": "We've updated our terms",
+    "intro": "Please read and agree to these to use Kharadhu. You can read each in full first.",
+    "terms": "I agree to the Terms of Service",
+    "privacy": "I have read the Privacy Policy",
+    "age": "I am 18 or older",
+    "readTerms": "Read the Terms",
+    "readPrivacy": "Read the Privacy Policy",
+    "urlMissing": "The legal pages aren't published yet.",
+    "continue": "Continue",
+    "signOut": "Not now, sign out",
+    "failed": "We couldn't save that. Please try again."
+  },
+  "deleteInfo": {
+    "title": "Delete your Kharadhu account",
+    "intro": "You can delete your account and all of your data yourself, any time.",
+    "step1": "Open Kharadhu and sign in.",
+    "step2": "Go to More, then Settings.",
+    "step3": "Choose Delete my account and type DELETE.",
+    "what": "This removes your spending, debts, giving, register, trusted people and receipt photos. It can't be undone.",
+    "help": "If you can't sign in, email us from the address on your account and we'll delete it for you.",
+    "email": "Contact: {{email}}",
+    "emailMissing": "The support email address isn't set up yet."
   }
 }

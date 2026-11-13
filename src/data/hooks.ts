@@ -36,3 +36,5 @@ export const useContacts = () => useQuery({ queryKey: ['contacts'], queryFn: api
 export const useCheckin = () => useQuery({ queryKey: ['checkin'], queryFn: api.getCheckin });
 export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listAudit });
 export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });
+
+export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });

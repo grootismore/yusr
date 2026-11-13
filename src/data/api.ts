@@ -10,6 +10,7 @@ import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './ty
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { GivingEntry, GivingKind } from '@/features/giving/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
+import type { ConsentKind } from '@/features/legal/consent';
 import type { AuditEntry, Checkin, ContactCase, ContactRegister, RegisterItem, RegisterKind, TrustedContact } from '@/features/register/types';
 
 async function uid(): Promise<string> {
@@ -357,4 +358,17 @@ export async function deleteAccount(): Promise<void> {
   const { error } = await getSupabase().functions.invoke('delete-account', { body: { confirm: 'delete' } });
   if (error) throw new Error('delete failed');
   await getSupabase().auth.signOut();
+}
+
+// ---- consents (launch checklist 6 and 17)
+export async function listConsents(): Promise<{ kind: string; version: string }[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().from('consents').select('kind,version'));
+}
+
+/** Record agreement to these kinds for this version. The time is set by the database. */
+export async function acceptConsents(kinds: readonly ConsentKind[], version: string): Promise<void> {
+  if (PREVIEW) return;
+  const user_id = await uid();
+  must(await getSupabase().from('consents').upsert(kinds.map((kind) => ({ user_id, kind, version })), { onConflict: 'user_id,kind,version', ignoreDuplicates: true }));
 }
