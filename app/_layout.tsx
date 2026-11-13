@@ -17,7 +17,7 @@ import { WEB_LIMITED } from '@/lib/platform';
 import { useConsents } from '@/data/hooks';
 import { PREVIEW } from '@/lib/supabase';
 
-// Where a visitor lands when the page they asked for is not available to them (for example /debts on the website).
+// Where a signed-in visitor lands when the page they asked for is not available to them (for example /debts on the website).
 export const unstable_settings = { anchor: WEB_LIMITED ? 'web-home' : '(tabs)' };
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
