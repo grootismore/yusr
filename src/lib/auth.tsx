@@ -10,6 +10,8 @@ export { authErrorKey, type AuthErrorKey };
 interface AuthResult { error?: AuthErrorKey; needsEmailConfirmation?: boolean }
 interface AuthValue {
   signedIn: boolean; loading: boolean;
+  /** The signed-in person's email, if known. */
+  email: string | null;
   signIn(email: string, password: string): Promise<AuthResult>;
   signUp(email: string, password: string): Promise<AuthResult>;
   signInWithApple(): Promise<AuthResult>;
@@ -52,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthValue>(() => ({
     signedIn: PREVIEW ? process.env.EXPO_PUBLIC_PREVIEW_OUT !== '1' : !!session,
     loading,
+    email: session?.user.email ?? null,
     async signIn(email, password) {
       const { error } = await getSupabase().auth.signInWithPassword({ email: email.trim(), password });
       return error ? { error: authErrorKey(error) } : {};

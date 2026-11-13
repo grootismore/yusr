@@ -3,8 +3,8 @@ import { Platform, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Icon, Row, Screen } from '@/components/ui';
-import { AuthHeader, Divider, Footer, PasswordField } from '@/features/auth/AuthParts';
+import { Button, Card, Field, Icon, Row } from '@/components/ui';
+import { AuthScreen, Divider, Footer, PasswordField } from '@/features/auth/AuthParts';
 import { useAuth, type AuthErrorKey } from '@/lib/auth';
 import { isEmail } from '@/lib/authForm';
 import { WEB_LIMITED } from '@/lib/platform';
@@ -68,19 +68,17 @@ export default function SignIn() {
 
   if (linkSentTo) {
     return (
-      <Screen>
-        <AuthHeader title={t('auth.linkSentTitle')} />
+      <AuthScreen title={t('auth.linkSentTitle')}>
         <Card tone="good">
           <Row><Icon name="mail-outline" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.linkSentBody', { email: `⁦${linkSentTo}⁩` })}</Text></Row>
         </Card>
         <Button kind="ghost" label={t('auth.useAnotherEmail')} onPress={() => setLinkSentTo(null)} />
-      </Screen>
+      </AuthScreen>
     );
   }
 
   return (
-    <Screen>
-      <AuthHeader title={t('auth.signInTitle')} subtitle={t('auth.signInSubtitle')} />
+    <AuthScreen title={t('auth.signInTitle')} subtitle={t('auth.signInSubtitle')}>
       {confirmed ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('auth.confirmed')}</Text></Row></Card> : null}
       {failedLink ? <Card tone="warn"><Text accessibilityLiveRegion="polite">{t('auth.linkExpired')}</Text></Card> : null}
 
@@ -122,6 +120,6 @@ export default function SignIn() {
           <Button kind="ghost" label={t('auth.createLink')} onPress={() => router.replace('/sign-up')} />
         </Footer>
       )}
-    </Screen>
+    </AuthScreen>
   );
 }

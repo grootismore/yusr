@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,7 @@ function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; 
 export default function Home() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const [scrollY] = useState(() => new Animated.Value(0));
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
@@ -87,7 +88,17 @@ export default function Home() {
   }
 
   return (
-    <Screen padded={false} bleed>
+    <Screen padded={false} bleed scrollY={scrollY} overlay={
+      // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
+      <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.teal, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
+        opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
+        transform: [{ translateY: scrollY.interpolate({ inputRange: [110, 190], outputRange: [-12, 0], extrapolate: 'clamp' }) }] }}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Text color={colors.onTeal}>{t('app.name')}</Text>
+          <Money laari={spent} variant="heading" color={colors.onTeal} />
+        </Row>
+      </Animated.View>
+    }>
       {/* Header band: runs under the status bar, carries the month's figure; the shortcut tiles overlap its lower edge. */}
       <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
         borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
@@ -182,7 +193,7 @@ export default function Home() {
       <View style={{ gap: space.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Text variant="heading">{t('home.recent')}</Text>
-          <Button kind="ghost" label={t('home.seeAll')} onPress={() => router.push('/reports')} />
+          <Button kind="ghost" label={t('home.seeAll')} onPress={() => router.push('/activity')} />
         </Row>
         <Card>
           {recentGroups.map(([day, rows]) => (

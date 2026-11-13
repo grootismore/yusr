@@ -3,8 +3,8 @@ import { Platform, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Screen } from '@/components/ui';
-import { AuthHeader, Divider, Footer, PasswordField, PasswordRules } from '@/features/auth/AuthParts';
+import { Button, Card, Field } from '@/components/ui';
+import { AuthScreen, Divider, Footer, PasswordField, PasswordRules } from '@/features/auth/AuthParts';
 import { useAuth, type AuthErrorKey } from '@/lib/auth';
 import { MIN_PASSWORD, checkPassword, isEmail } from '@/lib/authForm';
 import { space, useColors } from '@/theme/tokens';
@@ -39,8 +39,7 @@ export default function SignUp() {
   }
 
   return (
-    <Screen>
-      <AuthHeader title={t('auth.signUpTitle')} subtitle={t('auth.signUpSubtitle')} />
+    <AuthScreen title={t('auth.signUpTitle')} subtitle={t('auth.signUpSubtitle')}>
       <Card>
         <Field
           label={t('auth.email')} value={email} onChangeText={(v) => { setEmail(v); if (errors.email) setErrors({ ...errors, email: undefined }); }}
@@ -67,6 +66,6 @@ export default function SignUp() {
         <Text color={colors.inkMuted}>{t('auth.haveAccount')}</Text>
         <Button kind="ghost" label={t('auth.signInLink')} onPress={() => router.replace('/sign-in')} />
       </Footer>
-    </Screen>
+    </AuthScreen>
   );
 }

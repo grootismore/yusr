@@ -1,21 +1,30 @@
 import { useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { TextInput, View, type TextInputProps } from 'react-native';
+import { Image, TextInput, View, type TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Field, Icon, IconButton, Row } from '@/components/ui';
+import { Field, Icon, IconButton, Row, Screen } from '@/components/ui';
 import { MIN_PASSWORD, checkPassword } from '@/lib/authForm';
 import { space, useColors } from '@/theme/tokens';
 
-/** The brand header shared by every sign-in screen: name, a title and one calm line. */
-export function AuthHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+/**
+ * Every sign-in screen: the app icon and name centred at the top, a title and one calm line, then the form.
+ * A <Footer> as the last child sits at the bottom of the screen when the content is short.
+ */
+export function AuthScreen({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   const colors = useColors();
   const { t } = useTranslation();
   return (
-    <View style={{ gap: space.sm, paddingTop: space.xl }}>
-      <Text variant="heading" color={colors.teal}>{t('app.name')}</Text>
-      <Text variant="display">{title}</Text>
-      {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}
-    </View>
+    <Screen grow>
+      <View style={{ alignItems: 'center', gap: space.sm, paddingTop: space.lg }}>
+        <Image source={require('../../../assets/images/icon.png')} accessible={false} style={{ width: 64, height: 64, borderRadius: 16, borderCurve: 'continuous' }} />
+        <Text variant="heading" color={colors.teal}>{t('app.name')}</Text>
+      </View>
+      <View style={{ gap: space.xs, alignItems: 'center' }}>
+        <Text variant="title" accessibilityRole="header" style={{ textAlign: 'center' }}>{title}</Text>
+        {subtitle ? <Text color={colors.inkMuted} style={{ textAlign: 'center' }}>{subtitle}</Text> : null}
+      </View>
+      <View style={{ flex: 1, gap: space.lg }}>{children}</View>
+    </Screen>
   );
 }
 
@@ -72,5 +81,5 @@ export function Divider({ label }: { label: string }) {
 }
 
 export function Footer({ children }: { children: ReactNode }) {
-  return <Row style={{ justifyContent: 'center', flexWrap: 'wrap', gap: space.xs }}>{children}</Row>;
+  return <Row style={{ justifyContent: 'center', flexWrap: 'wrap', gap: space.xs, marginTop: 'auto', paddingTop: space.lg }}>{children}</Row>;
 }
