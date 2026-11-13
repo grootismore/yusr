@@ -54,23 +54,10 @@ export const Card = ({ children, tone = 'plain', style }: { children: ReactNode;
   );
 };
 
-/** The page behind every screen: the ground colour, with a faint mint glow at the top in the dark theme. */
+/** The page behind every screen: the plain ground colour. */
 export function Backdrop() {
   const colors = useColors();
-  const dark = useIsDark();
-  const rings = 24;
-  return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.ground, overflow: 'hidden' }]}>
-      {dark ? (
-        <View style={{ position: 'absolute', top: -200, end: -200, width: 440, height: 440, alignItems: 'center', justifyContent: 'center' }}>
-          {Array.from({ length: rings }, (_, i) => {
-            const d = 440 * (1 - i / rings);
-            return <View key={i} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: colors.mint, opacity: 1 - Math.pow(1 - 0.10, 1 / rings) }} />;
-          })}
-        </View>
-      ) : null}
-    </View>
-  );
+  return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.ground }]} />;
 }
 
 /** Large screen title with an optional calm line under it. One place so every tab starts the same way. */
@@ -215,7 +202,7 @@ function Fill({ percent, color }: { percent: number; color: string }) {
 
 export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = onHero ? colors.mint : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
+  const fill = onHero ? colors.sun : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
       style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.groundDeep, overflow: 'hidden' }}>
@@ -301,7 +288,7 @@ export function SettingRow({ icon, title, subtitle, value, onValueChange, disabl
   );
 }
 
-/** Pastel figure tile: a short label over one amount, dark text on mint or lilac. */
+/** Pastel figure tile: a short label over one amount, dark text on sun or tile. */
 export function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
   const colors = useColors();
   return (

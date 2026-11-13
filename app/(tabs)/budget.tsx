@@ -9,7 +9,7 @@ import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useExpenses, useWrite } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
-import { formatNumber, money, parseAmount } from '@/lib/money';
+import { formatNumber, parseAmount } from '@/lib/money';
 import { radius, space, useColors } from '@/theme/tokens';
 
 /** Edit one limit in place: a field, Save, and Remove when a limit exists. */
@@ -52,7 +52,7 @@ function LimitRow({ title, icon, categoryId, limit, spent, last }: { title: stri
         <View style={{ flex: 1, gap: 2 }}>
           <Text>{title}</Text>
           {limit
-            ? <Text latin variant="small" color={colors.inkMuted} style={{ writingDirection: 'ltr' }}>{money(spent)} / {money(limit)}</Text>
+            ? <Text latin variant="small" color={colors.inkMuted} style={{ writingDirection: 'ltr' }}>MVR {formatNumber(spent)} / {formatNumber(limit)}</Text>
             : <Text variant="small" color={colors.inkMuted}>{t('budget.noLimit')}</Text>}
         </View>
         <Button kind={limit ? 'ghost' : 'secondary'} label={limit ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditing(!editing)} style={limit ? undefined : { minHeight: 44, paddingHorizontal: space.lg }} />
@@ -101,7 +101,7 @@ export default function Budget() {
               : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} color={colors.onHero} />}
           </>
         ) : null}
-        <Button kind="secondary" label={overall ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditingAll(!editingAll)} style={{ backgroundColor: colors.mint, borderColor: colors.mint, alignSelf: 'flex-start' }} textColor={colors.onTile} />
+        <Button kind="secondary" label={overall ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditingAll(!editingAll)} style={{ backgroundColor: colors.sun, borderColor: colors.sun, alignSelf: 'flex-start' }} textColor={colors.onTile} />
         {editingAll ? <LimitEditor categoryId={null} limit={overall} onDone={() => setEditingAll(false)} /> : null}
       </Card>
 

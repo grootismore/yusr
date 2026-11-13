@@ -2,7 +2,7 @@
 
 Source of truth is `src/theme/tokens.ts` and `src/components/ui.tsx`.
 
-- **Look:** soft "Forest Night". Dark: green-black ground (`#0F1714`) with one pastel-mint accent (`#A9D9BA`). Light: pale sage ground (`#F2F6F1`) with a muted-pine accent. A pine `hero` panel carries the month's figure; pastel mint and lilac tiles hold numbers; the tab bar is a floating pine pill with a mint active icon. Cards are solid with a fine rim. Amber warns, coral means over budget; neither is ever colour alone. Every text pair is contrast-tested.
+- **Look:** "Ink and sun". A light page (`#F5F5F3`), white cards with a fine rim, text and icons in matte black (`#1E2023`), a matte-black figure panel (`#222428`) and one warm sun-yellow (`#F4C84A`) for progress, the Left tile and the active tab. Dark mode keeps the matte panel on a charcoal ground (`#141517`) and the buttons turn yellow. Tab bar is a floating matte pill. Amber warns, coral means over budget; neither is ever colour alone. Every text pair is contrast-tested.
 - **Type:** Thaana Noor for Dhivehi, Nunito Sans for English, numbers and amounts. Scale: display 32, title 24, heading 19, body 17, small 15. Thaana line height 1.75, Latin 1.4.
 - **Space and shape:** 4 pt grid; radius 8/14/20 and pill; continuous corners.
 - **Cards:** white surface with hairline and a soft lift in light mode; `hero` tone is the deep-green panel; warn/bad/good wash tones.

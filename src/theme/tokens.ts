@@ -1,27 +1,27 @@
 import { useColorScheme } from 'react-native';
 
 // Design tokens. One source for colour, spacing and type; every screen uses these.
-// Look: soft "Forest Night" in dark (green-black, one pastel-mint accent) and a pale-sage light theme. A muted pine panel carries the
-// month's figure, pastel mint and lilac tiles hold numbers, a floating pill is the tab bar. Warning amber and over-budget coral keep their own meaning.
+// Look: "Ink and sun". A light page, a matte-black figure panel, one warm sun-yellow accent for progress and the active tab.
+// Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  ground: '#F2F6F1', // page background
-  groundDeep: '#E2EBE0', // tracks, unselected segments
+  ground: '#F5F5F3', // page background
+  groundDeep: '#E8E8E4', // tracks, unselected segments
   surface: '#FFFFFF', // solid surfaces
   card: '#FFFFFF', // card fill
-  cardEdge: '#DEE7DC', // card rim
+  cardEdge: '#E6E6E1', // card rim
   field: '#FFFFFF', // input and chip fill
-  ink: '#14201A', // text
-  inkMuted: '#52605A', // secondary text (AA on ground and white)
-  line: '#DEE7DC', // hairlines
-  control: '#7F8B84', // borders of inputs and buttons (3:1 against ground)
-  accent: '#2E5B47', // primary actions, links, selected states (muted pine)
+  ink: '#1E2023', // text and icons: matte black
+  inkMuted: '#5B5E63', // secondary text (AA on ground and white)
+  line: '#E6E6E1', // hairlines
+  control: '#85888D', // borders of inputs and buttons (3:1 against ground)
+  accent: '#1E2023', // primary actions, selected states
   onAccent: '#FFFFFF',
-  accentWash: '#DCEBDD', // tinted tiles behind icons
-  hero: '#264A3B', // the month's figure panel
+  accentWash: '#ECECE8', // tinted tiles behind icons
+  hero: '#222428', // the month's figure panel: matte black
   onHero: '#FFFFFF',
-  mint: '#BEE3CB', // pastel tile, progress on the panel, active tab
-  lilac: '#DAD5F6', // second pastel tile
-  onTile: '#14201A', // text on the pastel tiles
+  sun: '#F4C84A', // the one warm accent: progress on the panel, the Left tile, the active tab
+  tile: '#ECECE8', // neutral figure tile
+  onTile: '#1E2023', // text on the tiles
   coral: '#B8362E', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
   amberDeep: '#8A5A00', // warning icons and borders (3:1+ on ground and white)
@@ -33,24 +33,24 @@ export type Palette = { [K in keyof typeof light]: string };
 
 /** The same roles in the dark theme: same hues, lifted for contrast on a dark ground (every text pair is tested). */
 export const dark: Palette = {
-  ground: '#0F1714',
-  groundDeep: '#18241F',
-  surface: '#15201B',
-  card: '#15201B',
-  cardEdge: '#243630',
-  field: '#15201B',
-  ink: '#E9F0EB',
-  inkMuted: '#A0B1A8',
-  line: '#243630',
-  control: '#74887D',
-  accent: '#A9D9BA',
-  onAccent: '#0F1A15',
-  accentWash: '#213B30',
-  hero: '#1F3D31',
+  ground: '#141517',
+  groundDeep: '#212327',
+  surface: '#1D1F22',
+  card: '#1D1F22',
+  cardEdge: '#2C2F34',
+  field: '#1D1F22',
+  ink: '#F1F1EF',
+  inkMuted: '#A3A6AB',
+  line: '#2C2F34',
+  control: '#7A7D83',
+  accent: '#F4C84A',
+  onAccent: '#1E2023',
+  accentWash: '#2A2C30',
+  hero: '#27292D',
   onHero: '#FFFFFF',
-  mint: '#A9D9BA',
-  lilac: '#CFC9F2',
-  onTile: '#14201A',
+  sun: '#F4C84A',
+  tile: '#ECECE8',
+  onTile: '#1E2023',
   coral: '#FF9A8C',
   amber: '#E0A526',
   amberDeep: '#F0C45A',

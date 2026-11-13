@@ -20,8 +20,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // A floating pill: deep green, the active tab is mint.
-        tabBarActiveTintColor: colors.mint,
+        // A floating pill: deep green, the active tab is sun.
+        tabBarActiveTintColor: colors.sun,
         tabBarInactiveTintColor: '#A9C2B3',
         tabBarShowLabel: false,
         tabBarStyle: { position: 'absolute', start: space.lg, end: space.lg, bottom: Math.max(insets.bottom, space.sm) + space.xs, height: 64, borderRadius: 32, borderCurve: 'continuous',
@@ -41,7 +41,7 @@ export default function TabsLayout() {
                 accessibilityRole="button"
                 accessibilityLabel={t('a11y.scanReceipt')}
                 onPress={() => router.push('/scan')}
-                style={({ pressed }) => ({ marginTop: -26, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
+                style={({ pressed }) => ({ marginTop: -26, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.sun, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1,
                   borderWidth: 4, borderColor: colors.hero })}
               >
                 <Icon name="scan" size={28} color={colors.onTile} />
