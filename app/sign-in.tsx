@@ -41,7 +41,8 @@ export default function SignIn() {
         <Button kind="ghost" label={t('auth.magicLink')} disabled={!email} onPress={async () => { setBusy(true); setError(null); const r = await auth.signInWithLink(email); setBusy(false); if (r.error) setError(t(`auth.errors.${r.error}`)); else setInfo(t('auth.linkSent')); }} />
         {WEB_LIMITED ? null : <Button kind="ghost" label={mode === 'in' ? t('auth.switchToSignUp') : t('auth.switchToSignIn')} onPress={() => { setMode(mode === 'in' ? 'up' : 'in'); setError(null); }} />}
       </Card>
-      {Platform.OS === 'ios' ? <Button kind="secondary" icon="logo-apple" label={t('auth.apple')} onPress={async () => { const r = await auth.signInWithApple(); if (r.error) setError(t(`auth.errors.${r.error}`)); }} /> : null}
+      {/* Sideloaded test builds are signed with a free Apple ID, which cannot carry Sign in with Apple, so those builds hide the button. */}
+      {Platform.OS === 'ios' && process.env.EXPO_PUBLIC_DISABLE_APPLE_SIGNIN !== '1' ? <Button kind="secondary" icon="logo-apple" label={t('auth.apple')} onPress={async () => { const r = await auth.signInWithApple(); if (r.error) setError(t(`auth.errors.${r.error}`)); }} /> : null}
     </Screen>
   );
 }

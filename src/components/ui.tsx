@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { tick } from '@/lib/haptics';
+import { isLtrInput } from '@/lib/inputs';
 import { fontFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors } from '@/theme/tokens';
 import { Text } from './Text';
@@ -89,6 +90,7 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const bad = !!error;
+  const ltr = isLtrInput(rest);
   return (
     <View style={{ gap: space.xs }}>
       <Text variant="label">{label}</Text>
@@ -99,7 +101,8 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
         {...rest}
         style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.surface, paddingHorizontal: space.lg, paddingVertical: space.sm,
-          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }, rest.style]}
+          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
+        {...(ltr ? { dir: 'ltr' } : {})}
       />
       {flag && !bad ? (
         <View style={{ flexDirection: 'row', gap: space.xs, alignItems: 'center' }}>
