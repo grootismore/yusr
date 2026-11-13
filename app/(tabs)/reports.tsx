@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
-import { useBudgets, useCategories, useCategoryName, useExpenses } from '@/data/hooks';
+import * as api from '@/data/api';
+import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, useWrite } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
-import { addMonths, monthStart } from '@/lib/dates';
+import { addMonths, formatDate, monthStart } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
 
 export default function Reports() {
@@ -28,6 +29,10 @@ export default function Reports() {
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
     return [...m].sort((a, b) => b[1] - a[1]);
   }, [expenses]);
+  const incomeQ = useIncome(month);
+  const incomeRows = useMemo(() => incomeQ.data ?? [], [incomeQ.data]);
+  const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0);
+  const removeIncome = useWrite(api.deleteIncome);
   const overall = limits?.get(null);
   const overallState = budgetState(total, overall);
   const rtl = i18n.language === 'dv';
@@ -44,6 +49,12 @@ export default function Reports() {
       <Card tone={overallState === 'over' ? 'bad' : overallState === 'near' ? 'warn' : 'plain'}>
         <Text color={colors.inkMuted}>{t('reports.total')}</Text>
         <Money laari={total} variant="display" />
+        {incomeTotal > 0 ? (
+          <View style={{ gap: 2 }}>
+            <Row><Text style={{ flex: 1 }} color={colors.inkMuted}>{t('reports.income')}</Text><Money laari={incomeTotal} /></Row>
+            <Row><Text style={{ flex: 1 }} color={colors.inkMuted}>{t('reports.net')}</Text><Money laari={incomeTotal - total} /></Row>
+          </View>
+        ) : null}
         {overall ? (
           <>
             <ProgressBar percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
@@ -57,6 +68,25 @@ export default function Reports() {
           </>
         ) : null}
       </Card>
+
+      {incomeRows.length > 0 ? (
+        <>
+          <Text variant="heading">{t('reports.incomeList')}</Text>
+          <Card>
+            {incomeRows.map((i) => (
+              <Row key={i.id} style={{ minHeight: 56 }}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text numberOfLines={1}>{i.note || t('reports.income')}</Text>
+                  <Text latin variant="small" color={colors.inkMuted}>{formatDate(i.received_at)}</Text>
+                </View>
+                <Money laari={i.mvr_laari} />
+                <Button kind="ghost" icon="trash-outline" label={t('common.remove')}
+                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id) }])} />
+              </Row>
+            ))}
+          </Card>
+        </>
+      ) : null}
 
       {expenses.length === 0 ? <Text color={colors.inkMuted}>{t('reports.empty')}</Text> : (
         <>

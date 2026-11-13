@@ -12,6 +12,9 @@ import type { GivingEntry } from '@/features/giving/logic';
 // ---- register (preview)
 import type { AuditEntry, ContactCase, ContactRegister, RegisterItem, TrustedContact } from '@/features/register/types';
 
+// ---- income (preview)
+import type { IncomeRow } from './api';
+
 const cat = (slug: string, name_en: string, name_dv: string, icon: string): Category => ({ id: slug, user_id: null, slug, name_en, name_dv, icon });
 export const categories: Category[] = [
   cat('food-groceries', 'Food and groceries', 'ކާބޯތަކެތި', 'cart'), cat('transport', 'Transport', 'ދަތުރުފަތުރު', 'boat'),
@@ -73,3 +76,7 @@ export const contactRegister: ContactRegister = {
   items: [{ kind: 'receivable', title: 'Owed by Ali', counterparty: 'Ali', amount_laari: 150_000, details: 'Call him first.' }, { kind: 'wish', title: 'Wish', counterparty: null, amount_laari: null, details: null }],
   debts: [{ lender: 'BML · Personal loan', kind: 'loan', balance_laari: 4_500_000 }],
 };
+export const income: IncomeRow[] = [
+  { id: 'i1', amount_laari: 1_800_000, currency: 'MVR', mvr_laari: 1_800_000, received_at: '2026-11-01', note: 'Salary' },
+  { id: 'i2', amount_laari: 250_000, currency: 'MVR', mvr_laari: 250_000, received_at: '2026-11-08', note: 'ޓިއުޝަން' },
+];

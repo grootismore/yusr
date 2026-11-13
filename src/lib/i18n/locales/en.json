@@ -64,7 +64,8 @@
     "emptyTitle": "Nothing logged yet",
     "emptyBody": "Add your first expense, or scan a receipt with Raseedhu.",
     "addExpense": "Add expense",
-    "income": "Income"
+    "income": "Income",
+    "incomeLine": "Income {{amount}}"
   },
   "expense": {
     "addTitle": "Add expense",
@@ -147,7 +148,9 @@
     "nearLimit": "Close to the limit",
     "uncategorised": "No category",
     "prev": "Previous month",
-    "next": "Next month"
+    "next": "Next month",
+    "net": "Net (income minus spending)",
+    "incomeList": "Income this month"
   },
   "more": {
     "title": "More",
@@ -534,5 +537,15 @@
   },
   "webHome": {
     "body": "The website is for people invited as a trusted person, and for deleting your account. For everything else, please use the Kharadhu app on your phone."
+  },
+  "add": {
+    "expense": "Expense",
+    "income": "Income"
+  },
+  "income": {
+    "addTitle": "Add income",
+    "noteLabel": "Where is it from?",
+    "deleteTitle": "Delete this income?",
+    "none": "No income recorded this month."
   }
 }

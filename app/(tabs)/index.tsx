@@ -7,7 +7,7 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, usePlanSettings, useZakat } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -35,6 +35,8 @@ export default function Home() {
   const planSettings = usePlanSettings().data ?? DEFAULT_PLAN;
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
+  const incomeQ = useIncome(month);
+  const incomeTotal = (incomeQ.data ?? []).reduce((s, i) => s + i.mvr_laari, 0);
   const givingQ = useGiving(month);
   const giving = useMemo(() => monthGiving(givingQ.data ?? []), [givingQ.data]);
   const goal = useZakat().data?.sadaqah_goal_laari ?? null;
@@ -72,6 +74,7 @@ export default function Home() {
       <Card tone={state === 'over' ? 'bad' : state === 'near' ? 'warn' : 'plain'}>
         <Text color={colors.inkMuted}>{t('home.thisMonth')} · {t('home.spent')}</Text>
         <Money laari={spent} variant="display" />
+        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.inkMuted} /> : null}
         {limit ? (
           <>
             <ProgressBar percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />

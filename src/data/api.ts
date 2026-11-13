@@ -42,6 +42,28 @@ export async function addExpense(input: NewExpense): Promise<void> {
   must(await getSupabase().from('expenses').insert({ ...input, user_id: await uid(), source: 'manual' }));
 }
 
+export interface IncomeRow { id: string; amount_laari: number; currency: string; mvr_laari: number; received_at: string; note: string | null }
+
+export async function listIncome(month: string): Promise<IncomeRow[]> {
+  if (PREVIEW) return fx.income;
+  return must(
+    await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note').gte('received_at', month).lt('received_at', addMonths(month, 1))
+      .order('received_at', { ascending: false }).order('created_at', { ascending: false }),
+  );
+}
+
+export async function addIncome(input: NewExpense): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('income').insert({
+    user_id: await uid(), amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
+  }));
+}
+
+export async function deleteIncome(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('income').delete().eq('id', id));
+}
+
 export async function listBudgets(month: string): Promise<BudgetRow[]> {
   if (PREVIEW) return fx.budgets;
   return must(await getSupabase().from('budgets').select('id,month,category_id,limit_laari').lte('month', month));

@@ -38,3 +38,4 @@ export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listA
 export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });
 
 export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });
+export const useIncome = (month: string) => useQuery({ queryKey: ['income', month], queryFn: () => api.listIncome(month) });
