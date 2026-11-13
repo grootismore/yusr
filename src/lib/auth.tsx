@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [qc]);
 
   const value = useMemo<AuthValue>(() => ({
-    signedIn: PREVIEW || !!session,
+    signedIn: PREVIEW ? process.env.EXPO_PUBLIC_PREVIEW_OUT !== '1' : !!session,
     loading,
     async signIn(email, password) {
       const { error } = await getSupabase().auth.signInWithPassword({ email: email.trim(), password });

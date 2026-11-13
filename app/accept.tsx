@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Screen } from '@/components/ui';
 import { acceptInvite } from '@/data/api';
+import { useAuth } from '@/lib/auth';
+import { WEB_LIMITED } from '@/lib/platform';
 import { TOKEN_PATTERN } from '@/features/register/invite';
 import { space, useColors } from '@/theme/tokens';
 
@@ -15,6 +17,7 @@ export default function Accept() {
   const colors = useColors();
   const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token?: string }>();
+  const { signedIn } = useAuth();
   const tokenOk = !!token && TOKEN_PATTERN.test(token);
   const [fetched, setPhase] = useState<Phase>({ kind: 'checking' });
   const phase: Phase = tokenOk ? fetched : { kind: 'problem', key: 'invalid' };
@@ -38,6 +41,10 @@ export default function Accept() {
       setPhase(r.ok ? { kind: 'done', accepted: action === 'accept' } : { kind: 'problem', key: 'error' });
     } finally { setBusy(false); }
   }
+
+  // Opened with no invite token: this is where the router drops anyone whose first screen is unavailable to them
+  // (for example a signed-out person on app start). Send them where they belong instead of saying "invalid link".
+  if (!token) return <Redirect href={signedIn ? (WEB_LIMITED ? '/web-home' : '/(tabs)') : '/sign-in'} />;
 
   return (
     <Screen>
