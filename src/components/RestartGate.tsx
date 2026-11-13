@@ -1,12 +1,13 @@
 import { View } from 'react-native';
 import { i18n } from '@/lib/i18n';
 import { useRestartRequired } from '@/lib/restartGate';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 import { Icon } from './ui';
 import { Text } from './Text';
 
 /** Covers the app after a language change that needs a restart, in both languages. No button: reopening the app is the only way forward. */
 export function RestartGate() {
+  const colors = useColors();
   const required = useRestartRequired();
   if (!required) return null;
   return (

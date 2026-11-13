@@ -4,7 +4,7 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Icon, Row } from '@/components/ui';
-import { colors, radius } from '@/theme/tokens';
+import { radius, useColors } from '@/theme/tokens';
 import type { DueState } from './due';
 
 /** "November 2026" in the current language. Amounts and years stay Latin. */
@@ -16,6 +16,7 @@ export function useMonthLabel() {
 
 /** Overdue and due-soon say it in words and an icon, never colour alone. Calm wording, no alarm. */
 export function DueBadge({ state, days }: { state: DueState; days: number }) {
+  const colors = useColors();
   const { t } = useTranslation();
   if (state === 'none' || state === 'ok') return null;
   const bad = state === 'overdue';
@@ -32,6 +33,7 @@ export function DueBadge({ state, days }: { state: DueState; days: number }) {
 
 /** A gentle, factual interest marker. No judgement: it only tells the person what the debt is. */
 export function InterestTag({ interestBearing, kind, rateBps }: { interestBearing: boolean; kind: string; rateBps: number | null }) {
+  const colors = useColors();
   const { t } = useTranslation();
   if (!interestBearing && kind !== 'qard_hasan') return null;
   const rate = rateBps ? `${(rateBps / 100).toFixed(2).replace(/\.?0+$/, '')}%` : null;

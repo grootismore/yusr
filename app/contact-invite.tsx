@@ -7,11 +7,12 @@ import { Button, Card, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useWrite } from '@/data/hooks';
 import { success } from '@/lib/haptics';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export default function ContactInvite() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const invite = useWrite(api.inviteContact);

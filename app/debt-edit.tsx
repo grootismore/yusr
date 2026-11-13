@@ -9,13 +9,14 @@ import { useDebts, useWrite } from '@/data/hooks';
 import { DEBT_KINDS, type DebtInput, type DebtKind } from '@/features/debts/types';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 const plain = (laari: number | null | undefined) => (laari ? formatNumber(laari).replace(/,/g, '') : '');
 // An annual rate such as "12.5" (%) is stored in basis points (1250). parseAmount turns "12.5" into 1250 hundredths, which is exactly that.
 const rateToBps = (text: string): number => parseAmount(text);
 
 export default function DebtEdit() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();

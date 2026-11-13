@@ -6,7 +6,7 @@ import { useCategoryName, useRates } from '@/data/hooks';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { formatNumber, ltr, parseAmount, parseRate, toMvrLaari } from '@/lib/money';
 import { isLow, type Confidence } from '@/lib/receipt';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 import { Msg } from './Msg';
 import { Text } from './Text';
 import { Button, Chip, Field, Icon, Row, type IconName } from './ui';
@@ -22,10 +22,13 @@ export interface FormInitial {
  * unsure about (`confidence` below 0.7) get a flagged style and words, not just a colour.
  * `children` renders extra sections (items, GST) between the category and the save button.
  */
-export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange }: {
+export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange, income }: {
   initial?: FormInitial; categories: Category[]; confidence?: Confidence; onSubmit: (e: NewExpense) => void; submitLabel: string; busy?: boolean;
   children?: ReactNode; onTotalChange?: (laari: number | null) => void;
+  /** Money coming in: no category or merchant, and the note says where it is from. */
+  income?: boolean;
 }) {
+  const colors = useColors();
   const { t } = useTranslation();
   const catName = useCategoryName();
   const { data: rates = {} } = useRates();
@@ -52,10 +55,10 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
     const iso = parseDate(date);
     if (!iso) next.date = t('expense.invalidDate');
     if (currency !== 'MVR') { try { parseRate(rate); } catch { next.rate = t('expense.invalidRate'); } }
-    if (!categoryId) next.category = t('expense.chooseCategory');
+    if (!income && !categoryId) next.category = t('expense.chooseCategory');
     setErrors(next);
     if (Object.keys(next).length) return;
-    onSubmit({ amount_laari: minor!, currency, fx_rate_to_mvr: currency === 'MVR' ? '1' : rate.trim(), category_id: categoryId, merchant: merchant.trim() || null, spent_at: iso!, note: note.trim() || null });
+    onSubmit({ amount_laari: minor!, currency, fx_rate_to_mvr: currency === 'MVR' ? '1' : rate.trim(), category_id: income ? null : categoryId, merchant: income ? null : merchant.trim() || null, spent_at: iso!, note: note.trim() || null });
   }
 
   return (
@@ -73,16 +76,16 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
         </View>
       ) : null}
 
-      <View style={{ gap: space.sm }}>
+      {income ? null : <View style={{ gap: space.sm }}>
         <Text variant="label">{t('expense.category')}</Text>
         <Row style={{ flexWrap: 'wrap' }}>
           {categories.map((c) => <Chip key={c.id} label={catName(c)} icon={c.icon as IconName} selected={c.id === categoryId} onPress={() => setCategoryId(c.id)} />)}
         </Row>
         {flag('category') && !errors.category ? <Row><Icon name="alert-circle" size={18} color={colors.amberDeep} /><Text variant="small">{t('confirm.checkThis')} — {t('confirm.lowConfidence')}</Text></Row> : null}
         {errors.category ? <Text variant="small" color={colors.coral}>{errors.category}</Text> : null}
-      </View>
+      </View>}
 
-      <Field label={t('expense.merchant')} value={merchant} onChangeText={setMerchant} flag={flag('merchant')} autoCapitalize="words" />
+      {income ? null : <Field label={t('expense.merchant')} value={merchant} onChangeText={setMerchant} flag={flag('merchant')} autoCapitalize="words" />}
       <View style={{ gap: space.sm }}>
         <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" placeholder="DD/MM/YYYY" error={errors.date} flag={flag('date')} />
         <Row>
@@ -90,7 +93,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
           <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
         </Row>
       </View>
-      <Field label={`${t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} multiline />
+      <Field label={`${income ? t('income.noteLabel') : t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} multiline />
       {children}
       <Button label={submitLabel} onPress={submit} loading={busy} />
     </View>

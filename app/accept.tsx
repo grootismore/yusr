@@ -6,12 +6,13 @@ import { Text } from '@/components/Text';
 import { Button, Card, Screen } from '@/components/ui';
 import { acceptInvite } from '@/data/api';
 import { TOKEN_PATTERN } from '@/features/register/invite';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 type Phase = { kind: 'checking' } | { kind: 'ask'; who: string } | { kind: 'done'; accepted: boolean } | { kind: 'problem'; key: 'invalid' | 'expired' | 'used' | 'error' };
 
 /** Public page for the person who was invited. The token in the link is the only credential; no account is needed to say yes or no. */
 export default function Accept() {
+  const colors = useColors();
   const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const tokenOk = !!token && TOKEN_PATTERN.test(token);

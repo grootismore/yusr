@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 export default function More() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();

@@ -5,9 +5,10 @@ import { Text } from '@/components/Text';
 import { Button, Card, Field, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { WEB_LIMITED } from '@/lib/platform';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function SignIn() {
+  const colors = useColors();
   const { t } = useTranslation();
   const auth = useAuth();
   const [mode, setMode] = useState<'in' | 'up'>('in');

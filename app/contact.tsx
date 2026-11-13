@@ -5,10 +5,11 @@ import { Text } from '@/components/Text';
 import { Button, Card, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useContactCases, useWrite } from '@/data/hooks';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 /** For someone who has said yes to being trusted. They sign in with the email they were invited on. */
 export default function ContactHome() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const cases = useContactCases().data ?? [];

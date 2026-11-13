@@ -1,5 +1,7 @@
+import { useColorScheme } from 'react-native';
+
 // Design tokens. One source for colour, spacing and type; every screen uses these.
-export const colors = {
+export const light = {
   sand: '#F5F1E8', // background
   surface: '#FFFFFF',
   sandDeep: '#E9E3D4', // tracks, unselected chips
@@ -16,6 +18,34 @@ export const colors = {
   coralWash: '#FCEFEA',
   tealWash: '#DCEBE8',
 } as const;
+
+export type Palette = { [K in keyof typeof light]: string };
+
+/** The same roles in the dark theme: same hues, lifted for contrast on a dark ground (every text pair is tested). */
+export const dark: Palette = {
+  sand: '#101614',
+  surface: '#1A2321',
+  sandDeep: '#27312E',
+  ink: '#EEEBE2',
+  inkMuted: '#A9B4B0',
+  line: '#2E3A37',
+  control: '#7F8B87',
+  teal: '#4DBDB7',
+  onTeal: '#08201E',
+  coral: '#F2907A',
+  amber: '#E0A526',
+  amberDeep: '#F0C45A',
+  amberWash: '#392F17',
+  coralWash: '#3A221C',
+  tealWash: '#18312F',
+};
+
+export const palettes = { light, dark } as const;
+
+/** The colours for the current appearance (system, or the person's choice in Settings). Every screen reads colours here. */
+export function useColors(): Palette {
+  return useColorScheme() === 'dark' ? dark : light;
+}
 
 /** 4-pt grid. */
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;

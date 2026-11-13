@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 /** What a signed-in person sees on the web: only the two things the website is for. */
 export default function WebHome() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();

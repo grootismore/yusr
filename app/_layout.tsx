@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RestartGate } from '@/components/RestartGate';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
+import { applyAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
@@ -86,14 +87,14 @@ export default function RootLayout() {
     NunitoSans_400Regular: require('../assets/fonts/NunitoSans_400Regular.ttf'),
     NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
   });
-  useEffect(() => { void initI18n().finally(() => setReady(true)); }, []);
+  useEffect(() => { void loadAppearance().then(applyAppearance); void initI18n().finally(() => setReady(true)); }, []);
   if (!ready || !(fontsLoaded || fontError)) return null;
   return (
     <SafeAreaProvider>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <StatusBar style="dark" />
+            <StatusBar style="auto" />
             <Routes />
             <RestartGate />
           </AuthProvider>

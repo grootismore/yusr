@@ -8,6 +8,7 @@ import { getItem, setItem } from '@/lib/kv';
 import * as fx from './preview';
 import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
+import { sumByMonth } from '@/features/trends/trend';
 import type { GivingEntry, GivingKind } from '@/features/giving/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
@@ -40,6 +41,28 @@ export async function listExpenses(month: string): Promise<Expense[]> {
 export async function addExpense(input: NewExpense): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('expenses').insert({ ...input, user_id: await uid(), source: 'manual' }));
+}
+
+export interface IncomeRow { id: string; amount_laari: number; currency: string; mvr_laari: number; received_at: string; note: string | null }
+
+export async function listIncome(month: string): Promise<IncomeRow[]> {
+  if (PREVIEW) return fx.income;
+  return must(
+    await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note').gte('received_at', month).lt('received_at', addMonths(month, 1))
+      .order('received_at', { ascending: false }).order('created_at', { ascending: false }),
+  );
+}
+
+export async function addIncome(input: NewExpense): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('income').insert({
+    user_id: await uid(), amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
+  }));
+}
+
+export async function deleteIncome(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('income').delete().eq('id', id));
 }
 
 export async function listBudgets(month: string): Promise<BudgetRow[]> {
@@ -371,4 +394,31 @@ export async function acceptConsents(kinds: readonly ConsentKind[], version: str
   if (PREVIEW) return;
   const user_id = await uid();
   must(await getSupabase().from('consents').upsert(kinds.map((kind) => ({ user_id, kind, version })), { onConflict: 'user_id,kind,version', ignoreDuplicates: true }));
+}
+
+// ---- spending trend (Reports)
+/** Pages through all rows (the API returns at most 1000 at a time) so a busy few months is never cut short. */
+async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += 1000) {
+    const rows = must(await page(from, from + 999)) ?? [];
+    out.push(...rows);
+    if (rows.length < 1000) return out;
+  }
+}
+
+/** Per-month spending and income in MVR laari for the given months (oldest first). */
+export async function monthlyTotals(months: string[]): Promise<{ spend: number[]; income: number[] }> {
+  if (PREVIEW) return fx.trend(months);
+  const supabase = getSupabase();
+  const from = months[0];
+  const to = addMonths(months[months.length - 1], 1);
+  const [spendRows, incomeRows] = await Promise.all([
+    fetchAll<{ mvr_laari: number; spent_at: string }>((a, b) => supabase.from('expenses').select('mvr_laari,spent_at').gte('spent_at', from).lt('spent_at', to).order('spent_at').range(a, b)),
+    fetchAll<{ mvr_laari: number; received_at: string }>((a, b) => supabase.from('income').select('mvr_laari,received_at').gte('received_at', from).lt('received_at', to).order('received_at').range(a, b)),
+  ]);
+  return {
+    spend: sumByMonth(spendRows.map((r) => ({ date: r.spent_at, laari: r.mvr_laari })), months),
+    income: sumByMonth(incomeRows.map((r) => ({ date: r.received_at, laari: r.mvr_laari })), months),
+  };
 }

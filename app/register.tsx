@@ -6,9 +6,10 @@ import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import { useContacts, useDebts, useRegisterItems } from '@/data/hooks';
 import { readiness } from '@/features/register/readiness';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 function Step({ done, label }: { done: boolean; label: string }) {
+  const colors = useColors();
   return (
     <Row accessible accessibilityLabel={`${label}, ${done ? '✓' : '○'}`}>
       <Icon name={done ? 'checkmark-circle' : 'ellipse-outline'} color={done ? colors.teal : colors.inkMuted} />
@@ -18,6 +19,7 @@ function Step({ done, label }: { done: boolean; label: string }) {
 }
 
 export default function Register() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const items = useRegisterItems().data ?? [];

@@ -8,7 +8,7 @@ import * as api from '@/data/api';
 import { useConsents } from '@/data/hooks';
 import { useAuth } from '@/lib/auth';
 import { CONSENT_KINDS, LEGAL_VERSION, type ConsentKind } from '@/features/legal/consent';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 /**
  * Shown to anyone who has not agreed to the current Terms, Privacy Policy and 18+ confirmation, however
@@ -16,6 +16,7 @@ import { colors, space } from '@/theme/tokens';
  * unticked switches; nothing is recorded until they are all on and the person taps Continue.
  */
 export default function Consent() {
+  const colors = useColors();
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const qc = useQueryClient();

@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Field } from '@/components/ui';
 import * as api from '@/data/api';
-import { colors } from '@/theme/tokens';
+import { useColors } from '@/theme/tokens';
 
 /** Delete my account and everything in it. Used in Settings (app) and on its own page (web). */
 export function DeleteAccountCard() {
+  const colors = useColors();
   const { t } = useTranslation();
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);

@@ -8,11 +8,12 @@ import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import { ScanError, scanReceipt, type ScanFailure } from '@/data/api';
 import { useScansUsed } from '@/data/hooks';
 import { useQueryClient } from '@tanstack/react-query';
-import { colors, space } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 const LIMIT = 10; // free scans per month; the server enforces it, this is only for display
 
 export default function Scan() {
+  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
