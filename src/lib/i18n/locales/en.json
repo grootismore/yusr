@@ -42,14 +42,40 @@
     "errors": {
       "invalid": "That email or password isn't right.",
       "exists": "An account with this email already exists.",
-      "weak": "Choose a longer password (at least 8 characters).",
+      "weak": "Use at least {{min}} characters.",
       "network": "No connection. Please try again.",
-      "generic": "We couldn't sign you in. Please try again."
+      "generic": "We couldn't sign you in. Please try again.",
+      "unconfirmed": "Please confirm your email first. We sent you a link.",
+      "rate": "Too many tries. Please wait a minute and try again."
     },
     "magicLink": "Email me a sign-in link",
     "linkSent": "Check your email for the sign-in link.",
     "confirmed": "Your email is confirmed. Open the Kharadhu app and sign in.",
-    "linkExpired": "That link has expired or was already used. If you haven't signed in yet, try signing in: your email may already be confirmed. Otherwise open the Kharadhu app and ask for the email again."
+    "linkExpired": "That link has expired or was already used. If you haven't signed in yet, try signing in: your email may already be confirmed. Otherwise open the Kharadhu app and ask for the email again.",
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to see your spending.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "It takes a minute. Your data stays private.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordRequired": "Enter your password.",
+    "forgotPassword": "Forgot password?",
+    "or": "or",
+    "noAccount": "New to Kharadhu?",
+    "createLink": "Create an account",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "choosePassword": "Choose a password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "ruleLength": "At least {{min}} characters",
+    "ruleMixed": "Tip: mix letters and numbers",
+    "met": "Done",
+    "notYet": "Not yet",
+    "agreeNext": "You will review our terms and privacy policy in the next step.",
+    "linkSentTitle": "Check your email",
+    "linkSentBody": "We sent a sign-in link to {{email}}.",
+    "useAnotherEmail": "Use a different email",
+    "resendConfirmation": "Send the confirmation email again"
   },
   "home": {
     "thisMonth": "This month",
@@ -589,5 +615,23 @@
     "save": "Save and start",
     "skip": "Skip for now",
     "tip": "Tip: tap the round button at the bottom to scan a receipt."
+  },
+  "forgot": {
+    "title": "Reset your password",
+    "body": "Enter your email and we will send you a link to choose a new password.",
+    "send": "Send reset link",
+    "sentTitle": "Check your email",
+    "sentBody": "If an account exists for {{email}}, a reset link is on its way.",
+    "back": "Back to sign in"
+  },
+  "reset": {
+    "title": "Choose a new password",
+    "body": "Pick a password you have not used before.",
+    "newPassword": "New password",
+    "save": "Save password",
+    "checking": "Checking your link…",
+    "done": "Your password is changed. Open the Kharadhu app and sign in with it.",
+    "expired": "This link has expired or was already used. Ask for a new reset link in the app.",
+    "none": "Open the reset link from your email to choose a new password."
   }
 }

@@ -28,7 +28,7 @@ export default function Welcome() {
   if (onboarded || WEB_LIMITED) return <Redirect href="/sign-in" />; // the website skips the intro
 
   const last = page === PAGES.length - 1;
-  const done = async (to: '/sign-in' | { pathname: '/sign-in'; params: { mode: 'up' } }) => { await setFlag('onboarded', true); router.replace(to); };
+  const done = async (to: '/sign-in' | '/sign-up') => { await setFlag('onboarded', true); router.replace(to); };
   const p = PAGES[page];
 
   return (
@@ -62,7 +62,7 @@ export default function Welcome() {
         </Row>
         {last ? (
           <>
-            <Button label={t('onboarding.start')} onPress={() => done({ pathname: '/sign-in', params: { mode: 'up' } })} />
+            <Button label={t('onboarding.start')} onPress={() => done('/sign-up')} />
             <Button kind="ghost" label={t('onboarding.haveAccount')} onPress={() => done('/sign-in')} />
           </>
         ) : <Button label={t('onboarding.next')} onPress={() => setPage(page + 1)} />}
