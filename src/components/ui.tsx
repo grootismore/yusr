@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ComponentRef, type ReactNode, type Ref } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,7 @@ export function Screen({ children, scroll = true, padded = true }: { children: R
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl };
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.sand }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
-      {scroll ? <ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[{ flex: 1 }, inner]}>{children}</View>}
+      {scroll ? <ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[{ flex: 1 }, inner]}>{children}</View>}
     </SafeAreaView>
   );
 }
@@ -86,7 +86,7 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
 }
 
 /** Labelled input. `flag` marks a field the scanner was unsure about: amber border plus words, never colour alone. */
-export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { label: string; error?: string | null; flag?: boolean; hint?: string }) {
+export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }: TextInputProps & { label: string; error?: string | null; flag?: boolean; hint?: string; trailing?: ReactNode; inputRef?: Ref<ComponentRef<typeof TextInput>> }) {
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const bad = !!error;
@@ -95,7 +95,9 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
     <View style={{ gap: space.xs }}>
       <Text variant="label">{label}</Text>
       {hint ? <Text variant="small" color={colors.inkMuted}>{hint}</Text> : null}
+      <View>
       <TextInput
+        ref={inputRef}
         accessibilityLabel={label}
         placeholderTextColor={colors.inkMuted}
         {...rest}
@@ -104,6 +106,8 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
           fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
         {...(ltr ? { dir: 'ltr' } : {})}
       />
+      {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, right: 4, justifyContent: 'center' }}>{trailing}</View> : null}
+      </View>
       {flag && !bad ? (
         <View style={{ flexDirection: 'row', gap: space.xs, alignItems: 'center' }}>
           <Icon name="alert-circle" size={18} color={colors.amberDeep} />

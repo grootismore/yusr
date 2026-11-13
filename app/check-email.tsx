@@ -43,11 +43,11 @@ export default function CheckEmail() {
         <Text variant="small" color={colors.inkMuted}>{t('checkEmail.tip')}</Text>
       </View>
       <Card>
-        <Button label={t('checkEmail.signIn')} onPress={() => router.replace('/sign-in')} />
+        <Button label={t('checkEmail.signIn')} onPress={() => router.replace({ pathname: '/sign-in', params: { email } })} />
         <Button kind="secondary" label={t('checkEmail.resend')} disabled={wait > 0} onPress={resend} />
         {wait > 0 ? <Text variant="small" color={colors.inkMuted}>{t('checkEmail.resendIn', { seconds: wait })}</Text> : null}
         {msg ? <Text variant="small" color={msg.bad ? colors.coral : colors.teal} accessibilityLiveRegion="polite">{msg.text}</Text> : null}
-        <Button kind="ghost" label={t('checkEmail.change')} onPress={() => router.replace({ pathname: '/sign-in', params: { mode: 'up' } })} />
+        <Button kind="ghost" label={t('checkEmail.change')} onPress={() => router.replace('/sign-up')} />
       </Card>
     </Screen>
   );

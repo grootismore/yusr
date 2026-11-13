@@ -76,11 +76,17 @@ function Routes() {
         {/* Public: the invited person says yes or no with the link alone, no account needed. */}
         <Stack.Screen name="welcome" />
         <Stack.Screen name="check-email" />
+        {/* Public: the password-reset email opens this page on the website. */}
+        <Stack.Screen name="reset-password" />
         <Stack.Screen name="accept" />
         {/* Public: how to delete an account (a web address the stores ask for). */}
         <Stack.Screen name="delete-info" />
+        <Stack.Protected guard={!signedIn && !WEB_LIMITED}>
+          <Stack.Screen name="sign-up" />
+        </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />
+          <Stack.Screen name="forgot-password" />
         </Stack.Protected>
       </Stack>
     </LockGate>

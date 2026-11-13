@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
+import { type AuthErrorKey, authErrorKey } from './authErrors';
 import { PREVIEW, getSupabase } from './supabase';
 
-export type AuthErrorKey = 'invalid' | 'exists' | 'weak' | 'network' | 'generic';
+export { authErrorKey, type AuthErrorKey };
+
 interface AuthResult { error?: AuthErrorKey; needsEmailConfirmation?: boolean }
 interface AuthValue {
   signedIn: boolean; loading: boolean;
@@ -15,6 +17,10 @@ interface AuthValue {
   signInWithLink(email: string): Promise<AuthResult>;
   /** Send the sign-up confirmation email again. */
   resendConfirmation(email: string): Promise<AuthResult>;
+  /** Email a link to choose a new password. The link opens the website's reset page. */
+  resetPassword(email: string): Promise<AuthResult>;
+  /** Set a new password for the person who is signed in (after following a reset link). */
+  updatePassword(password: string): Promise<AuthResult>;
   signOut(): Promise<void>;
 }
 
@@ -24,15 +30,6 @@ export const useAuth = (): AuthValue => {
   if (!v) throw new Error('useAuth must be used inside <AuthProvider>');
   return v;
 };
-
-export function authErrorKey(error: { message?: string; status?: number; code?: string }): AuthErrorKey {
-  const m = (error.message ?? '').toLowerCase();
-  if (error.code === 'user_already_exists' || m.includes('already registered')) return 'exists';
-  if (error.code === 'weak_password' || m.includes('password should be')) return 'weak';
-  if (error.code === 'invalid_credentials' || m.includes('invalid login')) return 'invalid';
-  if (m.includes('network') || m.includes('fetch') || error.status === 0) return 'network';
-  return 'generic';
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -82,6 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     async resendConfirmation(email) {
       const { error } = await getSupabase().auth.resend({ type: 'signup', email: email.trim() });
+      return error ? { error: authErrorKey(error) } : {};
+    },
+    async resetPassword(email) {
+      const base = process.env.EXPO_PUBLIC_APP_URL?.replace(/\/$/, '');
+      const { error } = await getSupabase().auth.resetPasswordForEmail(email.trim(), { redirectTo: base ? `${base}/reset-password` : undefined });
+      return error ? { error: authErrorKey(error) } : {};
+    },
+    async updatePassword(password) {
+      const { error } = await getSupabase().auth.updateUser({ password });
       return error ? { error: authErrorKey(error) } : {};
     },
     async signOut() { await getSupabase().auth.signOut(); qc.clear(); },
