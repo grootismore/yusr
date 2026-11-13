@@ -1,0 +1,40 @@
+name: Deploy functions
+# Manual only. Deploys the Supabase edge functions to yusr-prod and sets the Gemini key from a GitHub secret.
+# The release-ladder function is deliberately NOT deployable from here: see docs/RELEASE_RUNBOOK.md.
+on:
+  workflow_dispatch:
+    inputs:
+      functions:
+        description: Space-separated function names
+        default: scan-receipt accept-invite delete-account
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Refuse the release ladder
+        run: |
+          case " ${{ inputs.functions }} " in *" release-ladder "*) echo "release-ladder must be deployed by hand, after the runbook checklist."; exit 1;; esac
+      - name: Link the project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+      - name: Set secrets (only those provided)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          [ -n "$GEMINI_API_KEY" ] && supabase secrets set GEMINI_API_KEY="$GEMINI_API_KEY"
+          [ -n "$GEMINI_MODEL" ] && supabase secrets set GEMINI_MODEL="$GEMINI_MODEL"
+          exit 0
+      - name: Deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: for f in ${{ inputs.functions }}; do supabase functions deploy "$f"; done

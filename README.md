@@ -6,6 +6,10 @@ Dhivehi-first budgeting app for the Maldives (MVR), with Raseedhu receipt scanni
 - `supabase/` — migrations, the `scan-receipt` edge function, SQL tests. See [supabase/README.md](supabase/README.md).
 - `classic-yusr/` — the old Yusr app, kept for reference only. Not built or edited.
 
+## Setup
+
+Step by step, including GitHub variables and secrets: [docs/SETUP.md](docs/SETUP.md).
+
 ## Run
 
 ```
