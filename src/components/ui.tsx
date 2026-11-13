@@ -112,6 +112,17 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
   );
 }
 
+/** A 44-point icon-only button. The label is what a screen reader says. */
+export function IconButton({ icon, label, onPress, disabled, color }: { icon: IconName; label: string; onPress: () => void; disabled?: boolean; color?: string }) {
+  const colors = useColors();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
+      style={({ pressed }) => ({ minWidth: TOUCH, minHeight: TOUCH, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.4 : pressed ? 0.6 : 1 })}>
+      <Icon name={icon} color={color ?? colors.teal} />
+    </Pressable>
+  );
+}
+
 export function ProgressBar({ percent, state, label }: { percent: number; state: 'ok' | 'near' | 'over'; label: string }) {
   const colors = useColors();
   const fill = state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.teal;

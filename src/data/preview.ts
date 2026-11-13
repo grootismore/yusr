@@ -80,3 +80,9 @@ export const income: IncomeRow[] = [
   { id: 'i1', amount_laari: 1_800_000, currency: 'MVR', mvr_laari: 1_800_000, received_at: '2026-11-01', note: 'Salary' },
   { id: 'i2', amount_laari: 250_000, currency: 'MVR', mvr_laari: 250_000, received_at: '2026-11-08', note: 'ޓިއުޝަން' },
 ];
+
+// ---- trend (preview): a plausible, uneven history
+export const trend = (months: string[]) => ({
+  spend: months.map((_, i) => [820_000, 1_050_000, 960_000, 1_240_000, 1_103_000, 1_180_000][i % 6]),
+  income: months.map((_, i) => [1_800_000, 1_800_000, 2_050_000, 1_800_000, 1_800_000, 2_050_000][i % 6]),
+});

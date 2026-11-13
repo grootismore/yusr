@@ -39,3 +39,4 @@ export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], que
 
 export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });
 export const useIncome = (month: string) => useQuery({ queryKey: ['income', month], queryFn: () => api.listIncome(month) });
+export const useTrend = (months: string[]) => useQuery({ queryKey: ['trend', months[0], months.length], queryFn: () => api.monthlyTotals(months) });

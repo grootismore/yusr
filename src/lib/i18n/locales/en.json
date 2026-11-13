@@ -547,5 +547,11 @@
     "noteLabel": "Where is it from?",
     "deleteTitle": "Delete this income?",
     "none": "No income recorded this month."
+  },
+  "trend": {
+    "title": "Last 6 months",
+    "spending": "Spent",
+    "income": "Income",
+    "average": "Average spending {{amount}} a month. Tap a month to see it."
   }
 }

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, ProgressBar, Row, Screen } from '@/components/ui';
+import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useGiving, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
@@ -81,7 +81,7 @@ export default function Giving() {
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.spent_at)}</Text>
             </View>
             <Money laari={e.amount_laari} />
-            <Button kind="ghost" icon="trash-outline" label={t('common.remove')}
+            <IconButton icon="trash-outline" label={t('common.remove')}
               onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(e.expense_id) }])} />
           </Row>
         ))}

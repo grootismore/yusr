@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, ProgressBar, Row, Screen } from '@/components/ui';
+import { Button, Card, Field, IconButton, ProgressBar, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useDebtPayments, useDebts, useWrite } from '@/data/hooks';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
@@ -94,7 +94,7 @@ export default function DebtDetail() {
               <Money laari={p.amount_laari} />
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(p.paid_on)}{p.note ? ` · ${p.note}` : ''}</Text>
             </View>
-            <Button kind="ghost" icon="trash-outline" label={t('common.remove')}
+            <IconButton icon="trash-outline" label={t('common.remove')}
               onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id) }])} />
           </Row>
         ))}
