@@ -22,11 +22,13 @@ export interface FormInitial {
  * unsure about (`confidence` below 0.7) get a flagged style and words, not just a colour.
  * `children` renders extra sections (items, GST) between the category and the save button.
  */
-export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange, income }: {
+export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange, income, hideAmount }: {
   initial?: FormInitial; categories: Category[]; confidence?: Confidence; onSubmit: (e: NewExpense) => void; submitLabel: string; busy?: boolean;
   children?: ReactNode; onTotalChange?: (laari: number | null) => void;
   /** Money coming in: no category or merchant, and the note says where it is from. */
   income?: boolean;
+  /** The amount was already typed on the keypad; show everything else. */
+  hideAmount?: boolean;
 }) {
   const colors = useColors();
   const { t } = useTranslation();
@@ -63,7 +65,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
 
   return (
     <View style={{ gap: space.lg }}>
-      <Field label={t('expense.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" error={errors.amount} flag={flag('total')} style={{ fontSize: 24 }} />
+      {hideAmount ? null : <Field label={t('expense.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" error={errors.amount} flag={flag('total')} style={{ fontSize: 24 }} />}
 
       <View style={{ gap: space.sm }}>
         <Text variant="label">{t('expense.currency')}</Text>
