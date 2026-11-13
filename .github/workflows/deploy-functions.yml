@@ -31,10 +31,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: |
-          [ -n "$GEMINI_API_KEY" ] && supabase secrets set GEMINI_API_KEY="$GEMINI_API_KEY"
-          [ -n "$GEMINI_MODEL" ] && supabase secrets set GEMINI_MODEL="$GEMINI_MODEL"
-          exit 0
+          if [ -n "$GEMINI_API_KEY" ]; then supabase secrets set --yes GEMINI_API_KEY="$GEMINI_API_KEY"; fi
+          if [ -n "$GEMINI_MODEL" ]; then supabase secrets set --yes GEMINI_MODEL="$GEMINI_MODEL"; fi
       - name: Deploy
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: for f in ${{ inputs.functions }}; do supabase functions deploy "$f"; done
+        run: for f in ${{ inputs.functions }}; do supabase functions deploy --yes "$f"; done
