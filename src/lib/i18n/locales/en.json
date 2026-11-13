@@ -45,7 +45,9 @@
       "weak": "Choose a longer password (at least 8 characters).",
       "network": "No connection. Please try again.",
       "generic": "We couldn't sign you in. Please try again."
-    }
+    },
+    "magicLink": "Email me a sign-in link",
+    "linkSent": "Check your email for the sign-in link."
   },
   "home": {
     "thisMonth": "This month",
@@ -153,7 +155,9 @@
     "signOut": "Sign out",
     "about": "Kharadhu helps you see where your money goes.",
     "debts": "Debt-free plan",
-    "giving": "Giving"
+    "giving": "Giving",
+    "register": "Wasiyyah & Amanah",
+    "contactSide": "For someone who trusts me"
   },
   "settings": {
     "title": "Settings",
@@ -342,5 +346,158 @@
     "Shawwal",
     "Dhul Qadah",
     "Dhul Hijjah"
-  ]
+  ],
+  "register": {
+    "title": "Wasiyyah & Amanah",
+    "intro": "A private list of what your family should know: debts owed, money owed to you, giving still to do, trusts and wishes. Nothing is shared with anyone while you're well. Please never write passwords, PINs, card or ID numbers here.",
+    "checklist": "Getting ready",
+    "stepItems": "Write something down",
+    "stepContact": "Invite someone you trust",
+    "stepAccepted": "They've said yes",
+    "ready": "You're ready. Nothing is shared unless the people you trust confirm.",
+    "items": "Your list",
+    "itemsEmpty": "Nothing here yet. Your debts from the Debt-free plan are included automatically, if you chose that.",
+    "addItem": "Add to the list",
+    "contacts": "People you trust",
+    "release": "Check-ins and away mode",
+    "kind": {
+      "debt": "A debt I owe",
+      "receivable": "Money owed to me",
+      "giving": "Giving still to do",
+      "trust": "A trust I hold",
+      "wish": "A wish"
+    },
+    "itemTitle": "Add or edit",
+    "itemTitleLabel": "What is it?",
+    "counterparty": "Who is it with?",
+    "amount": "Approximate amount",
+    "details": "Details for your family",
+    "detailsHint": "Encrypted. Please don't write passwords, PINs or card numbers.",
+    "needTitle": "Write what it is.",
+    "deleteTitle": "Remove this from your list?",
+    "saved": "Saved",
+    "honest": "This is private, and kept encrypted. Honest note: Kharadhu's own database administrator could technically read it, as our privacy policy explains."
+  },
+  "contacts": {
+    "title": "People you trust",
+    "intro": "Choose up to three people. They see nothing now. If you can't be reached for a long time, they're asked to check on you, and your list opens only when they confirm.",
+    "none": "No one yet.",
+    "invite": "Invite someone",
+    "status": {
+      "invited": "Invited, waiting",
+      "accepted": "Said yes",
+      "revoked": "Removed"
+    },
+    "revoke": "Remove",
+    "revokeTitle": "Remove this person?",
+    "revokeBody": "They'll no longer be asked, and can't see anything.",
+    "name": "Their name",
+    "email": "Their email",
+    "phone": "Phone (optional)",
+    "inviterName": "How should you appear to them?",
+    "inviterHint": "For example: your first name.",
+    "consent": "I agree that Kharadhu shares this person's name and email with its email service (Resend) so it can send them messages, and that they will be told why they were chosen.",
+    "consentNeeded": "Please tick this to continue.",
+    "needName": "Enter their name.",
+    "needEmail": "Enter a valid email.",
+    "share": "Share the invite link",
+    "shareText": "{{who}} would like you to be someone they trust in Kharadhu. Please open this link: {{link}}",
+    "linkNote": "The link works for 7 days and only once. Send it to them yourself.",
+    "max": "You already have three people.",
+    "sendLink": "Send the link",
+    "created": "Invite created",
+    "appUrlMissing": "The invite web address isn't set up yet."
+  },
+  "release": {
+    "title": "Check-ins and away mode",
+    "intro": "If you haven't opened Kharadhu for a long time, we first check in with you by email, twice. Only if there's still no answer are the people you trust asked to check on you. Nothing opens because of silence alone.",
+    "state": {
+      "active": "You're active. Nothing is being asked of anyone.",
+      "quiet": "We've checked in with you. Open the app to let us know you're okay.",
+      "second_checkin": "We've checked in twice. Open the app to let us know you're okay.",
+      "contacts_asked": "The people you trust have been asked to check on you. Opening the app now stops this.",
+      "released": "Your list has been opened to the people you trust."
+    },
+    "okay": "I'm okay",
+    "okayDone": "Thank you. All is well.",
+    "away": "Away mode",
+    "awayNote": "Travelling, on Hajj or Umrah, or in hospital? Pause check-ins for a while (up to 90 days).",
+    "awayOn": "Away until {{date}}",
+    "awayEnd": "End away mode",
+    "awayDays": "{{count}} days",
+    "log": "What has happened",
+    "logEmpty": "Nothing yet.",
+    "by": {
+      "user": "You",
+      "contact": "A trusted person",
+      "system": "Kharadhu"
+    },
+    "events": {
+      "contact_invited": "You invited someone you trust",
+      "contact_accepted": "A trusted person said yes",
+      "contact_declined": "A trusted person said no",
+      "contact_revoked": "A trusted person was removed",
+      "register_item_changed": "Your list changed",
+      "register_viewed": "Your list was viewed",
+      "checkin_okay": "You said you're okay",
+      "ladder_advanced": "A check-in step happened",
+      "notice_sent": "A message was sent",
+      "released": "Your list was opened",
+      "release_blocked": "An attempt to open it was refused",
+      "contact_answered": "A trusted person answered",
+      "answer_withdrawn": "A trusted person changed their mind",
+      "away_set": "You turned on away mode",
+      "away_ended": "You ended away mode",
+      "unknown": "Something happened"
+    }
+  },
+  "accept": {
+    "title": "A request from someone you may know",
+    "checking": "Checking the invite…",
+    "body": "{{who}} would like you to be one of the people they trust. You'd only be asked if they can't be reached for a long time, to check on them. You'd see their list of debts and wishes only if you and others confirm they have passed away. You can say no.",
+    "accept": "Yes, I'll be there",
+    "decline": "No, thank you",
+    "accepted": "Thank you. You're now one of their trusted people. Nothing is needed from you now.",
+    "declined": "No problem. We've let them know you declined.",
+    "invalid": "This link isn't valid.",
+    "expired": "This invite has expired. Please ask them for a new one.",
+    "used": "This invite has already been used.",
+    "error": "Something went wrong. Please try again.",
+    "someone": "Someone"
+  },
+  "contactSide": {
+    "title": "For someone who trusts me",
+    "intro": "Here you'll see anyone who has asked you to be a trusted person, once they can't be reached. Please sign in with the same email address they invited.",
+    "none": "No one needs anything from you right now.",
+    "asked": "{{who}} can't be reached. Please check on them if you can, then tell us.",
+    "fine": "They're fine",
+    "passed": "They have passed away",
+    "passedTitle": "Are you sure?",
+    "passedBody": "Please only choose this if you know they have passed away. Their list opens only when others confirm too, and they will be told straight away.",
+    "yourAnswer": "You said: {{answer}}",
+    "answers": {
+      "fine": "They're fine",
+      "passed": "They have passed away"
+    },
+    "withdraw": "I've changed my mind",
+    "view": "Read their list",
+    "released": "{{who}}'s list is open to you.",
+    "whoFallback": "Someone",
+    "listTitle": "Their list",
+    "debts": "Debts still owed",
+    "items": "Their notes",
+    "none2": "Nothing is listed.",
+    "condolences": "Our condolences.",
+    "denied": "This isn't available to you."
+  },
+  "deleteAccount": {
+    "title": "Delete my account",
+    "body": "This removes your account and everything in it: spending, debts, giving, your register, your trusted people and your receipt photos. It can't be undone.",
+    "confirm": "Delete everything",
+    "typeLabel": "Type DELETE to confirm",
+    "type": "DELETE",
+    "failed": "We couldn't delete your account. Please try again, or contact us.",
+    "privacy": "Privacy policy",
+    "privacyMissing": "The privacy policy address isn't set up yet."
+  }
 }

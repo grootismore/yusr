@@ -6,6 +6,8 @@
 
 Secrets (never in git or the app): `supabase secrets set GEMINI_API_KEY=...`. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` are injected by the platform.
 
-Function tests: `node --experimental-strip-types --test supabase/functions/scan-receipt/scan.test.ts`
+Other functions: `accept-invite` (public yes/no for an invited person), `release-ladder` (scheduled by nothing; off until you enable it, see `docs/RELEASE_RUNBOOK.md`; secrets `RESEND_API_KEY`, `RESEND_FROM`, `RELEASE_CRON_SECRET`, `APP_URL`), `delete-account`.
+
+Function tests (`npm run test:functions` runs them all): `node --experimental-strip-types --test supabase/functions/scan-receipt/scan.test.ts`
 
 Accuracy and cost on real receipts: `GEMINI_API_KEY=... node --experimental-strip-types scripts/eval-receipts.ts <folder> --model gemini-2.5-flash-lite --model gemini-3.1-flash-lite`

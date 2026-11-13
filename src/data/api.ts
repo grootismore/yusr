@@ -9,6 +9,8 @@ import * as fx from './preview';
 import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { GivingEntry, GivingKind } from '@/features/giving/logic';
+import { inviteLink, newInviteToken } from '@/features/register/invite';
+import type { AuditEntry, Checkin, ContactCase, ContactRegister, RegisterItem, RegisterKind, TrustedContact } from '@/features/register/types';
 
 async function uid(): Promise<string> {
   const { data } = await getSupabase().auth.getSession();
@@ -254,4 +256,105 @@ export async function getZakat(): Promise<ZakatSettings> {
 export async function saveZakat(z: ZakatSettings): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('zakat_settings').upsert({ user_id: await uid(), ...z }, { onConflict: 'user_id' }));
+}
+
+// ---- register, trusted contacts, check-ins (Module 3)
+export async function listRegisterItems(): Promise<RegisterItem[]> {
+  if (PREVIEW) return fx.registerItems;
+  return must(await getSupabase().from('register_items').select('id,kind,title,counterparty,amount_laari').order('created_at'));
+}
+
+/** Details are encrypted in the database and only come back through this call. */
+export async function getRegisterDetails(id: string): Promise<string> {
+  if (PREVIEW) return 'Call him first. Receipt is in the blue folder.';
+  return (must(await getSupabase().rpc('get_register_item_details', { p_id: id })) as string | null) ?? '';
+}
+
+export async function saveRegisterItem(a: { id?: string; kind: RegisterKind; title: string; counterparty: string | null; amount_laari: number | null; details: string }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('save_register_item', { p_id: a.id ?? null, p_kind: a.kind, p_title: a.title, p_counterparty: a.counterparty, p_amount_laari: a.amount_laari, p_details: a.details }));
+}
+
+export async function deleteRegisterItem(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('register_items').delete().eq('id', id));
+}
+
+export async function listContacts(): Promise<TrustedContact[]> {
+  if (PREVIEW) return fx.contacts;
+  return must(await getSupabase().from('trusted_contacts').select('id,name,email,status,inviter_name,invite_expires_at').order('created_at'));
+}
+
+/**
+ * Invite someone. The raw token exists only in the returned link: the database keeps its SHA-256.
+ * The owner's own explicit consent is required by the form and the database stamps it server-side.
+ */
+export async function inviteContact(a: { name: string; email: string; phone: string | null; inviterName: string | null; baseUrl: string }): Promise<string> {
+  if (PREVIEW) return inviteLink(a.baseUrl, 'P'.repeat(43));
+  const { token, hash } = await newInviteToken();
+  must(await getSupabase().from('trusted_contacts').insert({
+    user_id: await uid(), name: a.name, email: a.email.trim().toLowerCase(), phone: a.phone, inviter_name: a.inviterName,
+    invite_token_hash: hash, invite_expires_at: new Date().toISOString(), consented_at: new Date().toISOString(),
+  }));
+  return inviteLink(a.baseUrl, token);
+}
+
+export async function revokeContact(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('trusted_contacts').update({ status: 'revoked' }).eq('id', id));
+}
+
+export async function getCheckin(): Promise<Checkin> {
+  if (PREVIEW) return { state: 'active', away_until: null, last_active_at: new Date().toISOString() };
+  return must(await getSupabase().from('release_checkins').select('state,away_until,last_active_at').single());
+}
+
+/** "I'm okay": any activity resets the ladder. Called when the app opens. */
+export async function recordActivity(): Promise<void> {
+  if (PREVIEW) return;
+  await getSupabase().rpc('record_activity');
+}
+
+export async function setAwayMode(days: number): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('set_away_mode', { p_days: days }));
+}
+
+export async function listAudit(): Promise<AuditEntry[]> {
+  if (PREVIEW) return fx.audit;
+  return must(await getSupabase().from('audit_log').select('id,actor,event,meta,created_at').order('created_at', { ascending: false }).limit(50));
+}
+
+// ---- the trusted person's side
+export async function acceptInvite(token: string, action: 'check' | 'accept' | 'decline'): Promise<{ ok: boolean; error?: string; inviter_name?: string | null }> {
+  if (PREVIEW) return { ok: true, inviter_name: 'Aisha' };
+  const r = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/accept-invite`, {
+    method: 'POST', headers: { 'content-type': 'application/json', apikey: process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '' }, body: JSON.stringify({ token, action }),
+  });
+  return await r.json().catch(() => ({ ok: false, error: 'error' }));
+}
+
+export async function contactCases(): Promise<ContactCase[]> {
+  if (PREVIEW) return fx.cases;
+  return must(await getSupabase().rpc('contact_cases'));
+}
+export async function answerRelease(owner: string, answer: 'fine' | 'passed'): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('answer_release_check', { p_owner: owner, p_answer: answer }));
+}
+export async function withdrawAnswer(owner: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('withdraw_release_answer', { p_owner: owner }));
+}
+export async function registerForContact(owner: string): Promise<ContactRegister> {
+  if (PREVIEW) return fx.contactRegister;
+  return must(await getSupabase().rpc('get_register_for_contact', { p_owner: owner }));
+}
+
+/** Delete my account and everything in it (the delete-account function does the work). */
+export async function deleteAccount(): Promise<void> {
+  if (PREVIEW) return;
+  const { error } = await getSupabase().functions.invoke('delete-account', { body: { confirm: 'delete' } });
+  if (error) throw new Error('delete failed');
+  await getSupabase().auth.signOut();
 }

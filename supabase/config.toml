@@ -10,3 +10,14 @@ major_version = 17
 # current signing keys; the gateway check is off because it does not.
 [functions.scan-receipt]
 verify_jwt = false
+
+# Public invite endpoint: the invite token is the credential.
+[functions.accept-invite]
+verify_jwt = false
+
+# Called by a scheduler with a shared secret (x-cron-secret). Nothing in this repo schedules it.
+[functions.release-ladder]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

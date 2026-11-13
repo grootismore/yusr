@@ -9,6 +9,9 @@ import type { Debt, DebtPayment } from '@/features/debts/types';
 // ---- giving (preview)
 import type { GivingEntry } from '@/features/giving/logic';
 
+// ---- register (preview)
+import type { AuditEntry, ContactCase, ContactRegister, RegisterItem, TrustedContact } from '@/features/register/types';
+
 const cat = (slug: string, name_en: string, name_dv: string, icon: string): Category => ({ id: slug, user_id: null, slug, name_en, name_dv, icon });
 export const categories: Category[] = [
   cat('food-groceries', 'Food and groceries', 'ކާބޯތަކެތި', 'cart'), cat('transport', 'Transport', 'ދަތުރުފަތުރު', 'boat'),
@@ -48,3 +51,25 @@ export const giving: GivingEntry[] = [
   { id: 'g2', expense_id: 'e9', kind: 'jariyah', recipient_note: null, amount_laari: 10_000, spent_at: '2026-11-03' },
   { id: 'g3', expense_id: 'e10', kind: 'zakat', recipient_note: 'ޢާއިލާ', amount_laari: 150_000, spent_at: '2026-11-02' },
 ];
+export const registerItems: RegisterItem[] = [
+  { id: 'r1', kind: 'receivable', title: 'Owed by Ali', counterparty: 'Ali', amount_laari: 150_000 },
+  { id: 'r2', kind: 'wish', title: 'Wish for the family', counterparty: null, amount_laari: null },
+  { id: 'r3', kind: 'giving', title: 'Pending sadaqah', counterparty: 'Masjid', amount_laari: 50_000 },
+];
+export const contacts: TrustedContact[] = [
+  { id: 'k1', name: 'Fathimath', email: 'fathimath@example.com', status: 'accepted', inviter_name: 'Aisha', invite_expires_at: '2026-11-20T00:00:00Z' },
+  { id: 'k2', name: 'ޢަލީ', email: 'ali@example.com', status: 'invited', inviter_name: 'Aisha', invite_expires_at: '2026-11-20T00:00:00Z' },
+];
+export const audit: AuditEntry[] = [
+  { id: 'a1', actor: 'user', event: 'register_item_changed', meta: {}, created_at: '2026-11-12T08:00:00Z' },
+  { id: 'a2', actor: 'contact', event: 'contact_accepted', meta: {}, created_at: '2026-11-11T09:30:00Z' },
+  { id: 'a3', actor: 'user', event: 'contact_invited', meta: {}, created_at: '2026-11-10T09:00:00Z' },
+];
+export const cases: ContactCase[] = [
+  { owner_id: 'o1', inviter_name: 'Aisha', state: 'contacts_asked', my_answer: null },
+  { owner_id: 'o2', inviter_name: 'Hassan', state: 'released', my_answer: 'passed' },
+];
+export const contactRegister: ContactRegister = {
+  items: [{ kind: 'receivable', title: 'Owed by Ali', counterparty: 'Ali', amount_laari: 150_000, details: 'Call him first.' }, { kind: 'wish', title: 'Wish', counterparty: null, amount_laari: null, details: null }],
+  debts: [{ lender: 'BML · Personal loan', kind: 'loan', balance_laari: 4_500_000 }],
+};
