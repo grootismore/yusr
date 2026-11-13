@@ -14,6 +14,15 @@ export default function More() {
     <Screen>
       <Text variant="title">{t('more.title')}</Text>
       <Card>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('more.debts')} onPress={() => router.push('/debts')} style={{ minHeight: 52, justifyContent: 'center' }}>
+          <Row>
+            <Icon name="leaf-outline" color={colors.teal} />
+            <Text style={{ flex: 1 }}>{t('more.debts')}</Text>
+            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+          </Row>
+        </Pressable>
+      </Card>
+      <Card>
         <Pressable accessibilityRole="button" accessibilityLabel={t('more.settings')} onPress={() => router.push('/settings')} style={{ minHeight: 52, justifyContent: 'center' }}>
           <Row>
             <Icon name="settings-outline" color={colors.teal} />

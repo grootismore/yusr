@@ -23,3 +23,7 @@ export function useCategoryName() {
   const { i18n, t } = useTranslation();
   return (c: Category | undefined | null) => (c ? (i18n.language === 'dv' ? c.name_dv : c.name_en) : t('reports.uncategorised'));
 }
+
+export const useDebts = () => useQuery({ queryKey: ['debts'], queryFn: api.listDebts });
+export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], queryFn: api.listDebtPayments });
+export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });

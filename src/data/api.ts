@@ -7,6 +7,7 @@ import { PREVIEW, getSupabase } from '@/lib/supabase';
 import { getItem, setItem } from '@/lib/kv';
 import * as fx from './preview';
 import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './types';
+import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 
 async function uid(): Promise<string> {
   const { data } = await getSupabase().auth.getSession();
@@ -157,3 +158,48 @@ export async function saveScan(a: {
 export function previewMvr(minor: number | null, rate: string): number | null {
   try { return minor === null ? null : toMvrLaari(minor, rate); } catch { return null; }
 }
+
+// ---- debts (Module 1)
+export async function listDebts(): Promise<Debt[]> {
+  if (PREVIEW) return fx.debts;
+  const supabase = getSupabase();
+  const rows = must(await supabase.from('debts').select('*').order('created_at')) as (Omit<Debt, 'balance_laari' | 'paid_laari'>)[];
+  const bal = must(await supabase.from('debt_balances').select('id,paid_laari,balance_laari')) as { id: string; paid_laari: number; balance_laari: number }[];
+  const byId = new Map(bal.map((b) => [b.id, b]));
+  return rows.map((r) => ({ ...r, paid_laari: byId.get(r.id)?.paid_laari ?? 0, balance_laari: byId.get(r.id)?.balance_laari ?? r.opening_balance_laari }));
+}
+
+export async function listDebtPayments(): Promise<DebtPayment[]> {
+  if (PREVIEW) return fx.debtPayments;
+  return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_on,note').order('paid_on', { ascending: false }));
+}
+
+export async function saveDebt(input: DebtInput, id?: string): Promise<void> {
+  if (PREVIEW) return;
+  const supabase = getSupabase();
+  must(id ? await supabase.from('debts').update(input).eq('id', id) : await supabase.from('debts').insert({ ...input, user_id: await uid() }));
+}
+
+export async function deleteDebt(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('debts').delete().eq('id', id));
+}
+
+export async function addDebtPayment(p: { debt_id: string; amount_laari: number; paid_on: string; note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('debt_payments').insert({ ...p, user_id: await uid() }));
+}
+
+export async function deleteDebtPayment(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('debt_payments').delete().eq('id', id));
+}
+
+// ---- the plan's settings (strategy and monthly amount) live on the device
+const PLAN_KEY = 'kharadhu.debtplan';
+export interface PlanSettings { strategy: 'snowball' | 'avalanche'; budgetLaari: number | null }
+export const DEFAULT_PLAN: PlanSettings = { strategy: 'snowball', budgetLaari: null };
+export async function getPlanSettings(): Promise<PlanSettings> {
+  try { return { ...DEFAULT_PLAN, ...JSON.parse((await getItem(PLAN_KEY)) ?? '{}') }; } catch { return DEFAULT_PLAN; }
+}
+export async function savePlanSettings(p: PlanSettings): Promise<void> { await setItem(PLAN_KEY, JSON.stringify(p)); }

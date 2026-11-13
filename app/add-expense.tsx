@@ -6,6 +6,7 @@ import { Button, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useCategories, useWrite } from '@/data/hooks';
 import { saveRate } from '@/data/api';
+import { success } from '@/lib/haptics';
 
 export default function AddExpense() {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function AddExpense() {
         onSubmit={async (e) => {
           await add.mutateAsync(e);
           if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
+          success();
           router.back();
         }}
       />

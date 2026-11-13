@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, View } from 'react-native';
+import { useLocalSearchParams, useNavigation, usePreventRemove, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { Msg } from '@/components/Msg';
@@ -10,6 +10,7 @@ import { deleteReceiptImage, saveRate, saveScan } from '@/data/api';
 import { useCategories, useWrite } from '@/data/hooks';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { checkTotals, type Draft } from '@/lib/receipt';
+import { success } from '@/lib/haptics';
 import { colors, space } from '@/theme/tokens';
 
 const field = (laari: number | null) => (laari == null ? '' : formatNumber(laari).replace(/,/g, ''));
@@ -18,6 +19,7 @@ const toLaari = (s: string): number => { try { return parseAmount(s || '0'); } c
 export default function Confirm() {
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const { draft: raw, path } = useLocalSearchParams<{ draft: string; path?: string }>();
   const draft: Draft = useMemo(() => JSON.parse(raw), [raw]);
   const categories = useCategories().data ?? [];
@@ -27,6 +29,17 @@ export default function Confirm() {
   const [gst, setGst] = useState(field(draft.gst_laari));
   const [total, setTotal] = useState<number | null>(draft.total_laari);
   const save = useWrite(saveScan);
+  const [done, setDone] = useState(false);
+
+  // Unsaved work in a modal: ask before the back swipe or Android back throws the draft away.
+  usePreventRemove(!done, ({ data }) => {
+    Alert.alert(t('confirm.leaveTitle'), t('confirm.leaveBody'), [
+      { text: t('confirm.leaveStay'), style: 'cancel' },
+      { text: t('confirm.leaveDiscard'), style: 'destructive', onPress: () => { if (path) void deleteReceiptImage(path); navigation.dispatch(data.action); } },
+    ]);
+  });
+
+  useEffect(() => { if (done) router.dismissAll(); }, [done, router]);
 
   const check = checkTotals({
     items: items.map((i) => toLaari(i.total)), gst: toLaari(gst), service: draft.service_charge_laari ?? 0, discount: draft.discount_laari ?? 0,
@@ -38,7 +51,7 @@ export default function Confirm() {
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
         <Text variant="title">{t('confirm.title')}</Text>
-        <Button kind="ghost" label={t('confirm.discard')} onPress={() => { if (path) void deleteReceiptImage(path); router.back(); }} />
+        <Button kind="ghost" label={t('confirm.discard')} onPress={() => router.back()} />
       </Row>
       <Text color={colors.inkMuted}>{t('confirm.intro')}</Text>
 
@@ -65,7 +78,8 @@ export default function Confirm() {
             items: items.filter((i) => i.name.trim()).map((i) => ({ name: i.name.trim(), qty: Number(i.qty) > 0 ? Number(i.qty) : 1, total_laari: toLaari(i.total) })),
           });
           if (expense.currency !== 'MVR') await saveRate(expense.currency, expense.fx_rate_to_mvr);
-          router.dismissAll();
+          success();
+          setDone(true); // the effect below leaves once the leave-guard has been lifted
         }}
       >
         <View style={{ gap: space.md }}>

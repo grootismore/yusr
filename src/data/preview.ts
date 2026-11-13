@@ -3,6 +3,9 @@ import { addMonths, today } from '@/lib/dates';
 import type { BudgetRow } from '@/lib/budget';
 import type { Category, Expense } from './types';
 
+// ---- debts (preview)
+import type { Debt, DebtPayment } from '@/features/debts/types';
+
 const cat = (slug: string, name_en: string, name_dv: string, icon: string): Category => ({ id: slug, user_id: null, slug, name_en, name_dv, icon });
 export const categories: Category[] = [
   cat('food-groceries', 'Food and groceries', 'ކާބޯތަކެތި', 'cart'), cat('transport', 'Transport', 'ދަތުރުފަތުރު', 'boat'),
@@ -26,4 +29,14 @@ export const budgets: BudgetRow[] = [
   { id: 'b0', month: addMonths(today().slice(0, 7) + '-01', -1), category_id: null, limit_laari: 1_200_000 },
   { id: 'b1', month: addMonths(today().slice(0, 7) + '-01', -1), category_id: 'food-groceries', limit_laari: 250_000 },
   { id: 'b2', month: addMonths(today().slice(0, 7) + '-01', -1), category_id: 'transport', limit_laari: 16_000 },
+];
+export const debts: Debt[] = [
+  { id: 'd1', lender: 'BML · Personal loan', kind: 'loan', opening_balance_laari: 6_000_000, balance_laari: 4_500_000, paid_laari: 1_500_000, min_payment_laari: 250_000, due_day: 10, interest_bearing: true, interest_rate_bps: 1250, started_on: '2026-01-05', in_register: true, notes: null },
+  { id: 'd2', lender: 'Ahmed (brother)', kind: 'qard_hasan', opening_balance_laari: 1_000_000, balance_laari: 800_000, paid_laari: 200_000, min_payment_laari: 50_000, due_day: 28, interest_bearing: false, interest_rate_bps: null, started_on: null, in_register: true, notes: null },
+  { id: 'd3', lender: 'ޑީއާރް ކްރެޑިޓް ކާޑު', kind: 'credit_card', opening_balance_laari: 450_000, balance_laari: 450_000, paid_laari: 0, min_payment_laari: 45_000, due_day: 16, interest_bearing: true, interest_rate_bps: 3600, started_on: null, in_register: false, notes: null },
+];
+export const debtPayments: DebtPayment[] = [
+  { id: 'p1', debt_id: 'd1', amount_laari: 250_000, paid_on: '2026-10-10', note: null },
+  { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_on: '2026-09-10', note: 'Salary day' },
+  { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_on: '2026-10-28', note: null },
 ];

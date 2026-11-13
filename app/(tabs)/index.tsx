@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
@@ -7,13 +7,16 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
-import { useBudgets, useCategories, useCategoryName, useExpenses } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, usePlanSettings } from '@/data/hooks';
+import { computePlan, nextDue } from '@/features/debts/compute';
+import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
-import { monthStart } from '@/lib/dates';
+import { DEFAULT_PLAN } from '@/data/api';
+import { monthStart, today } from '@/lib/dates';
 import { colors, space } from '@/theme/tokens';
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
   const month = monthStart();
@@ -23,6 +26,13 @@ export default function Home() {
   const categoriesQuery = useCategories();
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+
+  const monthLabel = useMonthLabel();
+  const debtsQ = useDebts();
+  const paymentsQ = useDebtPayments();
+  const planSettings = usePlanSettings().data ?? DEFAULT_PLAN;
+  const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
+  const due = nextDue(debtPlan);
 
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
@@ -76,6 +86,21 @@ export default function Home() {
           </>
         )}
       </Card>
+
+      {debtPlan.open.length > 0 ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
+          <Card>
+            <Row>
+              <Icon name="leaf-outline" color={colors.teal} />
+              <Text variant="heading" style={{ flex: 1 }}>{t('debts.title')}</Text>
+              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+            </Row>
+            <Money laari={debtPlan.total} variant="title" />
+            {debtPlan.result.debtFreeMonth ? <Text color={colors.inkMuted}>{t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) })}</Text> : null}
+            {due ? <><Text>{t('debts.nextDue', { name: due.debt.lender })}</Text><DueBadge state={due.due.state} days={due.due.days} /></> : <Text color={colors.inkMuted}>{t('debts.onTrack')}</Text>}
+          </Card>
+        </Pressable>
+      ) : null}
 
       <View style={{ gap: space.md }}>
         <Text variant="heading">{t('home.topCategories')}</Text>
