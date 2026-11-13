@@ -523,6 +523,10 @@
     "what": "This removes your spending, debts, giving, register, trusted people and receipt photos. It can't be undone.",
     "help": "If you can't sign in, email us from the address on your account and we'll delete it for you.",
     "email": "Contact: {{email}}",
-    "emailMissing": "The support email address isn't set up yet."
+    "emailMissing": "The support email address isn't set up yet.",
+    "signIn": "Sign in here to delete it"
+  },
+  "webHome": {
+    "body": "The website is for people invited as a trusted person, and for deleting your account. For everything else, please use the Kharadhu app on your phone."
   }
 }
