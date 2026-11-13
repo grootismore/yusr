@@ -12,15 +12,19 @@ import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { missingConsents } from '@/features/legal/consent';
+import { WEB_LIMITED } from '@/lib/platform';
 import { useConsents } from '@/data/hooks';
 import { PREVIEW } from '@/lib/supabase';
+
+// Where a visitor lands when the page they asked for is not available to them (for example /debts on the website).
+export const unstable_settings = { anchor: WEB_LIMITED ? 'web-home' : '(tabs)' };
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
 function Routes() {
   const { signedIn, loading } = useAuth();
-  useZakatReminderSync(signedIn);
-  useActivity(signedIn);
+  useZakatReminderSync(signedIn && !WEB_LIMITED);
+  useActivity(signedIn && !WEB_LIMITED);
   const consents = useConsents(signedIn && !PREVIEW);
   if (loading || (signedIn && !PREVIEW && consents.isLoading)) return null;
   // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
@@ -29,7 +33,18 @@ function Routes() {
   return (
     <LockGate active={signedIn}>
       <Stack screenOptions={{ headerShown: false }}>
+        {/* The website: only the trusted person's pages and account deletion. */}
+        <Stack.Protected guard={signedIn && !needsConsent && WEB_LIMITED}>
+          <Stack.Screen name="web-home" />
+        </Stack.Protected>
+        {/* Shared by the website and the app: the trusted person's pages and account deletion. */}
         <Stack.Protected guard={signedIn && !needsConsent}>
+          <Stack.Screen name="contact" />
+          <Stack.Screen name="contact-register" />
+          <Stack.Screen name="delete-account" />
+        </Stack.Protected>
+        {/* The app (phones). */}
+        <Stack.Protected guard={signedIn && !needsConsent && !WEB_LIMITED}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="add-expense" options={{ presentation: 'modal' }} />
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
@@ -40,8 +55,6 @@ function Routes() {
           <Stack.Screen name="contacts" />
           <Stack.Screen name="contact-invite" options={{ presentation: 'modal' }} />
           <Stack.Screen name="release" />
-          <Stack.Screen name="contact" />
-          <Stack.Screen name="contact-register" />
           <Stack.Screen name="giving" />
           <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />

@@ -19,7 +19,7 @@ npm start
 npm run typecheck && npm run lint && npm test && npm run test:functions
 ```
 
-Web preview with fixture data (layout and RTL checks, no backend): `EXPO_PUBLIC_PREVIEW=1 npx expo start --web`.
+The web build is not the app: it only serves invite pages, the trusted person's pages and account deletion (`src/lib/platform.ts`). To look at every screen in a browser during development: `EXPO_PUBLIC_FULL_WEB=1 EXPO_PUBLIC_PREVIEW=1 npx expo start --web` (fixture data, no backend).
 
 ## Fonts
 
