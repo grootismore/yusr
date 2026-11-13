@@ -3,8 +3,8 @@ import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Icon, Row, Screen } from '@/components/ui';
-import { AuthHeader } from '@/features/auth/AuthParts';
+import { Button, Card, Field, Icon, Row } from '@/components/ui';
+import { AuthScreen } from '@/features/auth/AuthParts';
 import { useAuth, type AuthErrorKey } from '@/lib/auth';
 import { isEmail } from '@/lib/authForm';
 import { useColors } from '@/theme/tokens';
@@ -42,8 +42,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <Screen>
-      <AuthHeader title={sentTo ? t('forgot.sentTitle') : t('forgot.title')} subtitle={sentTo ? undefined : t('forgot.body')} />
+    <AuthScreen title={sentTo ? t('forgot.sentTitle') : t('forgot.title')} subtitle={sentTo ? undefined : t('forgot.body')}>
       {sentTo ? (
         <>
           <Card tone="good">
@@ -64,6 +63,6 @@ export default function ForgotPassword() {
       <View style={{ alignItems: 'flex-start' }}>
         <Button kind="ghost" icon="arrow-back" label={t('forgot.back')} onPress={() => router.replace('/sign-in')} />
       </View>
-    </Screen>
+    </AuthScreen>
   );
 }

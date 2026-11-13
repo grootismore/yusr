@@ -2,20 +2,18 @@ import { useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Field, Icon, IconButton, Row } from '@/components/ui';
+import { Field, HeaderBand, Icon, IconButton, Row, Screen } from '@/components/ui';
 import { MIN_PASSWORD, checkPassword } from '@/lib/authForm';
 import { space, useColors } from '@/theme/tokens';
 
-/** The brand header shared by every sign-in screen: name, a title and one calm line. */
-export function AuthHeader({ title, subtitle }: { title: string; subtitle?: string }) {
-  const colors = useColors();
+/** Every sign-in screen: the teal band with the app name, a title and one calm line; the form card rises over its lower edge. */
+export function AuthScreen({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <View style={{ gap: space.sm, paddingTop: space.xl }}>
-      <Text variant="heading" color={colors.teal}>{t('app.name')}</Text>
-      <Text variant="display">{title}</Text>
-      {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}
-    </View>
+    <Screen padded={false} bleed>
+      <HeaderBand eyebrow={t('app.name')} title={title} subtitle={subtitle} />
+      <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: -space.xl }}>{children}</View>
+    </Screen>
   );
 }
 

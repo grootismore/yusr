@@ -1,9 +1,9 @@
 import { useEffect, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, ScrollView, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, Switch, ScrollView, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { fontFor } from '@/theme/fonts';
@@ -123,7 +123,7 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
         backgroundColor: selected ? colors.teal : colors.surface, borderWidth: 1.5, borderColor: selected ? colors.teal : colors.control }}
     >
       {icon ? <Icon name={icon} size={18} color={selected ? colors.onTeal : colors.ink} /> : null}
-      <Text variant="small" color={selected ? colors.onTeal : colors.ink}>{label}</Text>
+      <Text variant="small" latin={/^[\d.,]+$/.test(label)} color={selected ? colors.onTeal : colors.ink}>{label}</Text>
     </Pressable>
   );
 }
@@ -212,5 +212,66 @@ export function StackHeader({ title, numberOfLines }: { title: string; numberOfL
       <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} />
       <Text variant="title" style={{ flex: 1 }} numberOfLines={numberOfLines}>{title}</Text>
     </Row>
+  );
+}
+
+/**
+ * Teal header band that runs under the status bar, with an optional back arrow, an optional small eyebrow line, a title and a calm line.
+ * Use inside <Screen padded={false} bleed>; pull the first card up over its lower edge with a negative top margin.
+ */
+export function HeaderBand({ title, subtitle, eyebrow, onBack, children }: { title: string; subtitle?: string; eyebrow?: string; onBack?: boolean; children?: ReactNode }) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { t, i18n } = useTranslation();
+  return (
+    <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 56, gap: space.sm, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
+      <View pointerEvents="none" style={{ position: 'absolute', top: -70, end: -60, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(255,255,255,0.10)' }} />
+      <View pointerEvents="none" style={{ position: 'absolute', bottom: -100, start: -50, width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+      {onBack ? (
+        <View style={{ alignSelf: 'flex-start', marginStart: -space.sm }}>
+          <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} color={colors.onTeal} onPress={() => router.back()} />
+        </View>
+      ) : null}
+      {eyebrow ? <Text variant="heading" color={colors.onTeal}>{eyebrow}</Text> : null}
+      <Text variant="display" color={colors.onTeal} accessibilityRole="header">{title}</Text>
+      {subtitle ? <Text color={colors.onTeal}>{subtitle}</Text> : null}
+      {children}
+    </View>
+  );
+}
+
+/** Pill-shaped tabs for filtering one list (All / Income / Expenses). */
+export function Segmented<K extends string>({ options, value, onChange }: { options: { key: K; label: string }[]; value: K; onChange: (k: K) => void }) {
+  const colors = useColors();
+  return (
+    <View accessibilityRole="tablist" style={{ flexDirection: 'row', padding: 4, gap: 4, borderRadius: radius.pill, backgroundColor: colors.sandDeep }}>
+      {options.map((o) => {
+        const on = o.key === value;
+        return (
+          <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => { tick(); onChange(o.key); }}
+            style={{ flex: 1, minHeight: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.surface : 'transparent', boxShadow: on ? '0 1px 3px rgba(0,0,0,0.15)' : undefined }}>
+            <Text variant="small" color={on ? colors.teal : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** A settings row with an icon tile and an on/off switch. */
+export function SettingRow({ icon, title, subtitle, value, onValueChange, disabled, last }: { icon: IconName; title: string; subtitle?: string; value: boolean; onValueChange: (v: boolean) => void; disabled?: boolean; last?: boolean }) {
+  const colors = useColors();
+  return (
+    <View style={{ minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm, borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.line, opacity: disabled ? 0.5 : 1 }}>
+      <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} color={colors.teal} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text>{title}</Text>
+        {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
+      </View>
+      <Switch accessibilityLabel={title} value={value} disabled={disabled} trackColor={{ true: colors.teal, false: colors.control }} onValueChange={onValueChange} />
+    </View>
   );
 }

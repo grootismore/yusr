@@ -58,6 +58,7 @@ function Routes() {
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="activity" />
           <Stack.Screen name="register" />
           <Stack.Screen name="register-item" options={{ presentation: 'modal' }} />
           <Stack.Screen name="contacts" />

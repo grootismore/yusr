@@ -641,5 +641,12 @@
     "done": "Your password is changed. Open the Kharadhu app and sign in with it.",
     "expired": "This link has expired or was already used. Ask for a new reset link in the app.",
     "none": "Open the reset link from your email to choose a new password."
+  },
+  "activity": {
+    "title": "Activity",
+    "all": "All",
+    "income": "Income",
+    "expenses": "Expenses",
+    "empty": "Nothing here yet."
   }
 }

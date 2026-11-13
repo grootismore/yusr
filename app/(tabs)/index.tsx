@@ -182,7 +182,7 @@ export default function Home() {
       <View style={{ gap: space.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Text variant="heading">{t('home.recent')}</Text>
-          <Button kind="ghost" label={t('home.seeAll')} onPress={() => router.push('/reports')} />
+          <Button kind="ghost" label={t('home.seeAll')} onPress={() => router.push('/activity')} />
         </Row>
         <Card>
           {recentGroups.map(([day, rows]) => (

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, Row, Screen } from '@/components/ui';
-import { AuthHeader, PasswordField, PasswordRules } from '@/features/auth/AuthParts';
+import { Button, Card, Icon, Row } from '@/components/ui';
+import { AuthScreen, PasswordField, PasswordRules } from '@/features/auth/AuthParts';
 import { useAuth } from '@/lib/auth';
 import { MIN_PASSWORD, checkPassword } from '@/lib/authForm';
 import { recoverFromUrl, type Recovery } from '@/lib/recovery';
@@ -34,8 +34,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <Screen>
-      <AuthHeader title={t('reset.title')} subtitle={state === 'ready' ? t('reset.body') : undefined} />
+    <AuthScreen title={t('reset.title')} subtitle={state === 'ready' ? t('reset.body') : undefined}>
       {state === 'checking' ? <Text color={colors.inkMuted}>{t('reset.checking')}</Text> : null}
       {state === 'ready' ? (
         <Card>
@@ -47,6 +46,6 @@ export default function ResetPassword() {
       {state === 'done' ? <Card tone="good"><Row><Icon name="checkmark-circle" color={colors.teal} /><Text style={{ flex: 1 }} accessibilityLiveRegion="polite">{t('reset.done')}</Text></Row></Card> : null}
       {state === 'expired' ? <Card tone="warn"><Text accessibilityLiveRegion="polite">{t('reset.expired')}</Text></Card> : null}
       {state === 'none' ? <Card><Text>{t('reset.none')}</Text></Card> : null}
-    </Screen>
+    </AuthScreen>
   );
 }
