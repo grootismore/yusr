@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -300,7 +301,7 @@ export function Tile({ color, label, laari }: { color: string; label: string; la
 }
 
 /**
- * Texture for the dark figure panels: a halftone dot grid fading out from the bottom corner, and a huge ghost "MVR" behind the numbers.
+ * Texture for the dark figure panels: a halftone dot grid fading out from the bottom corner, and a huge outlined "MVR" behind the numbers.
  * Purely decorative, hidden from screen readers. Dots are plain views, rendered only where they are visible.
  */
 export function PanelArt() {
@@ -324,7 +325,12 @@ export function PanelArt() {
   }, [box.w, box.h, rtl]);
   return (
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
-      <Text latin allowFontScaling={false} style={{ position: 'absolute', bottom: -30, ...(rtl ? { left: -8 } : { right: -8 }), fontSize: 150, lineHeight: 160, fontFamily: 'NunitoSans_700Bold', color: colors.onHero, opacity: 0.07, letterSpacing: -4, writingDirection: 'ltr' }}>MVR</Text>
+      {box.w > 0 ? (
+        <Svg width={box.w} height={box.h} style={[StyleSheet.absoluteFill, { direction: 'ltr' }]}>
+          <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={132} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
+            fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.17}>MVR</SvgText>
+        </Svg>
+      ) : null}
       {dots.map((d, i) => <View key={i} style={{ position: 'absolute', left: d.x - 1.2, top: d.y - 1.2, width: 2.4, height: 2.4, borderRadius: 1.2, backgroundColor: colors.onHero, opacity: d.o }} />)}
     </View>
   );
