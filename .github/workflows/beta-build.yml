@@ -33,6 +33,8 @@ env:
   EXPO_PUBLIC_APP_URL: ${{ vars.EXPO_PUBLIC_APP_URL || 'https://kharadhu.expo.app' }}
   EXPO_PUBLIC_LEGAL_URL: ${{ vars.EXPO_PUBLIC_LEGAL_URL }}
   EXPO_PUBLIC_SUPPORT_EMAIL: ${{ vars.EXPO_PUBLIC_SUPPORT_EMAIL }}
+  # A free Apple ID cannot sign Sign in with Apple, so this build hides the button.
+  EXPO_PUBLIC_DISABLE_APPLE_SIGNIN: '1'
 
 jobs:
   checks:
