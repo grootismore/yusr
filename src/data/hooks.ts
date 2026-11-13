@@ -14,7 +14,7 @@ export const useProfile = () => useQuery({ queryKey: ['profile'], queryFn: api.g
 export const useRates = () => useQuery({ queryKey: ['rates'], queryFn: api.getRates });
 
 /** Run a write, then refresh everything it can affect. */
-export function useWrite<A>(fn: (a: A) => Promise<unknown>) {
+export function useWrite<A, R = unknown>(fn: (a: A) => Promise<R>) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: fn, onSuccess: () => qc.invalidateQueries() });
 }
@@ -30,3 +30,9 @@ export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn
 
 export const useGiving = (month: string) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month) });
 export const useZakat = (enabled = true) => useQuery({ queryKey: ['zakat'], queryFn: api.getZakat, enabled });
+
+export const useRegisterItems = () => useQuery({ queryKey: ['register-items'], queryFn: api.listRegisterItems });
+export const useContacts = () => useQuery({ queryKey: ['contacts'], queryFn: api.listContacts });
+export const useCheckin = () => useQuery({ queryKey: ['checkin'], queryFn: api.getCheckin });
+export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listAudit });
+export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });

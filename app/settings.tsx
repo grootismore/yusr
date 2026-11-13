@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Switch, View } from 'react-native';
+import { Alert, Linking, Switch, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
@@ -36,6 +36,8 @@ export default function Settings() {
   const updateProfile = useWrite(api.updateProfile);
   const [bio, setBio] = useState(false);
   const [bioOk, setBioOk] = useState(true);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   useEffect(() => { void biometricEnabled().then(setBio); void biometricAvailable().then(setBioOk); }, []);
 
   async function pickLanguage(l: Language) {
@@ -65,6 +67,18 @@ export default function Settings() {
         <Text variant="heading">{t('settings.rates')}</Text>
         <Text variant="small" color={colors.inkMuted}>{t('settings.ratesNote')}</Text>
         {CURRENCIES.filter((c) => c !== 'MVR').map((c) => <RateField key={`${c}-${rates[c] ?? ''}`} code={c} value={rates[c] ?? ''} />)}
+      </Card>
+
+      <Card>
+        <Text variant="heading">{t('deleteAccount.title')}</Text>
+        <Text variant="small" color={colors.inkMuted}>{t('deleteAccount.body')}</Text>
+        <Field label={t('deleteAccount.typeLabel')} value={confirmText} onChangeText={setConfirmText} autoCapitalize="characters" autoCorrect={false} />
+        <Button
+          kind="danger" label={t('deleteAccount.confirm')} loading={deleting} disabled={confirmText.trim().toUpperCase() !== t('deleteAccount.type')}
+          onPress={async () => { setDeleting(true); try { await api.deleteAccount(); } catch { Alert.alert(t('deleteAccount.failed')); } finally { setDeleting(false); } }}
+        />
+        <Button kind="ghost" label={t('deleteAccount.privacy')}
+          onPress={() => { const base = process.env.EXPO_PUBLIC_LEGAL_URL; if (base) void Linking.openURL(`${base.replace(/\/$/, '')}/privacy`); else Alert.alert(t('deleteAccount.privacyMissing')); }} />
       </Card>
 
       <Card>

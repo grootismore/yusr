@@ -11,6 +11,8 @@ interface AuthValue {
   signIn(email: string, password: string): Promise<AuthResult>;
   signUp(email: string, password: string): Promise<AuthResult>;
   signInWithApple(): Promise<AuthResult>;
+  /** Email a one-tap sign-in link (how a trusted person signs in without a password). */
+  signInWithLink(email: string): Promise<AuthResult>;
   signOut(): Promise<void>;
 }
 
@@ -59,6 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await getSupabase().auth.signUp({ email: email.trim(), password });
       if (error) return { error: authErrorKey(error) };
       return data.session ? {} : { needsEmailConfirmation: true };
+    },
+    async signInWithLink(email) {
+      const { error } = await getSupabase().auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: process.env.EXPO_PUBLIC_APP_URL || undefined } });
+      return error ? { error: authErrorKey(error) } : {};
     },
     async signInWithApple() {
       if (Platform.OS !== 'ios') return { error: 'generic' };

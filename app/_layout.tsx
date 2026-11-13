@@ -10,12 +10,14 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
+import { useActivity } from '@/features/register/useActivity';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
 function Routes() {
   const { signedIn, loading } = useAuth();
   useZakatReminderSync(signedIn);
+  useActivity(signedIn);
   if (loading) return null;
   return (
     <LockGate active={signedIn}>
@@ -26,6 +28,13 @@ function Routes() {
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="register-item" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="contacts" />
+          <Stack.Screen name="contact-invite" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="release" />
+          <Stack.Screen name="contact" />
+          <Stack.Screen name="contact-register" />
           <Stack.Screen name="giving" />
           <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
@@ -33,6 +42,8 @@ function Routes() {
           <Stack.Screen name="debt" />
           <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />
         </Stack.Protected>
+        {/* Public: the invited person says yes or no with the link alone, no account needed. */}
+        <Stack.Screen name="accept" />
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
