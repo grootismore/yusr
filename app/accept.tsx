@@ -44,7 +44,7 @@ export default function Accept() {
 
   // Opened with no invite token: this is where the router drops anyone whose first screen is unavailable to them
   // (for example a signed-out person on app start). Send them where they belong instead of saying "invalid link".
-  if (!token) return <Redirect href={signedIn ? (WEB_LIMITED ? '/web-home' : '/(tabs)') : '/sign-in'} />;
+  if (!token) return <Redirect href={signedIn ? (WEB_LIMITED ? '/web-home' : '/(tabs)') : WEB_LIMITED ? '/sign-in' : '/welcome'} />;
 
   return (
     <Screen>

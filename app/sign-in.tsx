@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Platform, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Field, Screen } from '@/components/ui';
@@ -11,7 +12,11 @@ export default function SignIn() {
   const colors = useColors();
   const { t } = useTranslation();
   const auth = useAuth();
-  const [mode, setMode] = useState<'in' | 'up'>('in');
+  const router = useRouter();
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<'in' | 'up'>(params.mode === 'up' && !WEB_LIMITED ? 'up' : 'in');
+  // The confirmation link in the email lands on the website; tell the person to go back to the app.
+  const confirmed = Platform.OS === 'web' && typeof window !== 'undefined' && /type=(signup|email)/.test(window.location.hash);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,7 +28,7 @@ export default function SignIn() {
     const r = mode === 'in' ? await auth.signIn(email, password) : await auth.signUp(email, password);
     setBusy(false);
     if (r.error) setError(t(`auth.errors.${r.error}`));
-    else if (r.needsEmailConfirmation) { setInfo(t('auth.confirmEmail')); setMode('in'); }
+    else if (r.needsEmailConfirmation) router.replace({ pathname: '/check-email', params: { email: email.trim() } });
   }
 
   return (
@@ -33,6 +38,7 @@ export default function SignIn() {
         <Text variant="title">{t('auth.welcome')}</Text>
         <Text color={colors.inkMuted}>{t('auth.tagline')}</Text>
       </View>
+      {confirmed ? <Card tone="good"><Text accessibilityLiveRegion="polite">{t('auth.confirmed')}</Text></Card> : null}
       <Card>
         <Field label={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
         <Field label={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry autoComplete={mode === 'in' ? 'current-password' : 'new-password'} textContentType={mode === 'in' ? 'password' : 'newPassword'} error={error} />

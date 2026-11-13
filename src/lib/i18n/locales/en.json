@@ -47,7 +47,8 @@
       "generic": "We couldn't sign you in. Please try again."
     },
     "magicLink": "Email me a sign-in link",
-    "linkSent": "Check your email for the sign-in link."
+    "linkSent": "Check your email for the sign-in link.",
+    "confirmed": "Your email is confirmed. Open the Kharadhu app and sign in."
   },
   "home": {
     "thisMonth": "This month",
@@ -553,5 +554,39 @@
     "spending": "Spent",
     "income": "Income",
     "average": "Average spending {{amount}} a month. Tap a month to see it."
+  },
+  "onboarding": {
+    "p1Title": "Know where your money goes",
+    "p1Body": "Log your spending in MVR in seconds, or photograph a receipt and let Raseedhu read it for you.",
+    "p2Title": "Pay debts down. Give with intention.",
+    "p2Body": "A calm plan to become debt-free, and a place to keep track of your sadaqah and zakat.",
+    "p3Title": "Private, and for your family",
+    "p3Body": "Your list of debts and wishes stays private. It opens to people you trust only if they confirm, never because of silence alone.",
+    "next": "Next",
+    "skip": "Skip",
+    "start": "Create my account",
+    "haveAccount": "I already have an account",
+    "page": "Page {{n}} of {{total}}",
+    "language": "Language"
+  },
+  "checkEmail": {
+    "title": "Check your email",
+    "body": "We sent a link to {{email}}. Open it, then come back to Kharadhu and sign in.",
+    "tip": "Can't find it? Look in your spam or junk folder.",
+    "resend": "Send it again",
+    "resendIn": "You can send it again in {{seconds}} seconds",
+    "resent": "Sent again. Check your email.",
+    "signIn": "I've confirmed, sign in",
+    "change": "Use a different email",
+    "failed": "We couldn't send it. Please try again in a minute."
+  },
+  "setup": {
+    "title": "Let's get you started",
+    "body": "One quick thing. You can change it any time.",
+    "budgetLabel": "Monthly budget (optional)",
+    "budgetHint": "How much do you plan to spend each month? We'll show how you're doing.",
+    "save": "Save and start",
+    "skip": "Skip for now",
+    "tip": "Tip: tap the round button at the bottom to scan a receipt."
   }
 }
