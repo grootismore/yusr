@@ -14,6 +14,7 @@ import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { missingConsents } from '@/features/legal/consent';
 import { WEB_LIMITED } from '@/lib/platform';
+import { loadFlags, useFlag } from '@/lib/flags';
 import { useConsents } from '@/data/hooks';
 import { PREVIEW } from '@/lib/supabase';
 
@@ -27,10 +28,13 @@ function Routes() {
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
   const consents = useConsents(signedIn && !PREVIEW);
+  const setupDone = useFlag('setupDone');
   if (loading || (signedIn && !PREVIEW && consents.isLoading)) return null;
   // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
   // itself fails (for example offline) we do not lock out someone who already agreed.
   const needsConsent = signedIn && !PREVIEW && consents.isSuccess && missingConsents(consents.data).length > 0;
+  // First run on a phone, after agreeing to the terms: one optional setup question before the app.
+  const needsSetup = signedIn && !needsConsent && !WEB_LIMITED && (!PREVIEW || process.env.EXPO_PUBLIC_PREVIEW_SETUP === '1') && setupDone === false;
   return (
     <LockGate active={signedIn}>
       <Stack screenOptions={{ headerShown: false }}>
@@ -45,7 +49,10 @@ function Routes() {
           <Stack.Screen name="delete-account" />
         </Stack.Protected>
         {/* The app (phones). */}
-        <Stack.Protected guard={signedIn && !needsConsent && !WEB_LIMITED}>
+        <Stack.Protected guard={needsSetup}>
+          <Stack.Screen name="setup" />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn && !needsConsent && !WEB_LIMITED && !needsSetup}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="add-expense" options={{ presentation: 'modal' }} />
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
@@ -67,6 +74,8 @@ function Routes() {
           <Stack.Screen name="consent" />
         </Stack.Protected>
         {/* Public: the invited person says yes or no with the link alone, no account needed. */}
+        <Stack.Screen name="welcome" />
+        <Stack.Screen name="check-email" />
         <Stack.Screen name="accept" />
         {/* Public: how to delete an account (a web address the stores ask for). */}
         <Stack.Screen name="delete-info" />
@@ -87,7 +96,7 @@ export default function RootLayout() {
     NunitoSans_400Regular: require('../assets/fonts/NunitoSans_400Regular.ttf'),
     NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
   });
-  useEffect(() => { void loadAppearance().then(applyAppearance); void initI18n().finally(() => setReady(true)); }, []);
+  useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n()]).finally(() => setReady(true)); }, []);
   if (!ready || !(fontsLoaded || fontError)) return null;
   return (
     <SafeAreaProvider>

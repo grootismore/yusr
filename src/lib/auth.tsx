@@ -13,6 +13,8 @@ interface AuthValue {
   signInWithApple(): Promise<AuthResult>;
   /** Email a one-tap sign-in link (how a trusted person signs in without a password). */
   signInWithLink(email: string): Promise<AuthResult>;
+  /** Send the sign-up confirmation email again. */
+  resendConfirmation(email: string): Promise<AuthResult>;
   signOut(): Promise<void>;
 }
 
@@ -77,6 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         return (e as { code?: string }).code === 'ERR_REQUEST_CANCELED' ? {} : { error: 'generic' };
       }
+    },
+    async resendConfirmation(email) {
+      const { error } = await getSupabase().auth.resend({ type: 'signup', email: email.trim() });
+      return error ? { error: authErrorKey(error) } : {};
     },
     async signOut() { await getSupabase().auth.signOut(); qc.clear(); },
   }), [session, loading, qc]);
