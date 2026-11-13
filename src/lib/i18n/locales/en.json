@@ -48,7 +48,8 @@
     },
     "magicLink": "Email me a sign-in link",
     "linkSent": "Check your email for the sign-in link.",
-    "confirmed": "Your email is confirmed. Open the Kharadhu app and sign in."
+    "confirmed": "Your email is confirmed. Open the Kharadhu app and sign in.",
+    "linkExpired": "That link has expired or was already used. If you haven't signed in yet, try signing in: your email may already be confirmed. Otherwise open the Kharadhu app and ask for the email again."
   },
   "home": {
     "thisMonth": "This month",

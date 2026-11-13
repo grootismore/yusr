@@ -16,7 +16,9 @@ export default function SignIn() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<'in' | 'up'>(params.mode === 'up' && !WEB_LIMITED ? 'up' : 'in');
   // The confirmation link in the email lands on the website; tell the person to go back to the app.
-  const confirmed = Platform.OS === 'web' && typeof window !== 'undefined' && /type=(signup|email)/.test(window.location.hash);
+  const hash = Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.hash : '';
+  const failed = /error=|error_code=/.test(hash); // an expired or already-used link comes back with an error in the address
+  const confirmed = !failed && /type=(signup|email)/.test(hash);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,6 +40,7 @@ export default function SignIn() {
         <Text variant="title">{t('auth.welcome')}</Text>
         <Text color={colors.inkMuted}>{t('auth.tagline')}</Text>
       </View>
+      {failed ? <Card tone="warn"><Text accessibilityLiveRegion="polite">{t('auth.linkExpired')}</Text></Card> : null}
       {confirmed ? <Card tone="good"><Text accessibilityLiveRegion="polite">{t('auth.confirmed')}</Text></Card> : null}
       <Card>
         <Field label={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
