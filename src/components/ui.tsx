@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, Switch, ScrollView, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -18,13 +18,18 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
 };
 
 /** Page: sand background, safe area, optional scroll. Sets the web preview direction. */
-export function Screen({ children, scroll = true, padded = true, bleed = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean }) {
+export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
+  /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode }) {
   const colors = useColors();
   const { i18n } = useTranslation();
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.sand }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
-      {scroll ? <ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[{ flex: 1 }, inner]}>{children}</View>}
+      {scroll ? (
+        <Animated.ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
+          {...(scrollY ? { scrollEventThrottle: 16, onScroll: Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }) } : {})}>{children}</Animated.ScrollView>
+      ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
+      {overlay}
     </SafeAreaView>
   );
 }
@@ -54,7 +59,7 @@ export function ScreenTitle({ title, subtitle, trailing }: { title: string; subt
   return (
     <View style={{ gap: space.xs, paddingTop: space.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="display" style={{ flexShrink: 1 }}>{title}</Text>
+        <Text variant="title" style={{ flexShrink: 1 }}>{title}</Text>
         {trailing}
       </Row>
       {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}
@@ -225,7 +230,7 @@ export function HeaderBand({ title, subtitle, eyebrow, onBack, children }: { tit
   const router = useRouter();
   const { t, i18n } = useTranslation();
   return (
-    <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 56, gap: space.sm, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
+    <View style={{ backgroundColor: colors.teal, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 44, gap: space.xs, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, borderCurve: 'continuous', overflow: 'hidden' }}>
       <View pointerEvents="none" style={{ position: 'absolute', top: -70, end: -60, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(255,255,255,0.10)' }} />
       <View pointerEvents="none" style={{ position: 'absolute', bottom: -100, start: -50, width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.07)' }} />
       {onBack ? (
@@ -234,8 +239,8 @@ export function HeaderBand({ title, subtitle, eyebrow, onBack, children }: { tit
         </View>
       ) : null}
       {eyebrow ? <Text variant="heading" color={colors.onTeal}>{eyebrow}</Text> : null}
-      <Text variant="display" color={colors.onTeal} accessibilityRole="header">{title}</Text>
-      {subtitle ? <Text color={colors.onTeal}>{subtitle}</Text> : null}
+      <Text variant="title" color={colors.onTeal} accessibilityRole="header">{title}</Text>
+      {subtitle ? <Text variant="small" color={colors.onTeal}>{subtitle}</Text> : null}
       {children}
     </View>
   );

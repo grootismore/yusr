@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Card, HeaderBand, Icon, IconButton, Row, Screen, Segmented } from '@/components/ui';
+import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import { useCategories, useExpenses, useIncome } from '@/data/hooks';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
@@ -35,9 +35,9 @@ export default function Activity() {
   const dayLabel = (d: string) => (d === today() ? t('common.today') : d === addDays(today(), -1) ? t('common.yesterday') : null);
 
   return (
-    <Screen padded={false} bleed>
-      <HeaderBand onBack title={t('activity.title')} />
-      <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: -space.xl }}>
+    <Screen>
+      <StackHeader title={t('activity.title')} />
+      <>
         <Segmented<Filter> value={filter} onChange={setFilter}
           options={[{ key: 'all', label: t('activity.all') }, { key: 'income', label: t('activity.income') }, { key: 'expenses', label: t('activity.expenses') }]} />
         <Row style={{ justifyContent: 'space-between' }}>
@@ -71,7 +71,7 @@ export default function Activity() {
             </Card>
           </View>
         ))}
-      </View>
+      </>
     </Screen>
   );
 }

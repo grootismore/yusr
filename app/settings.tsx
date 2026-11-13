@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
 import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
-import { Card, Chip, Field, HeaderBand, Row, Screen, SettingRow } from '@/components/ui';
+import { Card, Chip, Field, Row, Screen, SettingRow, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useProfile, useRates, useWrite } from '@/data/hooks';
 import { APPEARANCES, loadAppearance, saveAppearance, type AppearanceChoice } from '@/lib/appearance';
@@ -49,9 +48,9 @@ export default function Settings() {
   }
 
   return (
-    <Screen padded={false} bleed>
-      <HeaderBand onBack title={t('settings.title')} subtitle={email ?? undefined} />
-      <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: -space.xl }}>
+    <Screen>
+      <StackHeader title={t('settings.title')} />
+      {email ? <Text latin variant="small" color={colors.inkMuted} style={{ marginTop: -space.sm }}>{email}</Text> : null}
         <Card style={{ paddingVertical: space.sm, gap: 0 }}>
           <SettingRow icon="finger-print" title={t('settings.biometric')} subtitle={!bioOk ? t('settings.biometricUnavailable') : undefined} value={bio} disabled={!bioOk}
             onValueChange={async (v) => { setBio(v); await setBiometricEnabled(v); }} />
@@ -82,8 +81,7 @@ export default function Settings() {
           {CURRENCIES.filter((c) => c !== 'MVR').map((c) => <RateField key={`${c}-${rates[c] ?? ''}`} code={c} value={rates[c] ?? ''} />)}
         </Card>
 
-        <DeleteAccountCard />
-      </View>
+      <DeleteAccountCard />
     </Screen>
   );
 }
