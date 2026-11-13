@@ -24,6 +24,9 @@ function Routes() {
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="debts" />
+          <Stack.Screen name="debt" />
+          <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />
