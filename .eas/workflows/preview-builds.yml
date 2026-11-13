@@ -1,0 +1,19 @@
+name: Preview builds
+# Internal-distribution builds for testing on real phones. Run by hand: `eas workflow:run preview-builds.yml`,
+# or from the Expo dashboard (Workflows). Values come from the project's EAS environment variables.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_android:
+    name: Android preview
+    type: build
+    params:
+      platform: android
+      profile: preview
+  build_ios:
+    name: iOS preview
+    type: build
+    params:
+      platform: ios
+      profile: preview

@@ -1,0 +1,12 @@
+name: Deploy web
+# Publishes the web app (invite page, trusted-person pages, delete-info) to Expo Hosting. The EXPO_PUBLIC_*
+# values are read from the project's EAS environment variables (production). Run by hand.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    name: Deploy to production
+    type: deploy
+    params:
+      prod: true
