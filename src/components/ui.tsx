@@ -28,20 +28,62 @@ export function Screen({ children, scroll = true, padded = true }: { children: R
   );
 }
 
-export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good'; style?: ViewStyle }) => {
+export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good' | 'hero'; style?: ViewStyle }) => {
+  const colors = useColors();
+  const dark = colors.sand === '#101614';
+  const bg = tone === 'hero' ? colors.teal : tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.tealWash : colors.surface;
+  const border = tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : tone === 'hero' ? 'transparent' : colors.line;
+  return (
+    <View
+      style={[
+        { backgroundColor: bg, borderRadius: radius.lg, borderCurve: 'continuous', padding: space.lg, gap: space.md, borderWidth: 1, borderColor: border,
+          // A soft lift on the sand background; dark mode relies on the surface step and hairline instead.
+          ...(dark ? {} : { boxShadow: '0 1px 2px rgba(21,33,31,0.05), 0 6px 16px rgba(21,33,31,0.06)' }) },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+};
+
+/** Large screen title with an optional calm line under it. One place so every tab starts the same way. */
+export function ScreenTitle({ title, subtitle, trailing }: { title: string; subtitle?: string; trailing?: ReactNode }) {
   const colors = useColors();
   return (
-  <View
-    style={[
-      { backgroundColor: tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.tealWash : colors.surface,
-        borderRadius: radius.lg, borderCurve: 'continuous', padding: space.lg, gap: space.md, borderWidth: 1, borderColor: tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : colors.line },
-      style,
-    ]}
-  >
-    {children}
-  </View>
-);
-};
+    <View style={{ gap: space.xs, paddingTop: space.sm }}>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="display" style={{ flexShrink: 1 }}>{title}</Text>
+        {trailing}
+      </Row>
+      {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}
+    </View>
+  );
+}
+
+/** Tappable list row: icon tile, title, optional second line, trailing chevron that follows the reading direction. */
+export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { icon: IconName; title: string; subtitle?: string; onPress?: () => void; trailing?: ReactNode; last?: boolean }) {
+  const colors = useColors();
+  const { i18n } = useTranslation();
+  return (
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
+      onPress={onPress ? () => { tick(); onPress(); } : undefined}
+      style={({ pressed }) => ({ minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm,
+        borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.line, opacity: pressed ? 0.6 : 1 })}
+    >
+      <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} color={colors.teal} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text>{title}</Text>
+        {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
+      </View>
+      {trailing ?? (onPress ? <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} size={20} color={colors.inkMuted} /> : null)}
+    </Pressable>
+  );
+}
 
 type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean };
 export function Button({ label, kind = 'primary', icon, loading, disabled, style, ...rest }: ButtonProps) {
@@ -130,12 +172,12 @@ export function IconButton({ icon, label, onPress, disabled, color }: { icon: Ic
   );
 }
 
-export function ProgressBar({ percent, state, label }: { percent: number; state: 'ok' | 'near' | 'over'; label: string }) {
+export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.teal;
+  const fill = onHero ? colors.onTeal : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.teal;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
-      style={{ height: 12, borderRadius: radius.pill, backgroundColor: colors.sandDeep, overflow: 'hidden' }}>
+      style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.sandDeep, overflow: 'hidden' }}>
       <View style={{ width: `${percent}%`, height: '100%', backgroundColor: fill, borderRadius: radius.pill }} />
     </View>
   );

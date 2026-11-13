@@ -6,7 +6,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
+import { Button, Card, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
@@ -44,6 +44,7 @@ export default function Home() {
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
   const state = budgetState(spent, limit);
+  const hero = state !== 'near' && state !== 'over';
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -53,7 +54,7 @@ export default function Home() {
   if (expenses.length === 0 && !expensesQuery.isLoading) {
     return (
       <Screen>
-        <Text variant="title" color={colors.teal}>{t('app.name')}</Text>
+        <ScreenTitle title={t('app.name')} />
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
           <Icon name="receipt-outline" size={44} color={colors.teal} />
           <Text variant="heading" style={{ textAlign: 'center' }}>{t('home.emptyTitle')}</Text>
@@ -66,31 +67,29 @@ export default function Home() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" color={colors.teal}>{t('app.name')}</Text>
-        <Button kind="secondary" label={t('home.addExpense')} icon="add" onPress={() => router.push('/add-expense')} />
-      </Row>
+      <ScreenTitle title={t('app.name')} />
+      <Button label={t('home.addExpense')} icon="add" onPress={() => router.push('/add-expense')} />
 
-      <Card tone={state === 'over' ? 'bad' : state === 'near' ? 'warn' : 'plain'}>
-        <Text color={colors.inkMuted}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" />
-        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.inkMuted} /> : null}
+      <Card tone={state === 'over' ? 'bad' : state === 'near' ? 'warn' : 'hero'} style={{ gap: space.lg, padding: space.xl }}>
+        <Text color={hero ? colors.onTeal : colors.inkMuted}>{t('home.thisMonth')} · {t('home.spent')}</Text>
+        <Money laari={spent} variant="display" color={hero ? colors.onTeal : colors.ink} style={{ fontSize: 40, lineHeight: 52 }} />
+        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={hero ? colors.onTeal : colors.inkMuted} /> : null}
         {limit ? (
           <>
-            <ProgressBar percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
+            <ProgressBar onHero={hero} percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
             <Row>
               {state !== 'ok' ? <Icon name={state === 'over' ? 'alert-circle' : 'warning'} color={state === 'over' ? colors.coral : colors.amberDeep} /> : null}
               {state === 'over'
                 ? <Msg k="home.over" amounts={{ amount: spent - limit }} color={colors.coral} style={{ flex: 1 }} />
-                : <Msg k="home.left" amounts={{ amount: limit - spent }} style={{ flex: 1 }} />}
+                : <Msg k="home.left" amounts={{ amount: limit - spent }} color={hero ? colors.onTeal : colors.ink} style={{ flex: 1 }} />}
             </Row>
             {state === 'near' ? <Text>{t('home.nearLimit')}</Text> : null}
-            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.inkMuted} />
+            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={hero ? colors.onTeal : colors.inkMuted} />
           </>
         ) : (
           <>
-            <Text color={colors.inkMuted}>{t('home.noBudget')}</Text>
-            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} />
+            <Text color={hero ? colors.onTeal : colors.inkMuted}>{t('home.noBudget')}</Text>
+            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={hero ? { backgroundColor: colors.onTeal, borderColor: colors.onTeal } : undefined} />
           </>
         )}
       </Card>

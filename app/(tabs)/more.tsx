@@ -1,65 +1,26 @@
-import { Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, Row, Screen } from '@/components/ui';
+import { Button, Card, ListRow, Screen, ScreenTitle } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { useColors } from '@/theme/tokens';
+import { space, useColors } from '@/theme/tokens';
 
 export default function More() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();
   return (
     <Screen>
-      <Text variant="title">{t('more.title')}</Text>
-      <Card>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.register')} onPress={() => router.push('/register')} style={{ minHeight: 52, justifyContent: 'center' }}>
-          <Row>
-            <Icon name="shield-checkmark-outline" color={colors.teal} />
-            <Text style={{ flex: 1 }}>{t('more.register')}</Text>
-            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
-          </Row>
-        </Pressable>
+      <ScreenTitle title={t('more.title')} />
+      <Card style={{ paddingVertical: space.sm, gap: 0 }}>
+        <ListRow icon="shield-checkmark-outline" title={t('more.register')} onPress={() => router.push('/register')} />
+        <ListRow icon="heart-outline" title={t('more.giving')} onPress={() => router.push('/giving')} />
+        <ListRow icon="leaf-outline" title={t('more.debts')} onPress={() => router.push('/debts')} />
+        <ListRow icon="people-outline" title={t('more.contactSide')} onPress={() => router.push('/contact')} />
+        <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} last />
       </Card>
-      <Card>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.giving')} onPress={() => router.push('/giving')} style={{ minHeight: 52, justifyContent: 'center' }}>
-          <Row>
-            <Icon name="heart-outline" color={colors.teal} />
-            <Text style={{ flex: 1 }}>{t('more.giving')}</Text>
-            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
-          </Row>
-        </Pressable>
-      </Card>
-      <Card>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.debts')} onPress={() => router.push('/debts')} style={{ minHeight: 52, justifyContent: 'center' }}>
-          <Row>
-            <Icon name="leaf-outline" color={colors.teal} />
-            <Text style={{ flex: 1 }}>{t('more.debts')}</Text>
-            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
-          </Row>
-        </Pressable>
-      </Card>
-      <Card>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.contactSide')} onPress={() => router.push('/contact')} style={{ minHeight: 52, justifyContent: 'center' }}>
-          <Row>
-            <Icon name="people-outline" color={colors.teal} />
-            <Text style={{ flex: 1 }}>{t('more.contactSide')}</Text>
-            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
-          </Row>
-        </Pressable>
-      </Card>
-      <Card>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.settings')} onPress={() => router.push('/settings')} style={{ minHeight: 52, justifyContent: 'center' }}>
-          <Row>
-            <Icon name="settings-outline" color={colors.teal} />
-            <Text style={{ flex: 1 }}>{t('more.settings')}</Text>
-            <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
-          </Row>
-        </Pressable>
-      </Card>
-      <Text color={colors.inkMuted}>{t('more.about')}</Text>
+      <Text variant="small" color={colors.inkMuted}>{t('more.about')}</Text>
       <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={() => void signOut()} />
     </Screen>
   );

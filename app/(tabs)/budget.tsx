@@ -3,12 +3,12 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Icon, Row, Screen, type IconName } from '@/components/ui';
+import { Button, Card, Field, Icon, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useWrite } from '@/data/hooks';
 import { monthStart } from '@/lib/dates';
 import { formatNumber, parseAmount } from '@/lib/money';
-import { space, useColors } from '@/theme/tokens';
+import { radius, space, useColors } from '@/theme/tokens';
 
 function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: IconName; categoryId: string | null; limit?: number }) {
   const colors = useColors();
@@ -30,8 +30,10 @@ function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: Ico
 
   return (
     <View style={{ gap: space.sm }}>
-      <Row style={{ minHeight: 48 }}>
-        <Icon name={icon} color={colors.teal} />
+      <Row style={{ minHeight: 56 }}>
+        <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name={icon} color={colors.teal} />
+        </View>
         <View style={{ flex: 1 }}>
           <Text>{title}</Text>
           {limit ? <Money laari={limit} color={colors.inkMuted} variant="small" /> : <Text variant="small" color={colors.inkMuted}>{t('budget.noLimit')}</Text>}
@@ -52,15 +54,13 @@ function LimitRow({ title, icon, categoryId, limit }: { title: string; icon: Ico
 }
 
 export default function Budget() {
-  const colors = useColors();
   const { t } = useTranslation();
   const catName = useCategoryName();
   const limits = useBudgets(monthStart()).data;
   const categories = useCategories().data ?? [];
   return (
     <Screen>
-      <Text variant="title">{t('budget.title')}</Text>
-      <Text color={colors.inkMuted}>{t('budget.hint')}</Text>
+      <ScreenTitle title={t('budget.title')} subtitle={t('budget.hint')} />
       <Card>
         <LimitRow title={t('budget.overall')} icon="calendar" categoryId={null} limit={limits?.get(null)} />
       </Card>

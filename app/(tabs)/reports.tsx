@@ -6,7 +6,7 @@ import { TrendChart } from '@/components/TrendChart';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Card, Icon, IconButton, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
+import { Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle } from '@/components/ui';
 import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, useTrend, useWrite } from '@/data/hooks';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
@@ -43,7 +43,7 @@ export default function Reports() {
 
   return (
     <Screen>
-      <Text variant="title">{t('reports.title')}</Text>
+      <ScreenTitle title={t('reports.title')} />
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
         <Text variant="heading" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="heading">{month.slice(0, 4)}</Text></Text>
