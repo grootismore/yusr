@@ -86,12 +86,12 @@ export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { ic
   );
 }
 
-type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean };
-export function Button({ label, kind = 'primary', icon, loading, disabled, style, ...rest }: ButtonProps) {
+type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean; /** Override the label colour, e.g. a ghost button on a teal band. */ textColor?: string };
+export function Button({ label, kind = 'primary', icon, loading, disabled, style, textColor, ...rest }: ButtonProps) {
   const colors = useColors();
   const primary = kind === 'primary' || kind === 'danger';
   const bg = kind === 'danger' ? colors.coral : kind === 'primary' ? colors.teal : 'transparent';
-  const fg = primary ? colors.onTeal : colors.teal;
+  const fg = textColor ?? (primary ? colors.onTeal : colors.teal);
   return (
     <Pressable
       accessibilityRole="button"
