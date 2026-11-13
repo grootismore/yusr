@@ -79,7 +79,7 @@ export default function Reports() {
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>
           <Tile color={colors.tile} label={t('reports.income')} laari={incomeTotal} />
-          <Tile color={colors.sun} label={t('reports.netShort')} laari={incomeTotal - total} />
+          <Tile color={colors.sky} label={t('reports.netShort')} laari={incomeTotal - total} />
         </Row>
       ) : null}
 

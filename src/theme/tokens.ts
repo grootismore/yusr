@@ -1,7 +1,7 @@
 import { useColorScheme } from 'react-native';
 
 // Design tokens. One source for colour, spacing and type; every screen uses these.
-// Look: "Ink and sun". A light page, a matte-black figure panel, one warm sun-yellow accent for progress and the active tab.
+// Look: "Ink and sky". A light page, a matte-black figure panel, one soft sky-blue accent for progress and the active tab.
 // Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
   ground: '#F5F5F3', // page background
@@ -19,7 +19,7 @@ export const light = {
   accentWash: '#ECECE8', // tinted tiles behind icons
   hero: '#222428', // the month's figure panel: matte black
   onHero: '#FFFFFF',
-  sun: '#F4C84A', // the one warm accent: progress on the panel, the Left tile, the active tab
+  sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
   tile: '#ECECE8', // neutral figure tile
   onTile: '#1E2023', // text on the tiles
   coral: '#B8362E', // over budget, errors
@@ -43,12 +43,12 @@ export const dark: Palette = {
   inkMuted: '#A3A6AB',
   line: '#2C2F34',
   control: '#7A7D83',
-  accent: '#F4C84A',
+  accent: '#8EC5F0',
   onAccent: '#1E2023',
   accentWash: '#2A2C30',
   hero: '#27292D',
   onHero: '#FFFFFF',
-  sun: '#F4C84A',
+  sky: '#8EC5F0',
   tile: '#ECECE8',
   onTile: '#1E2023',
   coral: '#FF9A8C',

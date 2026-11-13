@@ -101,7 +101,7 @@ export default function Budget() {
               : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} color={colors.onHero} />}
           </>
         ) : null}
-        <Button kind="secondary" label={overall ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditingAll(!editingAll)} style={{ backgroundColor: colors.sun, borderColor: colors.sun, alignSelf: 'flex-start' }} textColor={colors.onTile} />
+        <Button kind="secondary" label={overall ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditingAll(!editingAll)} style={{ backgroundColor: colors.sky, borderColor: colors.sky, alignSelf: 'flex-start' }} textColor={colors.onTile} />
         {editingAll ? <LimitEditor categoryId={null} limit={overall} onDone={() => setEditingAll(false)} /> : null}
       </Card>
 

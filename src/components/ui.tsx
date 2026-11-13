@@ -202,7 +202,7 @@ function Fill({ percent, color }: { percent: number; color: string }) {
 
 export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = onHero ? colors.sun : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
+  const fill = onHero ? colors.sky : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
       style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.groundDeep, overflow: 'hidden' }}>
@@ -288,7 +288,7 @@ export function SettingRow({ icon, title, subtitle, value, onValueChange, disabl
   );
 }
 
-/** Pastel figure tile: a short label over one amount, dark text on sun or tile. */
+/** Pastel figure tile: a short label over one amount, dark text on sky or tile. */
 export function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
   const colors = useColors();
   return (

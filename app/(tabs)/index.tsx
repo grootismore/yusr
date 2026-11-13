@@ -130,7 +130,7 @@ export default function Home() {
 
       {showTiles ? (
         <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
-          {limit && state !== 'over' ? <Tile color={colors.sun} label={t('home.leftLabel')} laari={limit - spent} /> : null}
+          {limit && state !== 'over' ? <Tile color={colors.sky} label={t('home.leftLabel')} laari={limit - spent} /> : null}
           {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} /> : null}
         </Row>
       ) : null}
