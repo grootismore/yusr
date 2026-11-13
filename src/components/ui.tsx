@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, TextInput, View, type Pressab
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { tick } from '@/lib/haptics';
 import { fontFor } from '@/theme/fonts';
 import { colors, radius, space, TOUCH } from '@/theme/tokens';
 import { Text } from './Text';
@@ -19,7 +20,7 @@ export function Screen({ children, scroll = true, padded = true }: { children: R
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl };
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.sand }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
-      {scroll ? <ScrollView contentContainerStyle={inner} keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[{ flex: 1 }, inner]}>{children}</View>}
+      {scroll ? <ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[{ flex: 1 }, inner]}>{children}</View>}
     </SafeAreaView>
   );
 }
@@ -28,7 +29,7 @@ export const Card = ({ children, tone = 'plain', style }: { children: ReactNode;
   <View
     style={[
       { backgroundColor: tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.tealWash : colors.surface,
-        borderRadius: radius.lg, padding: space.lg, gap: space.md, borderWidth: 1, borderColor: tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : colors.line },
+        borderRadius: radius.lg, borderCurve: 'continuous', padding: space.lg, gap: space.md, borderWidth: 1, borderColor: tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : colors.line },
       style,
     ]}
   >
@@ -48,7 +49,7 @@ export function Button({ label, kind = 'primary', icon, loading, disabled, style
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       disabled={disabled || loading}
       style={(s) => [
-        { minHeight: 52, minWidth: TOUCH, paddingHorizontal: space.xl, borderRadius: radius.pill, backgroundColor: bg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: space.sm,
+        { minHeight: 52, minWidth: TOUCH, paddingHorizontal: space.xl, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: space.sm,
           borderWidth: kind === 'secondary' ? 1.5 : 0, borderColor: colors.teal, opacity: disabled ? 0.5 : s.pressed ? 0.85 : 1 },
         typeof style === 'function' ? style(s) : style,
       ]}
@@ -66,8 +67,8 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
-      onPress={onPress}
-      style={{ minHeight: TOUCH, paddingHorizontal: space.lg, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.xs,
+      onPress={() => { tick(); onPress(); }}
+      style={{ minHeight: TOUCH, paddingHorizontal: space.lg, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', gap: space.xs,
         backgroundColor: selected ? colors.teal : colors.surface, borderWidth: 1.5, borderColor: selected ? colors.teal : colors.control }}
     >
       {icon ? <Icon name={icon} size={18} color={selected ? colors.onTeal : colors.ink} /> : null}
@@ -88,7 +89,7 @@ export function Field({ label, error, flag, hint, ...rest }: TextInputProps & { 
         accessibilityLabel={label}
         placeholderTextColor={colors.inkMuted}
         {...rest}
-        style={[{ minHeight: 52, borderRadius: radius.md, borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
+        style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.surface, paddingHorizontal: space.lg, paddingVertical: space.sm,
           fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }, rest.style]}
       />

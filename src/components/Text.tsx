@@ -21,6 +21,10 @@ export function Text({ variant = 'body', color = colors.ink, latin, style, ...re
   const t = type[variant];
   return (
     <RNText
+      // Dynamic Type: follow the system text size, but cap it so tab bars and chips do not break.
+      maxFontSizeMultiplier={1.6}
+      accessibilityRole={variant === 'title' || variant === 'display' || variant === 'heading' ? 'header' : undefined}
+      accessibilityLanguage={dv && !latin ? 'dv' : 'en'}
       {...rest}
       style={[
         {

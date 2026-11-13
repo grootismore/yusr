@@ -116,7 +116,11 @@
     "mismatchBody": "Items {{items}} + GST {{gst}} = {{expected}}, but the receipt total is {{total}}. Check the amounts below.",
     "matchOk": "Items and GST match the total.",
     "save": "Save expense",
-    "discard": "Discard"
+    "discard": "Discard",
+    "leaveTitle": "Leave without saving?",
+    "leaveBody": "This receipt hasn't been saved yet.",
+    "leaveStay": "Keep editing",
+    "leaveDiscard": "Discard"
   },
   "budget": {
     "title": "Budget",
