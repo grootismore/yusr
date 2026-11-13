@@ -1,7 +1,22 @@
 # Kharadhu
 
-Dhivehi-first budgeting app for the Maldives, with Raseedhu AI receipt scanning and the Yusr modules (debt-free plan, sadaqah and zakat, Wasiyyah & Amanah register).
+Dhivehi-first budgeting app for the Maldives (MVR), with Raseedhu receipt scanning. Spec: [docs/kharadhu-prd.md](docs/kharadhu-prd.md).
 
-- Spec: [`docs/kharadhu-prd.md`](docs/kharadhu-prd.md)
-- Old Yusr app: [`classic-yusr/`](classic-yusr/NOT_IN_USE.md), not in use now
-- Backend: Supabase project `yusr-prod` (Mumbai, ap-south-1)
+- `app/`, `src/` — Expo (React Native, Expo Router, TypeScript). Dhivehi default with full RTL, runtime switch to English.
+- `supabase/` — migrations, the `scan-receipt` edge function, SQL tests. See [supabase/README.md](supabase/README.md).
+- `classic-yusr/` — the old Yusr app, kept for reference only. Not built or edited.
+
+## Run
+
+```
+cp .env.example .env     # public Supabase URL and publishable key only
+npm install
+npm start
+npm run typecheck && npm run lint && npm test && npm run test:functions
+```
+
+Web preview with fixture data (layout and RTL checks, no backend): `EXPO_PUBLIC_PREVIEW=1 npx expo start --web`.
+
+## Fonts
+
+Dhivehi text: [Thaana Noor](https://github.com/grootismore/thaananoor-font) (OFL). English and all amounts: Nunito Sans (OFL). Thaana Noor's own Latin `.` `,` `:` glyphs are malformed, so numbers never use it (see `src/theme/fonts.ts`).

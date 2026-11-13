@@ -1,0 +1,12 @@
+project_id = "kharadhu"
+
+[api]
+schemas = ["public", "graphql_public"]
+
+[db]
+major_version = 17
+
+# JWT is verified inside the function with auth.getUser(), which works with the project's
+# current signing keys; the gateway check is off because it does not.
+[functions.scan-receipt]
+verify_jwt = false
