@@ -1,0 +1,19 @@
+name: Production builds
+# Store builds. Run by hand once the store accounts and credentials exist. Submitting to the stores is a
+# separate, deliberate step (`eas submit`) until the launch checklist is done.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_android:
+    name: Android production
+    type: build
+    params:
+      platform: android
+      profile: production
+  build_ios:
+    name: iOS production
+    type: build
+    params:
+      platform: ios
+      profile: production
