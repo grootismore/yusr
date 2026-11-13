@@ -8,6 +8,7 @@ import { getItem, setItem } from '@/lib/kv';
 import * as fx from './preview';
 import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
+import type { GivingEntry, GivingKind } from '@/features/giving/logic';
 
 async function uid(): Promise<string> {
   const { data } = await getSupabase().auth.getSession();
@@ -203,3 +204,54 @@ export async function getPlanSettings(): Promise<PlanSettings> {
   try { return { ...DEFAULT_PLAN, ...JSON.parse((await getItem(PLAN_KEY)) ?? '{}') }; } catch { return DEFAULT_PLAN; }
 }
 export async function savePlanSettings(p: PlanSettings): Promise<void> { await setItem(PLAN_KEY, JSON.stringify(p)); }
+
+// ---- giving and zakat (Module 2)
+export async function listGiving(month: string): Promise<GivingEntry[]> {
+  if (PREVIEW) return fx.giving;
+  const rows = must(
+    await getSupabase().from('sadaqah_entries').select('id,expense_id,kind,recipient_note,expenses!inner(mvr_laari,spent_at)')
+      .gte('expenses.spent_at', month).lt('expenses.spent_at', addMonths(month, 1)),
+  ) as unknown as { id: string; expense_id: string; kind: GivingKind; recipient_note: string | null; expenses: { mvr_laari: number; spent_at: string } }[];
+  return rows.map((r) => ({ id: r.id, expense_id: r.expense_id, kind: r.kind, recipient_note: r.recipient_note, amount_laari: r.expenses.mvr_laari, spent_at: r.expenses.spent_at }))
+    .sort((a, b) => (a.spent_at < b.spent_at ? 1 : -1));
+}
+
+/**
+ * Giving is an ordinary expense in the Giving category plus a sadaqah_entries row, so the amount lives in one place.
+ * ponytail: two inserts, not one transaction; if the second fails the expense is removed again.
+ */
+export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  const supabase = getSupabase();
+  const user_id = await uid();
+  const cat = must(await supabase.from('categories').select('id').eq('slug', 'giving').maybeSingle()) as { id: string } | null;
+  const expense = must(
+    await supabase.from('expenses').insert({ user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' }).select('id').single(),
+  ) as { id: string };
+  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expense.id, kind: a.kind, recipient_note: a.recipient_note });
+  if (r.error) {
+    await supabase.from('expenses').delete().eq('id', expense.id);
+    throw new Error(r.error.message);
+  }
+}
+
+/** Deleting the expense removes the giving entry with it (cascade). */
+export async function deleteGiving(expenseId: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('expenses').delete().eq('id', expenseId));
+}
+
+export interface ZakatSettings { sadaqah_goal_laari: number | null; zakat_hijri_month: number | null; zakat_hijri_day: number | null; zakat_reminder: boolean; hijri_adjustment: number }
+export const DEFAULT_ZAKAT: ZakatSettings = { sadaqah_goal_laari: 5_000, zakat_hijri_month: 9, zakat_hijri_day: 1, zakat_reminder: false, hijri_adjustment: 0 };
+const EMPTY_ZAKAT: ZakatSettings = { sadaqah_goal_laari: null, zakat_hijri_month: null, zakat_hijri_day: null, zakat_reminder: false, hijri_adjustment: 0 };
+
+export async function getZakat(): Promise<ZakatSettings> {
+  if (PREVIEW) return DEFAULT_ZAKAT;
+  const r = must(await getSupabase().from('zakat_settings').select('sadaqah_goal_laari,zakat_hijri_month,zakat_hijri_day,zakat_reminder,hijri_adjustment').maybeSingle()) as ZakatSettings | null;
+  return r ?? EMPTY_ZAKAT;
+}
+
+export async function saveZakat(z: ZakatSettings): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('zakat_settings').upsert({ user_id: await uid(), ...z }, { onConflict: 'user_id' }));
+}

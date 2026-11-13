@@ -7,7 +7,8 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, usePlanSettings } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, usePlanSettings, useZakat } from '@/data/hooks';
+import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
@@ -33,6 +34,9 @@ export default function Home() {
   const planSettings = usePlanSettings().data ?? DEFAULT_PLAN;
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
+  const givingQ = useGiving(month);
+  const giving = useMemo(() => monthGiving(givingQ.data ?? []), [givingQ.data]);
+  const goal = useZakat().data?.sadaqah_goal_laari ?? null;
 
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
@@ -98,6 +102,24 @@ export default function Home() {
             <Money laari={debtPlan.total} variant="title" />
             {debtPlan.result.debtFreeMonth ? <Text color={colors.inkMuted}>{t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) })}</Text> : null}
             {due ? <><Text>{t('debts.nextDue', { name: due.debt.lender })}</Text><DueBadge state={due.due.state} days={due.due.days} /></> : <Text color={colors.inkMuted}>{t('debts.onTrack')}</Text>}
+          </Card>
+        </Pressable>
+      ) : null}
+
+      {goal || giving.total > 0 ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={t('giving.title')} onPress={() => router.push('/giving')}>
+          <Card>
+            <Row>
+              <Icon name="heart-outline" color={colors.teal} />
+              <Text variant="heading" style={{ flex: 1 }}>{t('giving.title')}</Text>
+              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+            </Row>
+            {goal ? (
+              <>
+                <Msg k="giving.homeCardGoal" amounts={{ given: giving.goalCounted, goal }} />
+                <ProgressBar percent={Math.min(100, goalPercent(giving.goalCounted, goal))} state="ok" label={t('a11y.progress', { percent: goalPercent(giving.goalCounted, goal) })} />
+              </>
+            ) : <Msg k="giving.homeCardGiven" amounts={{ given: giving.total }} />}
           </Card>
         </Pressable>
       ) : null}

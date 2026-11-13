@@ -27,3 +27,6 @@ export function useCategoryName() {
 export const useDebts = () => useQuery({ queryKey: ['debts'], queryFn: api.listDebts });
 export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], queryFn: api.listDebtPayments });
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
+
+export const useGiving = (month: string) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month) });
+export const useZakat = (enabled = true) => useQuery({ queryKey: ['zakat'], queryFn: api.getZakat, enabled });
