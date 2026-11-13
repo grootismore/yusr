@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Button, Card, Row, Screen } from '@/components/ui';
+import { Card, Row, Screen, StackHeader } from '@/components/ui';
 import { registerForContact } from '@/data/api';
 import type { ContactRegister } from '@/features/register/types';
 import { useColors } from '@/theme/tokens';
@@ -13,7 +13,6 @@ import { useColors } from '@/theme/tokens';
 export default function ContactRegisterScreen() {
   const colors = useColors();
   const { t } = useTranslation();
-  const router = useRouter();
   const { owner, who } = useLocalSearchParams<{ owner: string; who?: string }>();
   const [data, setData] = useState<ContactRegister | null | 'denied'>(null);
 
@@ -25,10 +24,7 @@ export default function ContactRegisterScreen() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('contactSide.listTitle')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('contactSide.listTitle')} />
       {who ? <Text color={colors.inkMuted}>{t('contactSide.condolences')} {who}</Text> : null}
       {data === 'denied' ? <Card tone="warn"><Text>{t('contactSide.denied')}</Text></Card> : null}
       {data && data !== 'denied' ? (

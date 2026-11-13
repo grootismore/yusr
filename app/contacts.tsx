@@ -2,7 +2,7 @@ import { Alert, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, Row, Screen } from '@/components/ui';
+import { Button, Card, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useContacts, useWrite } from '@/data/hooks';
 import { useColors } from '@/theme/tokens';
@@ -15,10 +15,7 @@ export default function Contacts() {
   const revoke = useWrite(api.revokeContact);
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('contacts.title')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('contacts.title')} />
       <Card tone="good"><Text>{t('contacts.intro')}</Text></Card>
       <Card>
         {contacts.length === 0 ? <Text color={colors.inkMuted}>{t('contacts.none')}</Text> : contacts.map((c) => (

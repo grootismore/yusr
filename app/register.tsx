@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, Row, Screen } from '@/components/ui';
+import { Button, Card, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import { useContacts, useDebts, useRegisterItems } from '@/data/hooks';
 import { readiness } from '@/features/register/readiness';
 import { space, useColors } from '@/theme/tokens';
@@ -30,10 +30,7 @@ export default function Register() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('register.title')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('register.title')} />
       <Card tone="good"><Text>{t('register.intro')}</Text></Card>
 
       <Card>

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, IconButton, ProgressBar, Row, Screen } from '@/components/ui';
+import { Button, Card, Field, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useDebtPayments, useDebts, useWrite } from '@/data/hooks';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
@@ -55,10 +55,7 @@ export default function DebtDetail() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }} numberOfLines={2}>{debt.lender}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={debt.lender} numberOfLines={2} />
 
       <Card>
         <Text color={colors.inkMuted}>{t(`debts.kind.${debt.kind}`)}</Text>

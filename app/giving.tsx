@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen } from '@/components/ui';
+import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useGiving, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
@@ -34,10 +34,7 @@ export default function Giving() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('giving.title')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('giving.title')} />
       <Card tone="good"><Text>{t('giving.intro')}</Text></Card>
 
       <Card>

@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Switch, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
 import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
-import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
+import { Card, Chip, Field, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useProfile, useRates, useWrite } from '@/data/hooks';
 import { APPEARANCES, loadAppearance, saveAppearance, type AppearanceChoice } from '@/lib/appearance';
@@ -33,7 +32,6 @@ function RateField({ code, value }: { code: string; value: string }) {
 export default function Settings() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
-  const router = useRouter();
   const profile = useProfile().data;
   const rates = useRates().data ?? {};
   const updateProfile = useWrite(api.updateProfile);
@@ -50,10 +48,7 @@ export default function Settings() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title">{t('settings.title')}</Text>
-        <Button kind="ghost" label={t('common.done')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('settings.title')} />
 
       <Card>
         <Text variant="heading">{t('settings.language')}</Text>

@@ -6,7 +6,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, ProgressBar, Row, Screen, type IconName } from '@/components/ui';
+import { Button, Card, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
@@ -14,7 +14,22 @@ import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { monthStart, today } from '@/lib/dates';
-import { space, useColors } from '@/theme/tokens';
+import { radius, space, useColors } from '@/theme/tokens';
+
+/** Round-cornered shortcut tile: icon over a short label. */
+function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
+  const colors = useColors();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
+      style={({ pressed }) => ({ flex: 1, minHeight: 88, alignItems: 'center', justifyContent: 'center', gap: space.xs, padding: space.sm, borderRadius: radius.lg, borderCurve: 'continuous',
+        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.6 : 1 })}>
+      <View style={{ width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.tealWash, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} color={colors.teal} />
+      </View>
+      <Text variant="small" numberOfLines={2} style={{ textAlign: 'center' }}>{label}</Text>
+    </Pressable>
+  );
+}
 
 export default function Home() {
   const colors = useColors();
@@ -53,7 +68,7 @@ export default function Home() {
   if (expenses.length === 0 && !expensesQuery.isLoading) {
     return (
       <Screen>
-        <Text variant="title" color={colors.teal}>{t('app.name')}</Text>
+        <ScreenTitle title={t('app.name')} />
         <Card style={{ alignItems: 'center', paddingVertical: space.xxl }}>
           <Icon name="receipt-outline" size={44} color={colors.teal} />
           <Text variant="heading" style={{ textAlign: 'center' }}>{t('home.emptyTitle')}</Text>
@@ -66,34 +81,43 @@ export default function Home() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" color={colors.teal}>{t('app.name')}</Text>
-        <Button kind="secondary" label={t('home.addExpense')} icon="add" onPress={() => router.push('/add-expense')} />
-      </Row>
+      <ScreenTitle title={t('app.name')} />
 
-      <Card tone={state === 'over' ? 'bad' : state === 'near' ? 'warn' : 'plain'}>
-        <Text color={colors.inkMuted}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" />
-        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.inkMuted} /> : null}
+      <Card tone="hero" style={{ gap: space.lg, padding: space.xl, overflow: 'hidden' }}>
+        {/* Soft shapes give the card depth without an image or a gradient dependency. */}
+        <View pointerEvents="none" style={{ position: 'absolute', top: -60, end: -50, width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.10)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', bottom: -90, start: -40, width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+        <Text color={colors.onTeal}>{t('home.thisMonth')} · {t('home.spent')}</Text>
+        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onTeal} style={{ fontSize: 40, lineHeight: 52 }} />
+        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onTeal} /> : null}
         {limit ? (
           <>
-            <ProgressBar percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
-            <Row>
-              {state !== 'ok' ? <Icon name={state === 'over' ? 'alert-circle' : 'warning'} color={state === 'over' ? colors.coral : colors.amberDeep} /> : null}
-              {state === 'over'
-                ? <Msg k="home.over" amounts={{ amount: spent - limit }} color={colors.coral} style={{ flex: 1 }} />
-                : <Msg k="home.left" amounts={{ amount: limit - spent }} style={{ flex: 1 }} />}
-            </Row>
-            {state === 'near' ? <Text>{t('home.nearLimit')}</Text> : null}
-            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.inkMuted} />
+            <ProgressBar onHero percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
+            {state === 'over' || state === 'near' ? (
+              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.pill, backgroundColor: state === 'over' ? colors.coralWash : colors.amberWash }}>
+                <Icon name={state === 'over' ? 'alert-circle' : 'warning'} size={18} color={state === 'over' ? colors.coral : colors.amberDeep} />
+                {state === 'over'
+                  ? <Msg k="home.over" amounts={{ amount: spent - limit }} variant="small" color={colors.coral} />
+                  : <Text variant="small" color={colors.ink}>{t('home.nearLimit')}</Text>}
+              </View>
+            ) : null}
+            {state === 'over' ? null : <Msg k="home.left" amounts={{ amount: limit - spent }} color={colors.onTeal} />}
+            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onTeal} />
           </>
         ) : (
           <>
-            <Text color={colors.inkMuted}>{t('home.noBudget')}</Text>
-            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} />
+            <Text color={colors.onTeal}>{t('home.noBudget')}</Text>
+            <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onTeal, borderColor: colors.onTeal }} />
           </>
         )}
       </Card>
+
+      <Row style={{ alignItems: 'stretch', gap: space.sm }}>
+        <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
+        <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
+        <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} />
+        <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} />
+      </Row>
 
       {debtPlan.open.length > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>

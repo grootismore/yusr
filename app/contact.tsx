@@ -2,7 +2,7 @@ import { Alert, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Row, Screen } from '@/components/ui';
+import { Button, Card, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useContactCases, useWrite } from '@/data/hooks';
 import { useColors } from '@/theme/tokens';
@@ -18,10 +18,7 @@ export default function ContactHome() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flex: 1 }}>{t('contactSide.title')}</Text>
-        <Button kind="ghost" label={t('common.back')} onPress={() => router.back()} />
-      </Row>
+      <StackHeader title={t('contactSide.title')} />
       <Text color={colors.inkMuted}>{t('contactSide.intro')}</Text>
       {cases.length === 0 ? <Card><Text color={colors.inkMuted}>{t('contactSide.none')}</Text></Card> : cases.map((c) => {
         const who = c.inviter_name ?? t('contactSide.whoFallback');
