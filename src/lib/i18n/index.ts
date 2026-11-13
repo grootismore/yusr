@@ -2,7 +2,6 @@ import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { I18nManager, Platform } from 'react-native';
 import { getItem, setItem } from '../kv';
-import { requireRestart } from '../restartGate';
 import dv from './locales/dv.json';
 import en from './locales/en.json';
 
@@ -22,13 +21,14 @@ export const isLanguage = (value: unknown): value is Language => (LANGUAGES as r
 /** Dhivehi is the default; only an explicit stored choice changes it (the device language does not). */
 export const resolveLanguage = (stored: string | null): Language => (isLanguage(stored) ? stored : DEFAULT_LANGUAGE);
 
-/** Set the native layout direction. Returns true when the app must restart for it to take effect. */
-function applyDirection(language: Language): boolean {
-  if (Platform.OS === 'web') return false; // web preview follows the root `dir` instead
-  const rtl = isRtl(language);
-  I18nManager.allowRTL(true);
-  I18nManager.forceRTL(rtl);
-  return I18nManager.isRTL !== rtl;
+/**
+ * The phone's own layout direction is kept left-to-right; the app mirrors itself with a `direction` style on its root view
+ * (see app/_layout.tsx). That way switching language never needs a restart. Clears a direction an older version forced.
+ */
+function applyDirection(): void {
+  if (Platform.OS === 'web') return; // web follows the root `dir` instead
+  I18nManager.allowRTL(false);
+  I18nManager.forceRTL(false);
 }
 
 export async function initI18n(): Promise<Language> {
@@ -39,17 +39,14 @@ export async function initI18n(): Promise<Language> {
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
   });
-  if (applyDirection(language)) requireRestart(); // e.g. very first launch on a left-to-right phone
+  applyDirection();
   return language;
 }
 
-/** Switch language and remember it. Returns whether a restart is needed for the new direction. */
-export async function setLanguage(language: Language): Promise<boolean> {
+/** Switch language and remember it. The layout mirrors immediately. */
+export async function setLanguage(language: Language): Promise<void> {
   await i18n.changeLanguage(language);
   await setItem(STORAGE_KEY, language);
-  const needsRestart = applyDirection(language);
-  if (needsRestart) requireRestart();
-  return needsRestart;
 }
 
 export { i18n };
