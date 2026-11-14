@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { markBoot } from '@/lib/boot';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
@@ -23,6 +24,7 @@ const Line = ({ w }: { w: `${number}%` }) => {
 };
 
 export function OnboardArt({ kind }: { kind: 'p1' | 'p2' | 'p3' }) {
+  markBoot('onboard-art');
   const colors = useColors();
   const { t } = useTranslation();
   return (

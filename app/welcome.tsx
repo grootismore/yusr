@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Chip, PanelArt, Row, Screen } from '@/components/ui';
+import { markBoot } from '@/lib/boot';
 import { OnboardArt } from '@/features/onboarding/Art';
 import { useAuth } from '@/lib/auth';
 import { setFlag, useFlag } from '@/lib/flags';
@@ -16,6 +17,7 @@ const PAGES: { key: 'p1' | 'p2' | 'p3' }[] = [{ key: 'p1' }, { key: 'p2' }, { ke
 
 /** First launch: three short pages, a language choice, then sign-up. Shown once; "I already have an account" goes to sign-in. */
 export default function Welcome() {
+  markBoot('welcome');
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();

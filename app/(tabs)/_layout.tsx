@@ -1,3 +1,4 @@
+import { markBoot } from '@/lib/boot';
 import { Pressable, View, type ColorValue } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ const tab = (name: IconName, active: IconName) =>
   };
 
 export default function TabsLayout() {
+  markBoot('tabs');
   const colors = useColors();
   const dark = useIsDark();
   const { t } = useTranslation();

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
+import { markBoot } from '@/lib/boot';
 import { fontFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
 import { Money } from './Money';
@@ -26,6 +27,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   /** A tab screen: leave room for the floating tab bar. */ tabbed?: boolean }) {
   const colors = useColors();
   const { i18n } = useTranslation();
+  markBoot('screen');
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
@@ -305,6 +307,7 @@ export function Tile({ color, label, laari }: { color: string; label: string; la
  * Purely decorative, hidden from screen readers. Dots are plain views, rendered only where they are visible.
  */
 export function PanelArt() {
+  markBoot('panel-art');
   const colors = useColors();
   const { i18n } = useTranslation();
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -325,12 +328,12 @@ export function PanelArt() {
   }, [box.w, box.h, rtl]);
   return (
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
-      {box.w > 0 ? (
+      {box.w > 0 ? (markBoot('panel-art-svg'), (
         <Svg width={box.w} height={box.h} style={[StyleSheet.absoluteFill, { direction: 'ltr' }]}>
           <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={132} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
             fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.17}>MVR</SvgText>
         </Svg>
-      ) : null}
+      )) : null}
       {dots.map((d, i) => <View key={i} style={{ position: 'absolute', left: d.x - 1.2, top: d.y - 1.2, width: 2.4, height: 2.4, borderRadius: 1.2, backgroundColor: colors.onHero, opacity: d.o }} />)}
     </View>
   );
