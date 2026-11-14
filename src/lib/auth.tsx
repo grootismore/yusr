@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { type AuthErrorKey, authErrorKey } from './authErrors';
+import { markBoot } from './boot';
 import { PREVIEW, getSupabase } from './supabase';
 
 export { authErrorKey, type AuthErrorKey };
@@ -40,15 +41,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (PREVIEW) return;
+    markBoot('auth-effect');
     const supabase = getSupabase();
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
+    markBoot('auth-client');
+    // If the stored-session check does not answer in time (a hung keychain read or network), carry on signed out rather than showing a blank screen.
+    const watchdog = setTimeout(() => { markBoot('auth-timeout'); setLoading(false); }, 4000);
+    supabase.auth.getSession()
+      .then(({ data }) => { markBoot('auth-session'); setSession(data.session); })
+      .catch(() => markBoot('auth-failed'))
+      .finally(() => { clearTimeout(watchdog); setLoading(false); });
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       if (event === 'SIGNED_OUT') qc.clear(); // never leave one person's data for the next
     });
     const appState = AppState.addEventListener('change', (s) => (s === 'active' ? supabase.auth.startAutoRefresh() : supabase.auth.stopAutoRefresh()));
     supabase.auth.startAutoRefresh();
-    return () => { sub.subscription.unsubscribe(); appState.remove(); supabase.auth.stopAutoRefresh(); };
+    return () => { clearTimeout(watchdog); sub.subscription.unsubscribe(); appState.remove(); supabase.auth.stopAutoRefresh(); };
   }, [qc]);
 
   const value = useMemo<AuthValue>(() => ({
