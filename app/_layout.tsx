@@ -21,8 +21,9 @@ import { loadFlags, useFlag } from '@/lib/flags';
 import { useConsents } from '@/data/hooks';
 import { PREVIEW } from '@/lib/supabase';
 
-// Where a signed-in visitor lands when the page they asked for is not available to them (for example /debts on the website).
-export const unstable_settings = { anchor: WEB_LIMITED ? 'web-home' : '(tabs)' };
+// No `unstable_settings.anchor` here on purpose. An anchor on a guarded screen (the tabs, for a signed-out person) made the
+// router bounce between the anchor and the public fallback forever on phones: a blank screen at launch. The `accept`
+// screen sends anyone without an invite token to the right place instead. Covered by src/__tests__/launchReal.test.tsx.
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 

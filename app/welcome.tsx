@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, usePathname, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,11 +22,12 @@ export default function Welcome() {
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const pathname = usePathname();
   const { signedIn } = useAuth();
   const onboarded = useFlag('onboarded');
   const [page, setPage] = useState(0);
   if (signedIn) return <Redirect href="/" />;
-  if (onboarded || WEB_LIMITED) return <Redirect href="/sign-in" />; // the website skips the intro
+  if ((onboarded || WEB_LIMITED) && pathname === '/welcome') return <Redirect href="/sign-in" />; // the website skips the intro
 
   const last = page === PAGES.length - 1;
   const done = async (to: '/sign-in' | '/sign-up') => { await setFlag('onboarded', true); router.replace(to); };
