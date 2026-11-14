@@ -58,6 +58,14 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200
         }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "kharadhu",
+          "organization": "tony-5f"
+        }
       ]
     ],
     "extra": {

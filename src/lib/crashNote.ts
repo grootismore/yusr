@@ -15,6 +15,9 @@ const text = (error: unknown): string => {
 
 // While the error screen is mounted it takes the error instead of letting iOS close the app.
 let shower: ((message: string) => void) | null = null;
+let reporter: ((error: unknown) => void) | null = null;
+/** Where an error goes when the on-screen error page takes it instead of the normal handler (so it is still reported). */
+export function reportFatalTo(fn: (error: unknown) => void): void { reporter = fn; }
 export function showErrorsHere(fn: ((message: string) => void) | null): void { shower = fn; }
 export const describeError = text;
 
@@ -26,7 +29,7 @@ export function installCrashNote(): void {
   utils.setGlobalHandler((error, fatal) => {
     if (fatal) {
       try { SecureStore.setItem(KEY, text(error)); } catch { /* nothing more we can do */ }
-      if (shower) { shower(text(error)); return; } // shown on screen: the app stays open
+      if (shower) { try { reporter?.(error); } catch { /* never block the error page */ } shower(text(error)); return; } // shown on screen: the app stays open
     }
     previous(error, fatal);
   });

@@ -12,7 +12,7 @@ name: Beta build (unsigned iOS IPA, installable Android APK)
 # Optional repository variables (Settings, Secrets and variables, Actions, Variables). None are needed: the
 # defaults below are the public values for yusr-prod. These ship inside the app, so they are variables, not secrets.
 #   EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_KEY (the publishable key: NEVER a secret or service-role key),
-#   EXPO_PUBLIC_APP_URL, EXPO_PUBLIC_LEGAL_URL, EXPO_PUBLIC_SUPPORT_EMAIL
+#   EXPO_PUBLIC_APP_URL, EXPO_PUBLIC_LEGAL_URL, EXPO_PUBLIC_SUPPORT_EMAIL, EXPO_PUBLIC_SENTRY_DSN (crash reporting)
 
 on:
   workflow_dispatch:
@@ -35,6 +35,11 @@ env:
   EXPO_PUBLIC_SUPPORT_EMAIL: ${{ vars.EXPO_PUBLIC_SUPPORT_EMAIL }}
   # A free Apple ID cannot sign Sign in with Apple, so this build hides the button.
   EXPO_PUBLIC_DISABLE_APPLE_SIGNIN: '1'
+  # Crash reporting. The DSN is a client key that ships inside the app (a repository variable, not a secret). Without it nothing is reported.
+  EXPO_PUBLIC_SENTRY_DSN: ${{ vars.EXPO_PUBLIC_SENTRY_DSN }}
+  # Readable crash stack traces need an upload token (a repository secret, never committed). Without it the build skips the upload and still succeeds.
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  SENTRY_DISABLE_AUTO_UPLOAD: ${{ secrets.SENTRY_AUTH_TOKEN == '' && 'true' || 'false' }}
 
 jobs:
   checks:

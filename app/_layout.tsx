@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { markBoot, previousBoot } from '@/lib/boot';
+import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
@@ -110,6 +111,7 @@ markBoot('layout');
 
 /** Expo Router shows this instead of closing the app when a screen throws while rendering. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  useEffect(() => { reportError(error); }, [error]);
   return (
     <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
       <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>Something went wrong</RNText>
@@ -122,7 +124,7 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [ready, setReady] = useState(false);
   const [crash, setCrash] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -171,3 +173,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default wrapRoot(RootLayout);
