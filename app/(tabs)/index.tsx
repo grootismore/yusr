@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { markBoot } from '@/lib/boot';
 import { Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -35,6 +36,7 @@ function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; 
 export default function Home() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  useEffect(() => { markBoot('home'); }, []);
   const [scrollY] = useState(() => new Animated.Value(0));
   const { t, i18n } = useTranslation();
   const router = useRouter();
