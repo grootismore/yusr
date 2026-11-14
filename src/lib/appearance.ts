@@ -13,6 +13,11 @@ export function applyAppearance(choice: AppearanceChoice): void {
   if (typeof Appearance.setColorScheme === 'function') Appearance.setColorScheme(choice === 'system' ? 'unspecified' : choice);
 }
 
+/** At launch: only a stored light or dark choice needs applying. "System" is already what the phone does, and telling the phone again can make it announce a change that redraws the whole app. */
+export function applyStoredAppearance(choice: AppearanceChoice): void {
+  if (choice !== 'system') applyAppearance(choice);
+}
+
 export async function loadAppearance(): Promise<AppearanceChoice> {
   const stored = await getItem(KEY);
   return isAppearance(stored) ? stored : 'system';
