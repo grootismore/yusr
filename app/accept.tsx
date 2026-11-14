@@ -6,14 +6,26 @@ import { Text } from '@/components/Text';
 import { Button, Card, Screen } from '@/components/ui';
 import { acceptInvite } from '@/data/api';
 import { useAuth } from '@/lib/auth';
+import { markBoot } from '@/lib/boot';
+import { useFlag } from '@/lib/flags';
 import { WEB_LIMITED } from '@/lib/platform';
 import { TOKEN_PATTERN } from '@/features/register/invite';
 import { space, useColors } from '@/theme/tokens';
+import SignIn from './sign-in';
+import Welcome from './welcome';
 
 type Phase = { kind: 'checking' } | { kind: 'ask'; who: string } | { kind: 'done'; accepted: boolean } | { kind: 'problem'; key: 'invalid' | 'expired' | 'used' | 'error' };
 
+/** What a signed-out person sees first on a phone: the intro once, then sign-in. */
+function SignedOutStart() {
+  markBoot('signed-out-start');
+  const onboarded = useFlag('onboarded');
+  return onboarded ? <SignIn /> : <Welcome />;
+}
+
 /** Public page for the person who was invited. The token in the link is the only credential; no account is needed to say yes or no. */
 export default function Accept() {
+  markBoot('accept');
   const colors = useColors();
   const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token?: string }>();
@@ -44,7 +56,13 @@ export default function Accept() {
 
   // Opened with no invite token: this is where the router drops anyone whose first screen is unavailable to them
   // (for example a signed-out person on app start). Send them where they belong instead of saying "invalid link".
-  if (!token) return <Redirect href={signedIn ? (WEB_LIMITED ? '/web-home' : '/(tabs)') : WEB_LIMITED ? '/sign-in' : '/welcome'} />;
+  if (!token) {
+    if (signedIn) return <Redirect href={WEB_LIMITED ? '/web-home' : '/(tabs)'} />;
+    if (WEB_LIMITED) return <Redirect href="/sign-in" />;
+    // On a phone, a signed-out launch lands here. Show the first screen in place: no navigation happens during launch,
+    // because a redirect at that moment left phones on a blank screen.
+    return <SignedOutStart />;
+  }
 
   return (
     <Screen>

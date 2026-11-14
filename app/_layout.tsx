@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text as RNText, View } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
-import { markBoot, previousBoot } from '@/lib/boot';
+import { markBoot, previousAlive, previousBoot } from '@/lib/boot';
 import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyAppearance, loadAppearance } from '@/lib/appearance';
@@ -21,13 +21,16 @@ import { loadFlags, useFlag } from '@/lib/flags';
 import { useConsents } from '@/data/hooks';
 import { PREVIEW } from '@/lib/supabase';
 
-// Where a signed-in visitor lands when the page they asked for is not available to them (for example /debts on the website).
-export const unstable_settings = { anchor: WEB_LIMITED ? 'web-home' : '(tabs)' };
+// No `unstable_settings.anchor` here on purpose. An anchor on a guarded screen (the tabs, for a signed-out person) made the
+// router bounce between the anchor and the public fallback forever on phones: a blank screen at launch. The `accept`
+// screen sends anyone without an invite token to the right place instead. Covered by src/__tests__/launchReal.test.tsx.
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
 function Routes() {
   markBoot('routes');
+  const pathname = usePathname();
+  markBoot(`path:${pathname}`);
   const { signedIn, loading } = useAuth();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
@@ -153,7 +156,7 @@ function RootLayout() {
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
         <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
         <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\n${crash ?? '(no error text)'}`}</RNText>
+        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\n${crash ?? '(no error text)'}`}</RNText>
         <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); markBoot('ok'); setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
           <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
         </Pressable>
