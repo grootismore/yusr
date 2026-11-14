@@ -32,7 +32,8 @@ function Routes() {
   useActivity(signedIn && !WEB_LIMITED);
   const consents = useConsents(signedIn && !PREVIEW);
   const setupDone = useFlag('setupDone');
-  if (loading || (signedIn && !PREVIEW && consents.isLoading)) return null;
+  if (loading || (signedIn && !PREVIEW && consents.isLoading)) { markBoot('routes-waiting'); return null; }
+  markBoot('routes-stack');
   // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
   // itself fails (for example offline) we do not lock out someone who already agreed.
   const needsConsent = signedIn && !PREVIEW && consents.isSuccess && missingConsents(consents.data).length > 0;

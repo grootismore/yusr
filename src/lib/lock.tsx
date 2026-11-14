@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Icon } from '@/components/ui';
 import { Text } from '@/components/Text';
 import { useColors } from '@/theme/tokens';
+import { markBoot } from './boot';
 import { getItem, setItem } from './kv';
 
 const KEY = 'kharadhu.biometric';
@@ -19,6 +20,7 @@ export const setBiometricEnabled = (on: boolean): Promise<void> => setItem(KEY, 
 
 /** Optional app lock. Locks at launch and after 30 seconds in the background; no PIN fallback beyond the phone's own. */
 export function LockGate({ children, active }: { children: ReactNode; active: boolean }) {
+  markBoot('lock');
   const colors = useColors();
   const { t } = useTranslation();
   const [locked, setLocked] = useState(false);
