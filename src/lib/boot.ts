@@ -10,6 +10,19 @@ const safe = <T,>(f: () => T, fallback: T): T => { try { return f(); } catch { r
 /** How far the previous launch got ("entry", "layout", "i18n", "fonts", "ready", "home" or "ok"), or null on the first launch. Read once, before this launch writes anything. */
 export const previousBoot: string | null = Platform.OS === 'web' ? null : safe(() => SecureStore.getItem(KEY), null);
 
+// Launch experiments. After a launch that did not reach "ok", the next one runs with one suspect switched off, in turn:
+// 0 normal, 1 no right-to-left wrapper, 2 no navigator (the intro is drawn directly), 3 no Sentry. A launch that reaches "ok"
+// records which variant it was. This lets the phone itself say which part makes the app close.
+export const VARIANTS = ['normal', 'no direction wrapper', 'no navigator', 'no Sentry'] as const;
+const num = (v: string | null): number => (v !== null && /^\d+$/.test(v) ? Number(v) : 0);
+const failedBefore = previousBoot !== null && previousBoot !== 'ok';
+/** The variant the previous launch ran, and the one this launch runs. */
+export const previousVariant: number = Platform.OS === 'web' ? 0 : num(safe(() => SecureStore.getItem(`${KEY}.variant`), null));
+export const variant: number = Platform.OS === 'web' ? 0 : failedBefore ? (previousVariant + 1) % VARIANTS.length : 0;
+/** The variant of the last launch that stayed alive, if any. */
+export const lastGoodVariant: string | null = Platform.OS === 'web' ? null : safe(() => SecureStore.getItem(`${KEY}.good`), null);
+if (Platform.OS !== 'web') safe(() => SecureStore.setItem(`${KEY}.variant`, String(variant)), undefined);
+
 let last = '';
 let finished = false;
 let writes = 0;
@@ -29,6 +42,6 @@ export function markBoot(stage: string): void {
   if (Platform.OS === 'web' || finished || stage === last) return;
   if (++writes > 60 && stage !== 'ok') return; // a redirect loop must not hammer the keychain
   last = stage;
-  if (stage === 'ok') finished = true;
+  if (stage === 'ok') { finished = true; safe(() => SecureStore.setItem(`${KEY}.good`, String(variant)), undefined); }
   safe(() => SecureStore.setItem(KEY, stage), undefined);
 }

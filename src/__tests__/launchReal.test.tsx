@@ -14,7 +14,7 @@ jest.mock('@/lib/supabase', () => ({
     startAutoRefresh() {}, stopAutoRefresh() {},
   } }),
 }));
-jest.mock('@/lib/boot', () => ({ previousBoot: null, previousAlive: null, startHeartbeat() {}, markBoot() {} }));
+jest.mock('@/lib/boot', () => ({ previousBoot: null, previousAlive: null, previousVariant: 0, variant: 0, lastGoodVariant: null, VARIANTS: ['normal'], startHeartbeat() {}, markBoot() {} }));
 jest.mock('expo-font', () => ({ useFonts: () => [true, null], isLoaded: () => true, loadAsync: async () => undefined }));
 jest.mock('expo-notifications', () => ({ setNotificationHandler() {}, getPermissionsAsync: async () => ({ status: 'denied' }), cancelScheduledNotificationAsync: async () => undefined, SchedulableTriggerInputTypes: { DATE: 'date' } }));
 jest.mock('@sentry/react-native', () => ({ init() {}, wrap: (c: unknown) => c, captureException() {} }));

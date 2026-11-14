@@ -8,7 +8,8 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
-import { markBoot, previousAlive, previousBoot } from '@/lib/boot';
+import { VARIANTS, lastGoodVariant, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
+import Welcome from './welcome';
 import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyAppearance, loadAppearance } from '@/lib/appearance';
@@ -107,6 +108,7 @@ function Routes() {
 function Direction({ children }: { children: ReactNode }) {
   const { i18n: instance } = useTranslation();
   markBoot('direction');
+  if (variant === 1) return <View style={{ flex: 1 }}>{children}</View>; // launch experiment: no direction style
   return <View style={{ flex: 1, direction: instance.language === 'dv' ? 'rtl' : 'ltr' }}>{children}</View>;
 }
 
@@ -142,22 +144,25 @@ function RootLayout() {
   });
   useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote().then(setCrash)]).finally(() => setReady(true)); }, []);
   useEffect(() => { if (fontsLoaded || fontError) markBoot('fonts'); }, [fontsLoaded, fontError]);
-  useEffect(() => {
-    if (!ready) return;
-    markBoot('ready');
-    const id = setTimeout(() => markBoot('ok'), 3000); // alive three seconds after the first screen: the launch was good
-    return () => clearTimeout(id);
-  }, [ready]);
-  if (!ready || !(fontsLoaded || fontError)) return null;
   const stoppedAt = !dismissed && previousBoot && previousBoot !== 'ok' ? previousBoot : null;
+  const showingApp = ready && !crash && !stoppedAt;
+  useEffect(() => {
+    if (!showingApp) return;
+    markBoot(`app:${variant}`);
+    const id = setTimeout(() => markBoot('ok'), 4000); // alive four seconds after the first real screen: the launch was good
+    return () => clearTimeout(id);
+  }, [showingApp]);
+  // Tell Sentry what the phone knows about the launch that failed (also proves reports from this phone arrive).
+  useEffect(() => { if (ready && stoppedAt && variant !== 3) reportError(new Error(`Launch stopped after ${stoppedAt}; alive ${previousAlive ?? '?'}s; variant ${previousVariant} (${VARIANTS[previousVariant]})`)); }, [ready, stoppedAt]);
+  if (!ready || !(fontsLoaded || fontError)) return null;
   if (crash || stoppedAt) {
     // Shown once after a crash, before any other screen, in plain system text so it cannot fail the same way.
     return (
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
         <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
         <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\n${crash ?? '(no error text)'}`}</RNText>
-        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); markBoot('ok'); setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
+        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\n${crash ?? '(no error text)'}`}</RNText>
+        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
           <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
         </Pressable>
       </ScrollView>
@@ -169,7 +174,7 @@ function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <StatusBar style="auto" />
-            <Direction><Routes /></Direction>
+            <Direction>{variant === 2 ? <Welcome /> : <Routes />}</Direction>
           </AuthProvider>
         </QueryClientProvider>
       </I18nextProvider>
@@ -177,4 +182,4 @@ function RootLayout() {
   );
 }
 
-export default wrapRoot(RootLayout);
+export default variant === 3 ? RootLayout : wrapRoot(RootLayout);
