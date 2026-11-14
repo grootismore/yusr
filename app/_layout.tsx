@@ -8,7 +8,8 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
-import { clearCrashNote, installCrashNote, readCrashNote } from '@/lib/crashNote';
+import { markBoot, previousBoot } from '@/lib/boot';
+import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
@@ -102,11 +103,27 @@ function Direction({ children }: { children: ReactNode }) {
   return <View style={{ flex: 1, direction: instance.language === 'dv' ? 'rtl' : 'ltr' }}>{children}</View>;
 }
 
-installCrashNote();
+markBoot('layout');
+
+/** Expo Router shows this instead of closing the app when a screen throws while rendering. */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  return (
+    <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
+      <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>Something went wrong</RNText>
+      <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>Please copy the text below and send it to support.</RNText>
+      <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19 }}>{describeError(error)}</RNText>
+      <Pressable accessibilityRole="button" onPress={() => void retry()} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
+        <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>Try again</RNText>
+      </Pressable>
+    </ScrollView>
+  );
+}
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [crash, setCrash] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => { showErrorsHere((message) => { setCrash(message); setDismissed(true); }); return () => showErrorsHere(null); }, []);
   // Thaana Noor for Dhivehi, Nunito Sans for English and numbers. If a font fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
     ThaanaNoor_Regular: require('../assets/fonts/ThaanaNoor-Regular.ttf'),
@@ -115,16 +132,24 @@ export default function RootLayout() {
     NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
     SpaceGrotesk_700Bold: require('../assets/fonts/SpaceGrotesk_700Bold.ttf'), // only for the outlined MVR on the panels
   });
-  useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n(), readCrashNote().then(setCrash)]).finally(() => setReady(true)); }, []);
+  useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote().then(setCrash)]).finally(() => setReady(true)); }, []);
+  useEffect(() => { if (fontsLoaded || fontError) markBoot('fonts'); }, [fontsLoaded, fontError]);
+  useEffect(() => {
+    if (!ready) return;
+    markBoot('ready');
+    const id = setTimeout(() => markBoot('ok'), 3000); // alive three seconds after the first screen: the launch was good
+    return () => clearTimeout(id);
+  }, [ready]);
   if (!ready || !(fontsLoaded || fontError)) return null;
-  if (crash) {
+  const stoppedAt = !dismissed && previousBoot && previousBoot !== 'ok' ? previousBoot : null;
+  if (crash || stoppedAt) {
     // Shown once after a crash, before any other screen, in plain system text so it cannot fail the same way.
     return (
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
         <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
         <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{crash}</RNText>
-        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); setCrash(null); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
+        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\n${crash ?? '(no error text)'}`}</RNText>
+        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); markBoot('ok'); setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
           <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
         </Pressable>
       </ScrollView>

@@ -680,8 +680,8 @@
     "explain": "Converting does not change your income or spending reports."
   },
   "crash": {
-    "title": "Kharadhu closed unexpectedly last time",
-    "body": "Please copy the text below and send it to support. It helps us fix the problem.",
+    "title": "Kharadhu ran into a problem",
+    "body": "Please copy the text below and send it to support. It tells us what went wrong.",
     "continue": "Continue"
   }
 }

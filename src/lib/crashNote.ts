@@ -8,6 +8,16 @@ import { getItem, removeItem } from './kv';
 const KEY = 'kharadhu.lastCrash';
 type Handler = (error: unknown, fatal?: boolean) => void;
 
+const text = (error: unknown): string => {
+  const e = error as { message?: string; stack?: string };
+  return `${new Date().toISOString()}\n${e?.message ?? String(error)}\n${e?.stack ?? ''}`.slice(0, 1800);
+};
+
+// While the error screen is mounted it takes the error instead of letting iOS close the app.
+let shower: ((message: string) => void) | null = null;
+export function showErrorsHere(fn: ((message: string) => void) | null): void { shower = fn; }
+export const describeError = text;
+
 export function installCrashNote(): void {
   if (Platform.OS === 'web') return;
   const utils = (globalThis as { ErrorUtils?: { getGlobalHandler(): Handler; setGlobalHandler(h: Handler): void } }).ErrorUtils;
@@ -15,10 +25,8 @@ export function installCrashNote(): void {
   const previous = utils.getGlobalHandler();
   utils.setGlobalHandler((error, fatal) => {
     if (fatal) {
-      try {
-        const e = error as { message?: string; stack?: string };
-        SecureStore.setItem(KEY, `${new Date().toISOString()}\n${e?.message ?? String(error)}\n${e?.stack ?? ''}`.slice(0, 1800));
-      } catch { /* nothing more we can do */ }
+      try { SecureStore.setItem(KEY, text(error)); } catch { /* nothing more we can do */ }
+      if (shower) { shower(text(error)); return; } // shown on screen: the app stays open
     }
     previous(error, fatal);
   });
