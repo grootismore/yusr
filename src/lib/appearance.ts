@@ -9,7 +9,8 @@ export const isAppearance = (v: unknown): v is AppearanceChoice => (APPEARANCES 
 
 /** Make the app follow the choice: "system" follows the phone, otherwise it is forced light or dark. */
 export function applyAppearance(choice: AppearanceChoice): void {
-  Appearance.setColorScheme(choice === 'system' ? 'unspecified' : choice);
+  // The website build has no setColorScheme (Sentry caught this as an error on launch); phones do.
+  if (typeof Appearance.setColorScheme === 'function') Appearance.setColorScheme(choice === 'system' ? 'unspecified' : choice);
 }
 
 export async function loadAppearance(): Promise<AppearanceChoice> {

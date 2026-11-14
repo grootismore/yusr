@@ -52,3 +52,10 @@ Follow `docs/LAUNCH_CHECKLIST.md`. In short: fill your details into `docs/legal/
 
 ## 9. The release ladder stays off
 Do not deploy or schedule it. When you decide to, follow `docs/RELEASE_RUNBOOK.md` exactly.
+
+## 10. Crash reporting (Sentry, optional but recommended for test builds)
+What it does: errors and crashes only, sent to the `kharadhu` project in Sentry (organization `tony-5f`). No screen recording, screenshots, user, IP, cookies, request data, console or profiling. Web addresses in breadcrumbs lose their query strings.
+1. GitHub, Settings, Secrets and variables, Actions, **Variables**: add `EXPO_PUBLIC_SENTRY_DSN` (copy it from Sentry, Settings, Projects, kharadhu, Client Keys).
+2. For readable stack traces, create a Sentry auth token (Settings, Developer settings, Auth Tokens, with project release and org read scopes) and add it as the **Secret** `SENTRY_AUTH_TOKEN`. Never commit it. Without it the build skips the upload and still succeeds, but traces stay minified.
+3. Expo hosting (web) and EAS: add the same two names to the Expo environment variables if you build there.
+4. Update the Privacy Policy before real users: Sentry (United States region) receives error reports from the app.
