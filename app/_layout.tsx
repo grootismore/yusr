@@ -26,6 +26,7 @@ export const unstable_settings = { anchor: WEB_LIMITED ? 'web-home' : '(tabs)' }
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
 function Routes() {
+  markBoot('routes');
   const { signedIn, loading } = useAuth();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
@@ -100,6 +101,7 @@ function Routes() {
 /** Mirrors the whole app for Dhivehi at runtime, so changing language never needs a restart. */
 function Direction({ children }: { children: ReactNode }) {
   const { i18n: instance } = useTranslation();
+  markBoot('direction');
   return <View style={{ flex: 1, direction: instance.language === 'dv' ? 'rtl' : 'ltr' }}>{children}</View>;
 }
 
