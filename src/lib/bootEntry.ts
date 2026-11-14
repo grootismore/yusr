@@ -4,7 +4,7 @@ import { installCrashNote, reportFatalTo } from './crashNote';
 import { initMonitoring, reportError } from './monitoring';
 
 // Monitoring first, so errors while the other modules load are caught; the crash note wraps it.
-if (variant !== 3) initMonitoring();
+if (variant !== 2) initMonitoring();
 reportFatalTo(reportError);
 installCrashNote();
 markBoot('entry');

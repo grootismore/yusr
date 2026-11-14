@@ -26,7 +26,8 @@ export default function Welcome() {
   const { signedIn } = useAuth();
   const onboarded = useFlag('onboarded');
   const [page, setPage] = useState(0);
-  if (signedIn) return <Redirect href="/" />;
+  if (signedIn && pathname === '/welcome') return <Redirect href="/" />;
+  if (signedIn) return null; // shown in place by another screen, which takes over once signed in
   if ((onboarded || WEB_LIMITED) && pathname === '/welcome') return <Redirect href="/sign-in" />; // the website skips the intro
 
   const last = page === PAGES.length - 1;

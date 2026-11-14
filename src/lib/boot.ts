@@ -11,9 +11,9 @@ const safe = <T,>(f: () => T, fallback: T): T => { try { return f(); } catch { r
 export const previousBoot: string | null = Platform.OS === 'web' ? null : safe(() => SecureStore.getItem(KEY), null);
 
 // Launch experiments. After a launch that did not reach "ok", the next one runs with one suspect switched off, in turn:
-// 0 normal, 1 no right-to-left wrapper, 2 no navigator (the intro is drawn directly), 3 no Sentry. A launch that reaches "ok"
+// 0 normal, 1 no right-to-left wrapper, 2 no Sentry. A launch that reaches "ok"
 // records which variant it was. This lets the phone itself say which part makes the app close.
-export const VARIANTS = ['normal', 'no direction wrapper', 'no navigator', 'no Sentry'] as const;
+export const VARIANTS = ['normal', 'no direction wrapper', 'no Sentry'] as const;
 const num = (v: string | null): number => (v !== null && /^\d+$/.test(v) ? Number(v) : 0);
 const failedBefore = previousBoot !== null && previousBoot !== 'ok';
 /** The variant the previous launch ran, and the one this launch runs. */

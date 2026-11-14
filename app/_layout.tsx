@@ -6,21 +6,18 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider, useAuth } from '@/lib/auth';
+import { AuthProvider } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { VARIANTS, lastGoodVariant, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
-import Welcome from './welcome';
 import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
-import { applyAppearance, loadAppearance } from '@/lib/appearance';
+import { applyStoredAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
-import { missingConsents } from '@/features/legal/consent';
 import { WEB_LIMITED } from '@/lib/platform';
-import { loadFlags, useFlag } from '@/lib/flags';
-import { useConsents } from '@/data/hooks';
-import { PREVIEW } from '@/lib/supabase';
+import { loadFlags } from '@/lib/flags';
+import { useGate } from '@/lib/gate';
 
 // No `unstable_settings.anchor` here on purpose. An anchor on a guarded screen (the tabs, for a signed-out person) made the
 // router bounce between the anchor and the public fallback forever on phones: a blank screen at launch. The `accept`
@@ -32,18 +29,11 @@ function Routes() {
   markBoot('routes');
   const pathname = usePathname();
   markBoot(`path:${pathname}`);
-  const { signedIn, loading } = useAuth();
+  const { signedIn, waiting, needsConsent, needsSetup } = useGate();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
-  const consents = useConsents(signedIn && !PREVIEW);
-  const setupDone = useFlag('setupDone');
-  if (loading || (signedIn && !PREVIEW && consents.isLoading)) { markBoot('routes-waiting'); return null; }
+  if (waiting) { markBoot('routes-waiting'); return null; }
   markBoot('routes-stack');
-  // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
-  // itself fails (for example offline) we do not lock out someone who already agreed.
-  const needsConsent = signedIn && !PREVIEW && consents.isSuccess && missingConsents(consents.data).length > 0;
-  // First run on a phone, after agreeing to the terms: one optional setup question before the app.
-  const needsSetup = signedIn && !needsConsent && !WEB_LIMITED && (!PREVIEW || process.env.EXPO_PUBLIC_PREVIEW_SETUP === '1') && setupDone === false;
   return (
     <LockGate active={signedIn}>
       <Stack screenOptions={{ headerShown: false }}>
@@ -129,10 +119,29 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
   );
 }
 
+// Everything that must happen once per app start lives here, outside the component. Sentry showed the root layout being
+// mounted about forty times a minute on a phone; work started from an effect would then run again each time and could feed
+// the loop. This runs once however often the layout mounts, and remembers its result.
+let startup: Promise<string | null> | null = null;
+let startupDone = false;
+let startupCrash: string | null = null;
+let rootMounts = 0;
+let dismissedOnce = false;
+function startOnce(): Promise<string | null> {
+  startup ??= (async () => {
+    void loadAppearance().then(applyStoredAppearance);
+    const [, , note] = await Promise.all([loadFlags(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote()]).catch(() => [null, null, null] as const);
+    startupCrash = note ?? null;
+    startupDone = true;
+    return startupCrash;
+  })();
+  return startup;
+}
+
 function RootLayout() {
-  const [ready, setReady] = useState(false);
-  const [crash, setCrash] = useState<string | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [ready, setReady] = useState(startupDone);
+  const [crash, setCrash] = useState<string | null>(startupCrash);
+  const [dismissed, setDismissed] = useState(dismissedOnce);
   useEffect(() => { showErrorsHere((message) => { setCrash(message); setDismissed(true); }); return () => showErrorsHere(null); }, []);
   // Thaana Noor for Dhivehi, Nunito Sans for English and numbers. If a font fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
@@ -142,7 +151,13 @@ function RootLayout() {
     NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
     SpaceGrotesk_700Bold: require('../assets/fonts/SpaceGrotesk_700Bold.ttf'), // only for the outlined MVR on the panels
   });
-  useEffect(() => { void loadAppearance().then(applyAppearance); void Promise.all([loadFlags(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote().then(setCrash)]).finally(() => setReady(true)); }, []);
+  useEffect(() => {
+    rootMounts += 1;
+    if (rootMounts === 2 || rootMounts === 10) { markBoot(`remount:${rootMounts}`); if (variant !== 2) reportError(new Error(`Root layout mounted ${rootMounts} times in one launch`)); }
+    let live = true;
+    void startOnce().then((note) => { if (live) { setCrash((c) => c ?? note); setReady(true); } });
+    return () => { live = false; };
+  }, []);
   useEffect(() => { if (fontsLoaded || fontError) markBoot('fonts'); }, [fontsLoaded, fontError]);
   const stoppedAt = !dismissed && previousBoot && previousBoot !== 'ok' ? previousBoot : null;
   const showingApp = ready && !crash && !stoppedAt;
@@ -153,7 +168,7 @@ function RootLayout() {
     return () => clearTimeout(id);
   }, [showingApp]);
   // Tell Sentry what the phone knows about the launch that failed (also proves reports from this phone arrive).
-  useEffect(() => { if (ready && stoppedAt && variant !== 3) reportError(new Error(`Launch stopped after ${stoppedAt}; alive ${previousAlive ?? '?'}s; variant ${previousVariant} (${VARIANTS[previousVariant]})`)); }, [ready, stoppedAt]);
+  useEffect(() => { if (ready && stoppedAt && variant !== 2 && rootMounts <= 1) reportError(new Error(`Launch stopped after ${stoppedAt}; alive ${previousAlive ?? '?'}s; variant ${previousVariant} (${VARIANTS[previousVariant]})`)); }, [ready, stoppedAt]);
   if (!ready || !(fontsLoaded || fontError)) return null;
   if (crash || stoppedAt) {
     // Shown once after a crash, before any other screen, in plain system text so it cannot fail the same way.
@@ -161,8 +176,8 @@ function RootLayout() {
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
         <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
         <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\n${crash ?? '(no error text)'}`}</RNText>
-        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
+        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\nroot layout mounts so far: ${rootMounts}\n${crash ?? '(no error text)'}`}</RNText>
+        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); startupCrash = null; dismissedOnce = true; setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
           <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
         </Pressable>
       </ScrollView>
@@ -174,7 +189,7 @@ function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <StatusBar style="auto" />
-            <Direction>{variant === 2 ? <Welcome /> : <Routes />}</Direction>
+            <Direction><Routes /></Direction>
           </AuthProvider>
         </QueryClientProvider>
       </I18nextProvider>
@@ -182,4 +197,4 @@ function RootLayout() {
   );
 }
 
-export default variant === 3 ? RootLayout : wrapRoot(RootLayout);
+export default variant === 2 ? RootLayout : wrapRoot(RootLayout);

@@ -34,7 +34,14 @@ function applyDirection(): void {
 // Run at import, before anything renders: a direction an older version forced is cleared even if a later step fails.
 applyDirection();
 
-export async function initI18n(): Promise<Language> {
+let started: Promise<Language> | null = null;
+/** Set up translations. Runs once per app start however often it is called: starting it again would briefly leave the app with no language. */
+export function initI18n(): Promise<Language> {
+  started ??= startI18n();
+  return started;
+}
+
+async function startI18n(): Promise<Language> {
   const language = resolveLanguage(await getItem(STORAGE_KEY));
   await i18n.use(initReactI18next).init({
     resources: { dv: { translation: dv }, en: { translation: en } },

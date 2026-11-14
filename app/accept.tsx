@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Screen } from '@/components/ui';
@@ -8,9 +8,12 @@ import { acceptInvite } from '@/data/api';
 import { useAuth } from '@/lib/auth';
 import { markBoot } from '@/lib/boot';
 import { useFlag } from '@/lib/flags';
+import { redirectAllowed, resetRedirectGuard, useGate } from '@/lib/gate';
 import { WEB_LIMITED } from '@/lib/platform';
 import { TOKEN_PATTERN } from '@/features/register/invite';
 import { space, useColors } from '@/theme/tokens';
+import Consent from './consent';
+import Setup from './setup';
 import SignIn from './sign-in';
 import Welcome from './welcome';
 
@@ -30,6 +33,8 @@ export default function Accept() {
   const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const { signedIn } = useAuth();
+  const gate = useGate();
+  const router = useRouter();
   const tokenOk = !!token && TOKEN_PATTERN.test(token);
   const [fetched, setPhase] = useState<Phase>({ kind: 'checking' });
   const phase: Phase = tokenOk ? fetched : { kind: 'problem', key: 'invalid' };
@@ -57,8 +62,22 @@ export default function Accept() {
   // Opened with no invite token: this is where the router drops anyone whose first screen is unavailable to them
   // (for example a signed-out person on app start). Send them where they belong instead of saying "invalid link".
   if (!token) {
-    if (signedIn) return <Redirect href={WEB_LIMITED ? '/web-home' : '/(tabs)'} />;
-    if (WEB_LIMITED) return <Redirect href="/sign-in" />;
+    if (gate.waiting) return null;
+    // Signed in but something must happen first: show that screen in place. Redirecting to the tabs here is refused by the
+    // router while they are locked, which sent phones bouncing between screens until the app closed.
+    if (gate.needsConsent) return <Consent />;
+    if (gate.needsSetup) return <Setup />;
+    if (signedIn || WEB_LIMITED) {
+      const href = signedIn ? (WEB_LIMITED ? '/web-home' : '/(tabs)') : '/sign-in';
+      if (redirectAllowed()) return <Redirect href={href} />;
+      markBoot('redirect-loop-stopped');
+      return (
+        <Screen>
+          <Card><Text>{t('app.name')}</Text></Card>
+          <Button label={t('common.retry')} onPress={() => { resetRedirectGuard(); router.replace(href); }} />
+        </Screen>
+      );
+    }
     // On a phone, a signed-out launch lands here. Show the first screen in place: no navigation happens during launch,
     // because a redirect at that moment left phones on a blank screen.
     return <SignedOutStart />;
