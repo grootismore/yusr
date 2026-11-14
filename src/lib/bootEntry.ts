@@ -1,5 +1,5 @@
 // Imported first from index.ts: before any other module of the app is evaluated.
-import { markBoot } from './boot';
+import { markBoot, startHeartbeat } from './boot';
 import { installCrashNote, reportFatalTo } from './crashNote';
 import { initMonitoring, reportError } from './monitoring';
 
@@ -8,3 +8,4 @@ initMonitoring();
 reportFatalTo(reportError);
 installCrashNote();
 markBoot('entry');
+startHeartbeat();
