@@ -8,6 +8,7 @@ import * as api from '@/data/api';
 import { useDebts, useWrite } from '@/data/hooks';
 import { DEBT_PRESETS, type DebtPreset } from '@/features/debts/presets';
 import { DEBT_KINDS, type DebtInput, type DebtKind } from '@/features/debts/types';
+import { today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
@@ -37,6 +38,8 @@ export default function DebtEdit() {
   const [minPayment, setMin] = useState(plain(debt?.min_payment_laari));
   const [dueDay, setDueDay] = useState(debt?.due_day ? String(debt.due_day) : '');
   const [hasInterest, setHasInterest] = useState(debt?.interest_bearing ?? false);
+  const [autoDeducted, setAutoDeducted] = useState(debt?.auto_deducted ?? false);
+  const [fixedLoan, setFixedLoan] = useState(false); // chosen from a fixed-instalment preset
   const [rate, setRate] = useState(debt?.interest_rate_bps ? String(debt.interest_rate_bps / 100) : '');
   const [inRegister, setInRegister] = useState(debt?.in_register ?? true);
   const [notes, setNotes] = useState(debt?.notes ?? '');
@@ -47,7 +50,8 @@ export default function DebtEdit() {
 
   function applyPreset(p: DebtPreset) {
     setLender(`${p.bank} ${p.label}`); setKind(p.kind); setCurrency(p.currency);
-    setHasInterest(true); setRate(String(p.rateBps / 100));
+    setAutoDeducted(!!p.autoDeducted); setFixedLoan(p.rateBps === null);
+    if (p.rateBps === null) { setHasInterest(false); setRate(''); } else { setHasInterest(true); setRate(String(p.rateBps / 100)); }
     if (p.minPctBps) { setMinMode('pct'); setPct(String(p.minPctBps / 100)); } else { setMinMode('fixed'); setPct(''); }
   }
 
@@ -59,6 +63,7 @@ export default function DebtEdit() {
     try { min = minPayment.trim() ? parseAmount(minPayment) : 0; } catch { e.min = t('expense.invalidAmount'); }
     let minBps: number | null = null;
     if (minMode === 'pct') { try { minBps = parseAmount(pct); if (minBps < 1 || minBps > 10000) throw new Error('x'); } catch { e.pct = t('debts.invalidPct'); } }
+    if (autoDeducted && !dueDay.trim()) e.day = t('debts.needDueDay');
     if (dueDay.trim()) { day = Number(dueDay); if (!Number.isInteger(day) || day < 1 || day > 31) e.day = t('debts.invalidDay'); }
     if (interestOn && rate.trim()) { try { bps = rateToBps(rate); if (bps > 20000) throw new Error('x'); } catch { e.rate = t('debts.invalidRate'); } }
     setErrors(e);
@@ -66,7 +71,7 @@ export default function DebtEdit() {
     // "Owed now" is what the person typed; the stored opening balance is that plus what they have already paid.
     const opening = editing ? owed + paid : owed;
     if (opening <= 0) { setErrors({ amount: t('expense.invalidAmount') }); return; }
-    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null };
+    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null, auto_deducted: autoDeducted, ...(autoDeducted && !debt?.started_on ? { started_on: today() } : {}) };
     if (editing) await updateDebt.mutateAsync({ id: id!, input }); else await addDebt.mutateAsync({ input });
     success();
     toast(t('toast.saved'));
@@ -85,7 +90,7 @@ export default function DebtEdit() {
           <Row style={{ flexWrap: 'wrap' }}>
             {DEBT_PRESETS.map((p) => <Chip key={p.id} label={`${p.bank} ${p.label}`} selected={lender === `${p.bank} ${p.label}`} onPress={() => applyPreset(p)} />)}
           </Row>
-          <Text variant="small" color={colors.inkMuted}>{t('debts.quickStartNote')}</Text>
+          <Text variant="small" color={colors.inkMuted}>{fixedLoan ? t('debts.fixedLoanNote') : t('debts.quickStartNote')}</Text>
         </View>
       ) : null}
       <Field label={t('debts.lender')} value={lender} onChangeText={setLender} error={errors.lender} autoCapitalize="words" />
@@ -121,6 +126,16 @@ export default function DebtEdit() {
           {interestOn ? <Field label={`${t('debts.rate')} (${t('common.optional')})`} value={rate} onChangeText={setRate} keyboardType="decimal-pad" error={errors.rate} /> : null}
         </Card>
       ) : null}
+
+      <Card>
+        <Row style={{ minHeight: 52 }}>
+          <View style={{ flex: 1 }}>
+            <Text>{t('debts.autoDeducted')}</Text>
+            <Text variant="small" color={colors.inkMuted}>{t('debts.autoDeductedNote')}</Text>
+          </View>
+          <Switch accessibilityLabel={t('debts.autoDeducted')} value={autoDeducted} onValueChange={setAutoDeducted} trackColor={{ true: colors.accent, false: colors.control }} />
+        </Row>
+      </Card>
 
       <Card>
         <Row style={{ minHeight: 52 }}>

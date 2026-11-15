@@ -184,7 +184,12 @@
     "incomeList": "Income this month",
     "netShort": "Left of income",
     "paidIn": "In {{currency}}",
-    "paidInRate": "{{amount}} at {{rate}}"
+    "paidInRate": "{{amount}} at {{rate}}",
+    "debtsTitle": "Debts",
+    "debtPaidByYou": "Paid by you",
+    "debtFromSalary": "Deducted from salary",
+    "debtFromSalaryNote": "Taken before your pay arrived, so it isn't counted as spending.",
+    "debtOwed": "Still owed"
   },
   "more": {
     "title": "More",
@@ -194,7 +199,8 @@
     "debts": "Debt-free plan",
     "giving": "Giving",
     "register": "Wasiyyah & Amanah",
-    "contactSide": "People who trust me"
+    "contactSide": "People who trust me",
+    "pools": "Money pools"
   },
   "settings": {
     "title": "Settings",
@@ -259,7 +265,7 @@
     "avalanche": "Highest interest first",
     "avalancheHint": "Costs the least interest overall.",
     "monthly": "Monthly amount for debts",
-    "monthlyHint": "Includes all minimum payments.",
+    "monthlyHint": "What you pay yourself each month. Loans taken from salary are separate.",
     "raised": "Increased to cover your minimum payments ({{amount}}).",
     "order": "Your plan",
     "clearedBy": "Cleared by {{month}}",
@@ -351,7 +357,14 @@
     "orderHint": {
       "snowball": "Smallest balance first. Each cleared debt frees its payment for the next.",
       "avalanche": "Highest interest first. It costs the least in interest overall."
-    }
+    },
+    "needDueDay": "Enter the day of the month it is taken.",
+    "fixedLoanNote": "MIB adds its profit up front, so there is no rate. Enter the total left to pay and the monthly instalment from your statement.",
+    "autoDeducted": "Deducted from my salary",
+    "autoDeductedNote": "The lender takes the instalment before your pay arrives. We record it each month for you, so you never enter it twice.",
+    "autoLine": "{{amount}} a month, deducted from your salary",
+    "autoPayNote": "Instalments are recorded for you each month. Add a payment only if you pay extra.",
+    "fromSalary": "From salary"
   },
   "giving": {
     "title": "Giving",
@@ -840,5 +853,35 @@
   "loadError": {
     "title": "We couldn't load this",
     "body": "Check your connection and try again."
+  },
+  "pools": {
+    "title": "Money pools",
+    "intro": "A pool with friends or family: everyone puts in the same amount each month, and each person takes the pot in turn.",
+    "emptyTitle": "No pools yet",
+    "emptyBody": "Add one to keep track of what you put in each month and when it's your turn.",
+    "add": "Add a money pool",
+    "addTitle": "Money pool",
+    "editTitle": "Change pool",
+    "name": "Pool name",
+    "nameHint": "For example, Office pool.",
+    "amount": "You put in each month",
+    "members": "People in the pool",
+    "membersHint": "Used to work out your pot.",
+    "payout": "Your turn (month)",
+    "payoutHint": "The month you take the pot, like 03/2027.",
+    "needName": "Enter a name.",
+    "invalidMembers": "Enter a number from 2 to 200.",
+    "invalidMonth": "Enter a month like 03/2027.",
+    "stop": "Stop this pool",
+    "stopTitle": "Stop this pool?",
+    "stopBody": "It stops showing each month. What you paid stays in your history.",
+    "stopped": "Pool stopped",
+    "each": "{{amount}} monthly · day {{day}}",
+    "about": "About {{amount}}",
+    "turn": "Your turn: {{month}}",
+    "turnAmount": "Your turn: {{month}} · about {{amount}}",
+    "recordPayout": "Record payout {{amount}}",
+    "payoutRecorded": "Payout added to your income",
+    "total": "Pools each month: {{amount}}"
   }
 }

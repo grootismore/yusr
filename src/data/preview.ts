@@ -8,6 +8,7 @@ import type { Debt, DebtPayment } from '@/features/debts/types';
 
 // ---- giving (preview)
 import type { GivingEntry } from '@/features/giving/logic';
+import type { MoneyPool } from '@/features/pools/logic';
 
 // ---- register (preview)
 import type { AuditEntry, ContactCase, ContactRegister, RegisterItem, TrustedContact } from '@/features/register/types';
@@ -40,14 +41,20 @@ export const budgets: BudgetRow[] = [
   { id: 'b2', month: addMonths(today().slice(0, 7) + '-01', -1), category_id: 'transport', limit_laari: 16_000 },
 ];
 export const debts: Debt[] = [
-  { id: 'd1', lender: 'BML · Personal loan', kind: 'loan', opening_balance_laari: 6_000_000, balance_laari: 4_500_000, paid_laari: 1_500_000, min_payment_laari: 250_000, min_pct_bps: null, currency: 'MVR', due_day: 10, interest_bearing: true, interest_rate_bps: 1250, started_on: '2026-01-05', in_register: true, notes: null },
-  { id: 'd2', lender: 'Ahmed (brother)', kind: 'qard_hasan', opening_balance_laari: 1_000_000, balance_laari: 800_000, paid_laari: 200_000, min_payment_laari: 50_000, min_pct_bps: null, currency: 'MVR', due_day: 28, interest_bearing: false, interest_rate_bps: null, started_on: null, in_register: true, notes: null },
-  { id: 'd3', lender: 'ޑީއާރް ކްރެޑިޓް ކާޑު', kind: 'credit_card', opening_balance_laari: 30_000, balance_laari: 30_000, paid_laari: 0, min_payment_laari: 1_000, min_pct_bps: 500, currency: 'USD', due_day: 16, interest_bearing: true, interest_rate_bps: 2400, started_on: null, in_register: false, notes: null },
+  { id: 'd1', lender: 'BML · Personal loan', kind: 'loan', opening_balance_laari: 6_000_000, balance_laari: 4_500_000, paid_laari: 1_500_000, min_payment_laari: 250_000, min_pct_bps: null, currency: 'MVR', due_day: 10, interest_bearing: true, interest_rate_bps: 1250, started_on: '2026-01-05', in_register: true, notes: null, auto_deducted: false },
+  { id: 'd2', lender: 'Ahmed (brother)', kind: 'qard_hasan', opening_balance_laari: 1_000_000, balance_laari: 800_000, paid_laari: 200_000, min_payment_laari: 50_000, min_pct_bps: null, currency: 'MVR', due_day: 28, interest_bearing: false, interest_rate_bps: null, started_on: null, in_register: true, notes: null, auto_deducted: false },
+  { id: 'd3', lender: 'ޑީއާރް ކްރެޑިޓް ކާޑު', kind: 'credit_card', opening_balance_laari: 30_000, balance_laari: 30_000, paid_laari: 0, min_payment_laari: 1_000, min_pct_bps: 500, currency: 'USD', due_day: 16, interest_bearing: true, interest_rate_bps: 2400, started_on: null, in_register: false, notes: null, auto_deducted: false },
+  { id: 'd4', lender: 'MIB Ujaalaa Dhiriulhun', kind: 'loan', opening_balance_laari: 1_800_000, balance_laari: 1_650_000, paid_laari: 150_000, min_payment_laari: 150_000, min_pct_bps: null, currency: 'MVR', due_day: 1, interest_bearing: false, interest_rate_bps: null, started_on: '2026-10-01', in_register: true, notes: null, auto_deducted: true },
 ];
 export const debtPayments: DebtPayment[] = [
+  { id: 'p4', debt_id: 'd4', amount_laari: 150_000, paid_mvr_laari: null, paid_on: today().slice(0, 7) + '-01', note: null, source: 'auto', period: today().slice(0, 7) + '-01' },
   { id: 'p1', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-10-10', note: null },
   { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-09-10', note: 'Salary day' },
   { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_mvr_laari: null, paid_on: '2026-10-28', note: null },
+];
+export const pools: MoneyPool[] = [
+  { id: 'pl1', name: 'Office pool', note: null, amount_minor: 100_000, currency: 'MVR', due_day: 5, members: 10, payout_month: '2027-03-01', payout_received: false, started_on: '2026-09-01', ended_on: null },
+  { id: 'pl2', name: 'Family pool (USD)', note: null, amount_minor: 10_000, currency: 'USD', due_day: 15, members: 6, payout_month: null, payout_received: false, started_on: '2026-09-01', ended_on: null },
 ];
 export const giving: GivingEntry[] = [
   { id: 'g1', expense_id: 'e6', kind: 'sadaqah', recipient_note: 'Masjid fund', amount_laari: 20_000, spent_at: '2026-11-06' },

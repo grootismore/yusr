@@ -54,3 +54,18 @@ export function maskDate(text: string): string {
   const d = text.replace(/\D/g, '').slice(0, 8);
   return d.length <= 2 ? d : d.length <= 4 ? `${d.slice(0, 2)}/${d.slice(2)}` : `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
 }
+
+/** Types a month from the number pad: digits in, "03/2027" out. */
+export function maskMonth(text: string): string {
+  const d = text.replace(/\D/g, '').slice(0, 6);
+  return d.length <= 2 ? d : `${d.slice(0, 2)}/${d.slice(2)}`;
+}
+/** "03/2027" to "2027-03-01", or null when it is not a real month. */
+export function parseMonth(text: string): string | null {
+  const m = /^(\d{2})\/(\d{4})$/.exec(text.trim());
+  if (!m) return null;
+  const month = Number(m[1]);
+  return month >= 1 && month <= 12 ? `${m[2]}-${m[1]}-01` : null;
+}
+/** "2027-03-01" to "03/2027". */
+export const formatMonthInput = (iso: string): string => `${iso.slice(5, 7)}/${iso.slice(0, 4)}`;

@@ -8,9 +8,10 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
-import { Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
+import { Button, Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
-import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, useTrend, useWrite } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, useRates, useTrend, useWrite } from '@/data/hooks';
+import { debtMonth } from '@/features/debts/report';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
@@ -43,9 +44,13 @@ export default function Reports() {
     for (const e of expenses) g.set(e.spent_at, [...(g.get(e.spent_at) ?? []), e]);
     return [...g].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }, [expenses]);
+  const debtsData = useDebts().data;
+  const debtPaymentsData = useDebtPayments().data;
+  const rates = useRates().data;
   const incomeQ = useIncome(month);
   const incomeRows = useMemo(() => incomeQ.data ?? [], [incomeQ.data]);
   const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0);
+  const dm = useMemo(() => debtMonth(debtsData ?? [], debtPaymentsData ?? [], month.slice(0, 7), rates ?? {}), [debtsData, debtPaymentsData, month, rates]);
   const removeIncome = useWrite(api.deleteIncome);
   const mixedPay = incomeRows.some((i) => i.currency !== 'MVR'); // pay arrived in more than one currency
   const trendMonths = useMemo(() => lastMonths(monthStart(), 6), []);
@@ -88,8 +93,25 @@ export default function Reports() {
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>
           <Tile color={colors.tile} label={t('reports.income')} laari={incomeTotal} />
-          <Tile color={colors.sky} label={t('reports.netShort')} laari={incomeTotal - total} />
+          <Tile color={colors.sky} label={t('reports.netShort')} laari={incomeTotal - total - dm.byYou} />
         </Row>
+      ) : null}
+
+      {dm.open > 0 || dm.byYou + dm.fromSalary > 0 ? (
+        <>
+          <Text variant="heading">{t('reports.debtsTitle')}</Text>
+          <Card>
+            <Row><Text style={{ flex: 1 }}>{t('reports.debtPaidByYou')}</Text><Money laari={dm.byYou} /></Row>
+            {dm.fromSalary > 0 ? (
+              <View style={{ gap: 2 }}>
+                <Row><Text style={{ flex: 1 }}>{t('reports.debtFromSalary')}</Text><Money laari={dm.fromSalary} /></Row>
+                <Text variant="small" color={colors.inkMuted}>{t('reports.debtFromSalaryNote')}</Text>
+              </View>
+            ) : null}
+            <Row><Text style={{ flex: 1 }}>{t('reports.debtOwed')}</Text><Money laari={dm.owed} /></Row>
+            <Button kind="secondary" label={t('more.debts')} icon="leaf-outline" onPress={() => router.push('/debts')} />
+          </Card>
+        </>
       ) : null}
 
       {trend ? (

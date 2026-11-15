@@ -108,9 +108,13 @@ export default function Debts() {
                 <View style={{ gap: 4, paddingStart: 44 }}>
                   <InterestTag interestBearing={v.debt.interest_bearing} kind={v.debt.kind} rateBps={v.debt.interest_rate_bps} />
                   <DueBadge state={v.due.state} days={v.due.days} />
-                  {v.minMvr > 0 ? <Msg k="debts.minLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : null}
-                  <Msg k={v.focus && v.suggestedMvr > v.minMvr ? 'debts.payExtra' : 'debts.payThis'} amounts={{ amount: v.suggestedMvr }} variant="small" color={v.focus && v.suggestedMvr > v.minMvr ? colors.accent : colors.ink} />
-                  {v.goodwill ? <Text variant="small" color={colors.inkMuted}>{t('debts.goodwillNote')}</Text> : null}
+                  {v.autoDeducted ? <Msg k="debts.autoLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : (
+                    <>
+                      {v.minMvr > 0 ? <Msg k="debts.minLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : null}
+                      <Msg k={v.focus && v.suggestedMvr > v.minMvr ? 'debts.payExtra' : 'debts.payThis'} amounts={{ amount: v.suggestedMvr }} variant="small" color={v.focus && v.suggestedMvr > v.minMvr ? colors.accent : colors.ink} />
+                      {v.goodwill ? <Text variant="small" color={colors.inkMuted}>{t('debts.goodwillNote')}</Text> : null}
+                    </>
+                  )}
                   {v.clearedMonth ? <Text variant="small" color={colors.inkMuted}>{t('debts.clearedBy', { month: monthLabel(v.clearedMonth) })}</Text> : null}
                 </View>
               </Pressable>

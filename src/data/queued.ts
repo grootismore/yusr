@@ -5,6 +5,7 @@ import * as api from './api';
 import type { Expense, NewExpense } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
+import type { MoneyPool, PoolInput } from '@/features/pools/logic';
 
 /**
  * The saves that still work with no signal: they are kept on the phone and sent when the connection is back.
@@ -19,8 +20,10 @@ const OPS = {
   deleteConversion: api.deleteConversion,
   // budgets and debts
   setBudget: api.setBudget, clearBudget: api.clearBudget, addDebt: api.addDebt, updateDebt: api.updateDebt, deleteDebt: api.deleteDebt,
+  // money pools
+  addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -88,7 +91,7 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       qc.setQueriesData<BudgetRow[]>({ queryKey: ['budgets'] }, (old) => old?.filter((r) => r.category_id !== categoryId));
     } else if (op === 'addDebt') {
       const { id, input } = args as { id: string; input: DebtInput };
-      prepend(qc, ['debts'], { ...input, id, paid_laari: 0, balance_laari: input.opening_balance_laari, started_on: null } as Debt);
+      prepend(qc, ['debts'], { ...input, id, paid_laari: 0, balance_laari: input.opening_balance_laari, started_on: input.started_on ?? null } as Debt);
     } else if (op === 'updateDebt') {
       const { id, input } = args as { id: string; input: DebtInput };
       qc.setQueryData<Debt[]>(['debts'], (old) => old?.map((d) => (d.id === id ? { ...d, ...input, balance_laari: Math.max(0, input.opening_balance_laari - d.paid_laari) } : d)));
@@ -96,6 +99,19 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       const id = args as string;
       qc.setQueryData<Debt[]>(['debts'], (old) => old?.filter((d) => d.id !== id));
       qc.setQueryData<DebtPayment[]>(['debt-payments'], (old) => old?.filter((p) => p.debt_id !== id));
+    } else if (op === 'addPool') {
+      const { id, input } = args as { id: string; input: PoolInput };
+      prepend(qc, ['pools'], { ...input, id, started_on: new Date().toISOString().slice(0, 10), ended_on: null } as MoneyPool);
+    } else if (op === 'updatePool') {
+      const { id, input } = args as { id: string; input: PoolInput };
+      qc.setQueryData<MoneyPool[]>(['pools'], (old) => old?.map((p) => (p.id === id ? { ...p, ...input } : p)));
+    } else if (op === 'endPool') {
+      const id = args as string;
+      qc.setQueryData<MoneyPool[]>(['pools'], (old) => old?.map((p) => (p.id === id ? { ...p, ended_on: new Date().toISOString().slice(0, 10) } : p)));
+    } else if (op === 'logPoolPayment') {
+      const a = args as Parameters<typeof api.logPoolPayment>[0];
+      prepend(qc, ['pool-payments'], { id: a.id, pool_id: a.pool_id, expense_id: a.id, period: a.period });
+      prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
     } else if (op === 'deleteConversion') {
       qc.setQueriesData<{ id: string }[]>({ queryKey: ['conversions'] }, (old) => old?.filter((x) => x.id !== (args as string)));
     } else if (op === 'logGiving') {
