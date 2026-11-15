@@ -23,4 +23,4 @@ The web build is not the app: it only serves invite pages, the trusted person's 
 
 ## Fonts
 
-Dhivehi text: [Thaana Noor](https://github.com/grootismore/thaananoor-font) (OFL). English and all amounts: the phone's own system font (San Francisco on iOS, Roboto on Android). Thaana Noor's own Latin `.` `,` `:` glyphs are malformed, so numbers never use it (see `src/theme/fonts.ts`).
+Dhivehi text: [Thaana Noor](https://github.com/grootismore/thaananoor-font) (OFL). English and all amounts: the phone's own system font: SF Pro Rounded on iPhone, Roboto on Android. Thaana Noor's own Latin `.` `,` `:` glyphs are malformed, so numbers never use it (see `src/theme/fonts.ts`).

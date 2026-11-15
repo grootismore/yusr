@@ -28,7 +28,8 @@ it('Dhivehi text uses Thaana Noor, English and numbers use the phone\'s own font
   expect(faceFor('dv', 'regular')).toEqual({ fontFamily: 'ThaanaNoor_Regular' });
   expect(faceFor('dv', 'semibold')).toEqual({ fontFamily: 'ThaanaNoor_Bold' }); // Thaana Noor has two weights
   expect(faceFor('dv', 'bold')).toEqual({ fontFamily: 'ThaanaNoor_Bold' });
-  expect(faceFor('dv', 'regular', true)).toEqual({ fontWeight: '400' }); // amounts inside Dhivehi text: system font
-  expect(faceFor('en', 'bold')).toEqual({ fontWeight: '700' });
-  expect(faceFor('en', 'semibold')).toEqual({ fontWeight: '600' });
+  // amounts inside Dhivehi text and all English text: the system font, in its rounded design on iPhone
+  expect(faceFor('dv', 'regular', true)).toEqual({ fontFamily: 'ui-rounded', fontWeight: '400' });
+  expect(faceFor('en', 'bold')).toEqual({ fontFamily: 'ui-rounded', fontWeight: '700' });
+  expect(faceFor('en', 'semibold')).toEqual({ fontFamily: 'ui-rounded', fontWeight: '600' });
 });
