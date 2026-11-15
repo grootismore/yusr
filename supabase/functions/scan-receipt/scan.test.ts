@@ -75,6 +75,7 @@ function deps(over: Partial<ScanDeps> = {}) {
     download: async () => ({ bytes: new Uint8Array(1000), mimeType: 'image/jpeg' }),
     deleteImage: async () => (calls.deleted++, true),
     keepImages: async () => false,
+    scanLimit: async () => 10,
     extract: async () => (calls.extract++, good),
     now: () => NOW,
     ...over,
@@ -169,4 +170,20 @@ test('a failed scan tells the app the reason', async () => {
   const r = await handleScan(req(), d);
   assert.equal(r.status, 502);
   assert.match(String(r.json.reason), /gemini 404/);
+});
+
+test('the monthly limit comes from the plan: Plus gets 100', async () => {
+  let asked = 0;
+  const { d } = deps({ scanLimit: async () => 100, reserveScan: async (_u, _m, limit) => (asked = limit, 4) });
+  const r = await handleScan(req(), d);
+  assert.equal(asked, 100);
+  assert.equal(r.json.limit, 100);
+  assert.equal(r.json.scans_left, 96);
+});
+
+test('a failure to read the plan falls back to the free limit', async () => {
+  let asked = 0;
+  const { d } = deps({ scanLimit: async () => { throw new Error('down'); }, reserveScan: async (_u, _m, limit) => (asked = limit, 1) });
+  await handleScan(req(), d);
+  assert.equal(asked, 10);
 });

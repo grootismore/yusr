@@ -7,11 +7,10 @@ import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
 import { reportError } from '@/lib/monitoring';
 import { ScanError, scanReceipt, type ScanFailure } from '@/data/api';
-import { useScansUsed } from '@/data/hooks';
+import { usePlan, useScansUsed } from '@/data/hooks';
+import { scanLimit } from '@/features/plus/limits';
 import { useQueryClient } from '@tanstack/react-query';
 import { space, useColors } from '@/theme/tokens';
-
-const LIMIT = 10; // free scans per month; the server enforces it, this is only for display
 
 export default function Scan() {
   const colors = useColors();
@@ -19,6 +18,8 @@ export default function Scan() {
   const router = useRouter();
   const qc = useQueryClient();
   const used = useScansUsed().data ?? 0;
+  const plus = usePlan().data?.plus ?? false;
+  const LIMIT = scanLimit(plus); // the server enforces it; this is for display
   const left = Math.max(0, LIMIT - used);
   const [step, setStep] = useState<null | 'uploading' | 'reading'>(null);
   const [problem, setProblem] = useState<ScanFailure | 'camera' | null>(null);
@@ -67,6 +68,7 @@ export default function Scan() {
           <Text variant="heading" accessibilityLiveRegion="polite">{t('scan.left', { left, limit: LIMIT })}</Text>
         </Row>
         {left === 0 ? <Text>{t('scan.noScans', { limit: LIMIT })}</Text> : null}
+        {left === 0 && !plus ? <Button kind="secondary" icon="sparkles-outline" label={t('plus.get')} onPress={() => router.push({ pathname: '/plus', params: { reason: 'scans' } })} /> : null}
       </Card>
 
       {busy ? (

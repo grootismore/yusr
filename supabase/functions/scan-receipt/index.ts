@@ -1,7 +1,7 @@
 // Supabase Edge Function (Deno). Secrets: GEMINI_API_KEY (set with `supabase secrets set`);
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { MODEL_CHAIN } from './config.ts';
+import { FREE_SCANS_PER_MONTH, MODEL_CHAIN } from './config.ts';
 import { callGeminiAny } from './gemini.ts';
 import { handleScan } from './handler.ts';
 
@@ -51,7 +51,14 @@ Deno.serve(async (request) => {
       const { error } = await bucket.remove([path]);
       return !error;
     },
+    async scanLimit(userId) {
+      const { data } = await admin.rpc('scan_limit', { p_user: userId });
+      return typeof data === 'number' ? data : FREE_SCANS_PER_MONTH;
+    },
     async keepImages(userId) {
+      // Keeping the photo is a Plus feature, whatever the profile setting says.
+      const { data: plus } = await admin.rpc('is_plus', { p_user: userId });
+      if (plus !== true) return false;
       const { data } = await userDb.from('profiles').select('keep_receipt_images').eq('id', userId).maybeSingle();
       return data?.keep_receipt_images === true;
     },

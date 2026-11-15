@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen, StackHeader } from '@/components/ui';
-import { useSplit } from '@/data/hooks';
+import { usePlan, useSplit } from '@/data/hooks';
+import { splitNeedsPlus } from '@/features/plus/limits';
 import { meOf, ofGroup } from '@/features/split/logic';
 import { useMoneyText } from '@/lib/privacy';
 import { space, useColors } from '@/theme/tokens';
@@ -18,6 +19,7 @@ export default function Split() {
   const dataQ = useSplit();
   const data = useMemo(() => dataQ.data ?? { groups: [], people: [], expenses: [], shares: [], settlements: [] }, [dataQ.data]);
   const groups = data.groups.filter((g) => !g.archived);
+  const plus = usePlan().data?.plus ?? false;
   const chevron = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
 
   return (
@@ -53,7 +55,7 @@ export default function Split() {
           })}
         </Card>
       )}
-      <Button kind={groups.length === 0 ? 'primary' : 'secondary'} label={t('split.newGroup')} icon="add" onPress={() => router.push('/split-new-group')} />
+      <Button kind={groups.length === 0 ? 'primary' : 'secondary'} label={t('split.newGroup')} icon="add" onPress={() => (splitNeedsPlus(groups.length, plus) ? router.push({ pathname: '/plus', params: { reason: 'split' } }) : router.push('/split-new-group'))} />
     </Screen>
   );
 }

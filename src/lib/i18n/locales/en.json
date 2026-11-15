@@ -1129,5 +1129,50 @@
     "subtotal": "Items",
     "discount": "Discount",
     "photo": "Receipt photo"
+  },
+  "plus": {
+    "title": "Kharadhu Plus",
+    "intro": "Everything you rely on stays free. Plus is for people who scan a lot, share with more people, or keep long records.",
+    "get": "Get Plus",
+    "restore": "Restore purchases",
+    "soon": "Subscriptions open soon. Thank you for your patience.",
+    "failed": "The purchase didn't go through. You were not charged.",
+    "welcome": "Welcome to Plus",
+    "active": "You have Plus",
+    "until": "Until {{date}}",
+    "comingSoon": "Coming soon",
+    "priceNote": "The App Store or Google Play shows the price when you subscribe. You can cancel any time in your store account.",
+    "freeTitle": "Always free",
+    "freeBody": "Adding entries by hand, budgets and charts, the debt-free plan, zakat, sadaqah and giving, couple sharing, working offline, the PIN lock, and {{free}} Raseedhu scans a month.",
+    "needed": "This needs Kharadhu Plus.",
+    "status": "Plus",
+    "benefit": {
+      "scans": "{{plus}} Raseedhu scans a month",
+      "photos": "Keep your receipt photos",
+      "export": "Monthly summary as PDF or CSV",
+      "household": "Households of three or more",
+      "history": "Reports older than {{months}} months",
+      "split": "More than {{groups}} Split groups",
+      "recurring": "More than {{recurring}} recurring items"
+    },
+    "benefitNote": {
+      "scans": "Free: {{free}} a month.",
+      "photos": "Free scans keep only what was read, not the photo.",
+      "export": "A tidy page to share or keep.",
+      "household": "Free: you and one other person.",
+      "history": "Free: this month and the five before.",
+      "split": "Free: {{groups}} groups.",
+      "recurring": "Free: {{recurring}} active items."
+    },
+    "reason": {
+      "scans": "You've used this month's {{free}} free scans. Plus gives {{plus}}.",
+      "photos": "Keeping receipt photos is part of Plus.",
+      "export": "The monthly summary is part of Plus.",
+      "household": "A household of three or more is part of Plus. You and one other person are free.",
+      "history": "Reports older than {{months}} months are part of Plus.",
+      "split": "You have {{groups}} Split groups. More are part of Plus.",
+      "recurring": "You have {{recurring}} recurring items. More are part of Plus."
+    },
+    "more": "Scans, people and history for more"
   }
 }

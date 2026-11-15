@@ -6,8 +6,9 @@ import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Icon, IconButton, Row, Screen, StackHeader, Tile, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
-import { useCategories, useCategoryName, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
+import { usePlan, useCategories, useCategoryName, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
 import { coupleBalance, nameOf, summarize } from '@/features/household/logic';
+import { householdNeedsPlus } from '@/features/plus/limits';
 import { HouseholdStart } from '@/features/household/Start';
 import { Msg } from '@/components/Msg';
 import { useAuth } from '@/lib/auth';
@@ -35,6 +36,7 @@ export default function HouseholdScreen() {
   const leave = useWrite(api.leaveHousehold);
   const remove = useWrite(api.removeHouseholdMember);
   const setMode = useWrite(api.setHouseholdMode);
+  const plus = usePlan().data?.plus ?? false;
   const makeInvite = useWrite(api.createHouseholdInvite);
 
   if (hq.isLoading) return <Screen><StackHeader title={t('household.title')} /></Screen>;
@@ -131,7 +133,7 @@ export default function HouseholdScreen() {
           </View>
         ) : null}
         <Button kind="secondary" icon="person-add-outline" label={t('household.invite')} loading={makeInvite.isPending}
-          onPress={async () => { try { setInvite(await makeInvite.mutateAsync(undefined) as unknown as string); } catch { toast(t('household.inviteFailed'), 'error'); } }} />
+          onPress={async () => { if (householdNeedsPlus(data.members.length, plus)) { router.push({ pathname: '/plus', params: { reason: 'household' } }); return; } try { setInvite(await makeInvite.mutateAsync(undefined) as unknown as string); } catch { toast(t('household.inviteFailed'), 'error'); } }} />
       </Card>
 
       <Button kind="ghost" label={t('household.leave')} icon="exit-outline"
