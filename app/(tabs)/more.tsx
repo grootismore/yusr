@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, ListRow, Screen, ScreenTitle } from '@/components/ui';
+import { usePlan } from '@/data/hooks';
 import { useAuth } from '@/lib/auth';
 import { usePending } from '@/lib/outbox';
 import { space, useColors } from '@/theme/tokens';
@@ -13,10 +14,12 @@ export default function More() {
   const router = useRouter();
   const { signOut } = useAuth();
   const pending = usePending();
+  const plan = usePlan().data;
   return (
     <Screen tabbed>
       <ScreenTitle title={t('more.title')} />
       <Card style={{ paddingVertical: space.sm, gap: 0 }}>
+        <ListRow icon="sparkles-outline" title={t('plus.title')} subtitle={plan?.plus ? t('plus.active') : t('plus.more')} onPress={() => router.push('/plus')} />
         <ListRow icon="swap-vertical" title={t('activity.title')} onPress={() => router.push('/activity')} />
         <ListRow icon="shield-checkmark-outline" title={t('more.register')} onPress={() => router.push('/register')} />
         <ListRow icon="heart-outline" title={t('more.giving')} onPress={() => router.push('/giving')} />

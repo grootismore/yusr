@@ -8,7 +8,9 @@ import { Text } from '@/components/Text';
 import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
 import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
-import { useCategories, useCategoryName, useRecurring, useWrite } from '@/data/hooks';
+import { useCategories, useCategoryName, usePlan, useRecurring, useWrite } from '@/data/hooks';
+import { recurringNeedsPlus } from '@/features/plus/limits';
+import { useAuth } from '@/lib/auth';
 import { useShare } from '@/features/household/useShare';
 import { EVERY, type Every, type RecurringInput } from '@/features/recurring/logic';
 import { formatDate, parseDate, today } from '@/lib/dates';
@@ -44,6 +46,10 @@ export default function RecurringEdit() {
   const [note, setNote] = useState(existing?.note ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const plus = usePlan().data?.plus ?? false;
+  const allItems = useRecurring().data;
+  const { userId } = useAuth();
+
   async function submit() {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = t('recurring.needName');
@@ -54,6 +60,7 @@ export default function RecurringEdit() {
     setErrors(e);
     if (Object.keys(e).length) return;
     const input: RecurringInput = { kind, name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, category_id: kind === 'expense' ? categoryId : null, every, starts_on: iso!, auto_add: auto, household_id: share.householdId, for_user: share.forUser };
+    if (!existing && recurringNeedsPlus((allItems ?? []).filter((i) => !i.ended_on && (!i.user_id || i.user_id === userId)).length, plus)) { router.replace({ pathname: '/plus', params: { reason: 'recurring' } }); return; }
     if (existing) await update.mutateAsync({ id: existing.id, input }); else {
       const newId = Crypto.randomUUID();
       await add.mutateAsync({ id: newId, input });

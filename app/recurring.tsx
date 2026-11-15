@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useRates, useRecurring, useRecurringRuns, useWrite } from '@/data/hooks';
+import { usePlan, useRates, useRecurring, useRecurringRuns, useWrite } from '@/data/hooks';
 import { DEFAULT_USD_RATE } from '@/features/debts/compute';
+import { recurringNeedsPlus } from '@/features/plus/limits';
+import { useAuth } from '@/lib/auth';
 import { useShareTag } from '@/features/household/useTag';
 import { activeItems, dueRuns, nextDate, shareTarget, type RecurringItem } from '@/features/recurring/logic';
 import { formatDate, today } from '@/lib/dates';
@@ -29,6 +31,9 @@ export default function Recurring() {
   const active = useMemo(() => activeItems(items), [items]);
   const due = useMemo(() => dueRuns(active.filter((i) => !i.auto_add), runs, today()), [active, runs]);
   const tag = useShareTag();
+  const { userId } = useAuth();
+  const plus = usePlan().data?.plus ?? false;
+  const ownActive = active.filter((i) => !i.user_id || i.user_id === userId).length; // the limit counts what you made
   const record = useWrite(api.logRecurring);
   const skip = useWrite(api.skipRecurring);
   const rateFor = (c: string): string => (c === 'MVR' ? '1' : rates[c] ?? (c === 'USD' ? String(DEFAULT_USD_RATE) : '1'));
@@ -86,7 +91,7 @@ export default function Recurring() {
         </>
       )}
 
-      <Button kind={active.length === 0 ? 'primary' : 'secondary'} label={t('recurring.add')} icon="add" onPress={() => router.push('/recurring-edit')} />
+      <Button kind={active.length === 0 ? 'primary' : 'secondary'} label={t('recurring.add')} icon="add" onPress={() => (recurringNeedsPlus(ownActive, plus) ? router.push({ pathname: '/plus', params: { reason: 'recurring' } }) : router.push('/recurring-edit'))} />
     </Screen>
   );
 }

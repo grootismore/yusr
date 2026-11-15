@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { TrendChart } from '@/components/TrendChart';
+import { historyNeedsPlus } from '@/features/plus/limits';
 import { SharedCard } from '@/features/household/SharedCard';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
@@ -11,7 +12,7 @@ import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, useRates, useSharedTotals, useTrend, useWrite } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, usePlan, useRates, useSharedTotals, useTrend, useWrite } from '@/data/hooks';
 import { debtMonth } from '@/features/debts/report';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
@@ -30,6 +31,7 @@ export default function Reports() {
   const router = useRouter();
   const catName = useCategoryName();
   const [month, setMonth] = useState(monthStart());
+  const plus = usePlan().data?.plus ?? false;
   const expensesQuery = useExpenses(month);
   const expenses = useMemo(() => expensesQuery.data ?? [], [expensesQuery.data]);
   const limits = useBudgets(month).data;
@@ -72,7 +74,7 @@ export default function Reports() {
       <ScreenTitle title={t('reports.title')} />
       {expensesQuery.isError && !expensesQuery.data ? <LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
-        <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
+        <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => (historyNeedsPlus(addMonths(month, -1), monthStart(), plus) ? router.push({ pathname: '/plus', params: { reason: 'history' } }) : setMonth(addMonths(month, -1)))} />
         <View style={{ paddingVertical: space.sm, paddingHorizontal: space.xl, borderRadius: radius.pill, backgroundColor: colors.accentWash }}>
           <Text variant="label" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="label">{month.slice(0, 4)}</Text></Text>
         </View>

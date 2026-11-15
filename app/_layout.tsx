@@ -75,6 +75,7 @@ function Routes() {
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
           <Stack.Screen name="about" />
+          <Stack.Screen name="plus" />
           <Stack.Screen name="set-pin" />
           <Stack.Screen name="activity" />
           <Stack.Screen name="convert" options={{ presentation: 'modal' }} />

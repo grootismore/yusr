@@ -40,7 +40,7 @@ export function useWrite<A, R = unknown>(fn: (a: A) => Promise<R>) {
       }
     },
     onSuccess: () => qc.invalidateQueries(),
-    onError: (e) => toast(isNetworkError(e) ? t('offline.cantSave') : t('common.saveFailed'), 'error'),
+    onError: (e) => toast(isNetworkError(e) ? t('offline.cantSave') : /plus_required/.test(String((e as Error)?.message)) ? t('plus.needed') : t('common.saveFailed'), 'error'),
   });
 }
 
@@ -54,6 +54,7 @@ export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], que
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
 
 export const usePaidCommitments = (month: string) => useQuery({ queryKey: ['giving-paid', month], queryFn: () => api.listPaidCommitments(month) });
+export const usePlan = () => useQuery({ queryKey: ['plan'], queryFn: api.getPlan });
 export const useReceipt = (id: string | null | undefined) => useQuery({ queryKey: ['receipt', id], queryFn: () => api.getReceipt(id!), enabled: !!id });
 export const useReceiptPhoto = (path: string | null | undefined) => useQuery({ queryKey: ['receipt-photo', path], queryFn: () => api.receiptPhotoUrl(path!), enabled: !!path, staleTime: 240_000 });
 export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });

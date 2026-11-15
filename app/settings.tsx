@@ -6,7 +6,7 @@ import { Text } from '@/components/Text';
 import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
 import { Card, Chip, Field, Row, Screen, SettingRow, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useProfile, useRates, useWrite } from '@/data/hooks';
+import { usePlan, useProfile, useRates, useWrite } from '@/data/hooks';
 import { APPEARANCES, loadAppearance, saveAppearance, type AppearanceChoice } from '@/lib/appearance';
 import { LANGUAGES, LANGUAGE_NAMES, setLanguage, type Language } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
@@ -38,6 +38,7 @@ export default function Settings() {
   const { email } = useAuth();
   const router = useRouter();
   const profile = useProfile().data;
+  const plus = usePlan().data?.plus ?? false;
   const rates = useRates().data ?? {};
   const updateProfile = useWrite(api.updateProfile);
   const [appearance, setAppearance] = useState<AppearanceChoice>('system');
@@ -64,8 +65,8 @@ export default function Settings() {
           <SettingRow icon="keypad-outline" title={t('settings.pin')} subtitle={t('settings.pinNote')} value={pinOn}
             onValueChange={async (v) => { if (v) router.push('/set-pin'); else { setPinOn(false); await clearPin(); } }} />
           <SettingRow icon="eye-off-outline" title={t('settings.hideAmounts')} subtitle={t('settings.hideAmountsNote')} value={hideAmounts} onValueChange={(v) => void setHideAmounts(v)} />
-          <SettingRow icon="image-outline" title={t('settings.keepPhotos')} subtitle={t('settings.keepPhotosNote')} value={!!profile?.keep_receipt_images}
-            onValueChange={(v) => updateProfile.mutate({ keep_receipt_images: v })} last />
+          <SettingRow icon="image-outline" title={t('settings.keepPhotos')} subtitle={plus ? t('settings.keepPhotosNote') : t('plus.benefitNote.photos')} value={plus && !!profile?.keep_receipt_images}
+            onValueChange={(v) => (plus ? updateProfile.mutate({ keep_receipt_images: v }) : router.push({ pathname: '/plus', params: { reason: 'photos' } }))} last />
         </Card>
 
         <Card>

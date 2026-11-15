@@ -259,6 +259,15 @@ export async function receiptPhotoUrl(path: string): Promise<string | null> {
   return data?.signedUrl ?? null;
 }
 
+export interface Plan { plus: boolean; expiresAt: string | null }
+/** Whether this person is on Kharadhu Plus. The server writes it; a missing or expired row is the free plan. */
+export async function getPlan(): Promise<Plan> {
+  if (PREVIEW) return { plus: false, expiresAt: null };
+  const row = must(await getSupabase().from('entitlements').select('plan,expires_at').maybeSingle()) as { plan: string; expires_at: string | null } | null;
+  const live = !!row && row.plan === 'plus' && (!row.expires_at || Date.parse(row.expires_at) > Date.now());
+  return { plus: live, expiresAt: row?.expires_at ?? null };
+}
+
 export async function deleteReceiptImage(path: string): Promise<void> {
   if (PREVIEW) return;
   await getSupabase().storage.from('receipts').remove([path]).catch(() => undefined);

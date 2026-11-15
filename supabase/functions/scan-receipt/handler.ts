@@ -10,6 +10,8 @@ export interface ScanDeps {
   download(path: string): Promise<{ bytes: Uint8Array; mimeType: string } | null>;
   deleteImage(path: string): Promise<boolean>;
   keepImages(userId: string): Promise<boolean>;
+  /** Scans a month this person may make: 10 free, more on Plus. */
+  scanLimit(userId: string): Promise<number>;
   extract(image: { bytes: Uint8Array; mimeType: string }): Promise<unknown>;
   now?: () => Date;
 }
@@ -38,8 +40,9 @@ export async function handleScan(
 
   const now = (deps.now ?? (() => new Date()))();
   const month = monthStart(now);
-  const used = await deps.reserveScan(userId, month, FREE_SCANS_PER_MONTH);
-  if (used === null) return reply(429, { error: 'quota_exceeded', scans_used: FREE_SCANS_PER_MONTH, scans_left: 0, limit: FREE_SCANS_PER_MONTH });
+  const limit = await deps.scanLimit(userId).catch(() => FREE_SCANS_PER_MONTH);
+  const used = await deps.reserveScan(userId, month, limit);
+  if (used === null) return reply(429, { error: 'quota_exceeded', scans_used: limit, scans_left: 0, limit });
 
   let usable = false;
   try {
@@ -48,10 +51,10 @@ export async function handleScan(
     if (image.bytes.length > MAX_IMAGE_BYTES) return reply(413, { error: 'image_too_large' });
 
     const outcome = buildDraft(await deps.extract(image), now);
-    const quota = { scans_used: used, scans_left: FREE_SCANS_PER_MONTH - used, limit: FREE_SCANS_PER_MONTH };
+    const quota = { scans_used: used, scans_left: limit - used, limit };
     if (!outcome.ok) {
       // Blurry, not a receipt, or no total: the app offers a retake or a pre-filled form. Image is kept for that.
-      return reply(422, { error: 'unreadable', reason: outcome.reason, draft: outcome.draft, ...refundedQuota(used) });
+      return reply(422, { error: 'unreadable', reason: outcome.reason, draft: outcome.draft, ...refundedQuota(used, limit) });
     }
     usable = true;
     const imageDeleted = (await deps.keepImages(userId)) ? false : await deps.deleteImage(path);
@@ -60,10 +63,10 @@ export async function handleScan(
     // Say why (Google's reason or a short note), never anything secret, so a failure can be fixed instead of guessed at.
     const reason = e instanceof Error && e.name !== 'TypeError' ? e.message.slice(0, 200) : 'internal';
     console.error('scan_failed', reason);
-    return reply(502, { error: 'scan_failed', reason, ...refundedQuota(used) });
+    return reply(502, { error: 'scan_failed', reason, ...refundedQuota(used, limit) });
   } finally {
     if (!usable) await deps.refundScan(userId, month).catch(() => {});
   }
 }
 
-const refundedQuota = (used: number) => ({ scans_used: used - 1, scans_left: FREE_SCANS_PER_MONTH - used + 1, limit: FREE_SCANS_PER_MONTH });
+const refundedQuota = (used: number, limit: number) => ({ scans_used: used - 1, scans_left: limit - used + 1, limit });
