@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Alert, AppState, Platform, View } from 'react-native';
+import { Alert, AppState, Modal, Platform, View } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { PinPad } from '@/components/PinPad';
@@ -81,21 +81,27 @@ export function LockGate({ children, active }: { children: ReactNode; active: bo
     { text: t('pin.forgotConfirm'), style: 'destructive', onPress: async () => { await clearPin(); await setBiometricEnabled(false); await signOut(); open(); } },
   ]);
 
-  if (!locked) return <>{children}</>;
+  // The app stays mounted underneath, so unlocking returns to the same screen. The lock sits in a Modal so it also
+  // covers any sheet that was open (a native modal screen would otherwise hide a plain overlay).
   return (
-    <View accessibilityViewIsModal style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20 }}>
-      <Icon name="lock-closed" size={44} color={colors.accent} />
-      <Text variant="title">{t('lock.title')}</Text>
-      {hasPin ? (
-        <>
-          <Text variant="small" color={wrong ? colors.coral : colors.inkMuted}>
-            {wait > 0 ? t('pin.wait', { seconds: wait }) : wrong ? t('pin.wrong') : t('pin.enter')}
-          </Text>
-          <PinPad value={pin} onChange={setPin} disabled={wait > 0} />
-          {bio ? <Button label={t('lock.unlock')} kind="ghost" onPress={unlock} /> : null}
-          <Button label={t('pin.forgot')} kind="ghost" onPress={forgot} />
-        </>
-      ) : <Button label={t('lock.unlock')} onPress={unlock} />}
-    </View>
+    <>
+      <View style={{ flex: 1 }} accessibilityElementsHidden={locked} importantForAccessibility={locked ? 'no-hide-descendants' : 'auto'}>{children}</View>
+      <Modal visible={locked} animationType="none" statusBarTranslucent onRequestClose={() => undefined}>
+        <View accessibilityViewIsModal style={{ flex: 1, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20 }}>
+          <Icon name="lock-closed" size={44} color={colors.accent} />
+          <Text variant="title">{t('lock.title')}</Text>
+          {hasPin ? (
+            <>
+              <Text variant="small" color={wrong ? colors.coral : colors.inkMuted}>
+                {wait > 0 ? t('pin.wait', { seconds: wait }) : wrong ? t('pin.wrong') : t('pin.enter')}
+              </Text>
+              <PinPad value={pin} onChange={setPin} disabled={wait > 0} />
+              {bio ? <Button label={t('lock.unlock')} kind="ghost" onPress={unlock} /> : null}
+              <Button label={t('pin.forgot')} kind="ghost" onPress={forgot} />
+            </>
+          ) : <Button label={t('lock.unlock')} onPress={unlock} />}
+        </View>
+      </Modal>
+    </>
   );
 }
