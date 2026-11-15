@@ -15,7 +15,7 @@ import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
 import { setFlag, useFlag } from '@/lib/flags';
 import { dueRuns } from '@/features/recurring/logic';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useRecurring, useRecurringRuns, useZakat } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -60,7 +60,9 @@ export default function Home() {
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
   const incomeQ = useIncome(month);
-  const incomeTotal = (incomeQ.data ?? []).reduce((s, i) => s + i.mvr_laari, 0);
+  const shared = useSharedTotals(month);
+  // In a couple or household, the whole shared pot counts alongside your own.
+  const incomeTotal = (incomeQ.data ?? []).reduce((s, i) => s + i.mvr_laari, 0) + shared.income;
   const givingQ = useGiving(month);
   const giving = useMemo(() => monthGiving(givingQ.data ?? []), [givingQ.data]);
   const goal = useZakat().data?.sadaqah_goal_laari ?? null;
@@ -72,7 +74,7 @@ export default function Home() {
   const hidden = useHideAmounts();
   const heldOpen = useFlag('heldOpen') === true;
 
-  const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
+  const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const limit = budgets?.get(null);
   const state = budgetState(spent, limit);
   const recentGroups = useMemo(() => {
@@ -84,13 +86,14 @@ export default function Home() {
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
+    for (const [id, v] of shared.byCategory) m.set(id, (m.get(id) ?? 0) + v);
     return [...m].sort((a, b) => b[1] - a[1]).slice(0, 3);
-  }, [expenses]);
+  }, [expenses, shared]);
 
   if (expensesQuery.isError && !expensesQuery.data) {
     return <Screen tabbed><ScreenTitle title={t('app.name')} /><LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /></Screen>;
   }
-  if (expenses.length === 0 && !expensesQuery.isLoading) {
+  if (expenses.length === 0 && shared.spent === 0 && !expensesQuery.isLoading) {
     return (
       <Screen tabbed>
         <ScreenTitle title={t('app.name')} />
@@ -131,6 +134,7 @@ export default function Home() {
         </Row>
         <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
         <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
+        {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
         {limit ? (
           <>

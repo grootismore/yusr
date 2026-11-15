@@ -11,7 +11,7 @@ import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, useRates, useTrend, useWrite } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, useRates, useSharedTotals, useTrend, useWrite } from '@/data/hooks';
 import { debtMonth } from '@/features/debts/report';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
@@ -36,12 +36,15 @@ export default function Reports() {
   const categoriesQuery = useCategories();
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-  const total = expenses.reduce((s, e) => s + e.mvr_laari, 0);
+  const shared = useSharedTotals(month);
+  // In a couple or household, the whole shared pot counts alongside your own.
+  const total = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const rows = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
+    for (const [id, v] of shared.byCategory) m.set(id, (m.get(id) ?? 0) + v);
     return [...m].sort((a, b) => b[1] - a[1]);
-  }, [expenses]);
+  }, [expenses, shared]);
   const slices = useMemo(() => sliceShares(rows), [rows]);
   const palette = useIsDark() ? series.dark : series.light;
   const days = useMemo(() => {
@@ -54,7 +57,7 @@ export default function Reports() {
   const rates = useRates().data;
   const incomeQ = useIncome(month);
   const incomeRows = useMemo(() => incomeQ.data ?? [], [incomeQ.data]);
-  const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0);
+  const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0) + shared.income;
   const dm = useMemo(() => debtMonth(debtsData ?? [], debtPaymentsData ?? [], month.slice(0, 7), rates ?? {}), [debtsData, debtPaymentsData, month, rates]);
   const removeIncome = useWrite(api.deleteIncome);
   const mixedPay = incomeRows.some((i) => i.currency !== 'MVR'); // pay arrived in more than one currency
@@ -79,6 +82,7 @@ export default function Reports() {
       <Card tone="hero" style={{ gap: space.md, padding: space.xl }}>
         <Text color={colors.onHero}>{t('reports.total')}</Text>
         <Money laari={total} variant="display" color={colors.onHero} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} />
+        {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
         {overall ? (
           <>
             <ProgressBar onHero percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
@@ -158,7 +162,7 @@ export default function Reports() {
         </>
       ) : null}
 
-      {expenses.length === 0 ? <Text color={colors.inkMuted}>{t('reports.empty')}</Text> : (
+      {rows.length === 0 ? <Text color={colors.inkMuted}>{t('reports.empty')}</Text> : (
         <>
           <Text variant="heading">{t('reports.byCategory')}</Text>
           <Card>

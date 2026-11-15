@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { effectiveBudgets } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
 import * as api from './api';
+import { sharedTotals } from '@/features/household/logic';
 import { holdings } from '@/features/foreign/logic';
 import type { Category, Expense } from './types';
 
@@ -55,6 +56,11 @@ export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn
 export const usePaidCommitments = (month: string) => useQuery({ queryKey: ['giving-paid', month], queryFn: () => api.listPaidCommitments(month) });
 export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
 export const useHousehold = () => useQuery({ queryKey: ['household'], queryFn: api.getHousehold });
+/** The shared pot's totals for a month, to add to your own. Zero when you are not in a household. */
+export function useSharedTotals(month: string) {
+  const entries = useHouseholdEntries(month).data;
+  return useMemo(() => sharedTotals(entries), [entries]);
+}
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });
 export const useSplit = () => useQuery({ queryKey: ['split'], queryFn: api.listSplit });
 export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });

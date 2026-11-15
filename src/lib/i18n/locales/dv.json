@@ -1029,7 +1029,8 @@
     "whose": "މިއީ ކާކުގެ؟",
     "tiedTo": "{{name}} އަށް",
     "whoPaidIt": "ކާކު ދެއްކީ؟",
-    "whoReceived": "ކާކަށް ލިބުނީ؟"
+    "whoReceived": "ކާކަށް ލިބުނީ؟",
+    "includesShared": "{{amount}} އެކުގައި ޚަރަދުކުރި ޚަރަދު ހިމެނޭ."
   },
   "split": {
     "title": "ބެހުން",
