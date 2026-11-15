@@ -8,7 +8,6 @@ import { Button, Chip, Field, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { useCategories, useExpense, useSadaqah, useWrite } from '@/data/hooks';
-import type { NewExpense } from '@/data/types';
 import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
@@ -28,8 +27,8 @@ export default function EditExpense() {
   const [recipientEdit, setRecipientEdit] = useState<string | null>(null);
   const kind = kindEdit ?? sadaqah?.kind ?? 'sadaqah';
   const recipient = recipientEdit ?? sadaqah?.recipient_note ?? '';
-  const update = useWrite((a: { id: string; e: NewExpense }) => api.updateExpense(a.id, a.e));
-  const updateGiving = useWrite((a: { id: string; kind: GivingKind; recipient_note: string | null }) => api.updateSadaqah(a.id, { kind: a.kind, recipient_note: a.recipient_note }));
+  const update = useWrite(api.updateExpense);
+  const updateGiving = useWrite(api.updateSadaqah);
   const remove = useWrite(api.deleteExpense);
 
   if (!expense) return <Screen><StackHeader title={t('edit.expenseTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;

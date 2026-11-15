@@ -17,13 +17,13 @@ function LimitEditor({ categoryId, limit, onDone }: { categoryId: string | null;
   const { t } = useTranslation();
   const [text, setText] = useState(limit ? formatNumber(limit).replace(/,/g, '') : '');
   const [error, setError] = useState<string | null>(null);
-  const save = useWrite((l: number) => api.setBudget(monthStart(), categoryId, l));
-  const clear = useWrite(() => api.clearBudget(categoryId));
+  const save = useWrite(api.setBudget);
+  const clear = useWrite(api.clearBudget);
   async function submit() {
     try {
       const l = parseAmount(text);
       if (l <= 0) throw new Error('x');
-      await save.mutateAsync(l);
+      await save.mutateAsync({ month: monthStart(), categoryId, limit: l });
       onDone();
     } catch { setError(t('expense.invalidAmount')); }
   }
@@ -32,7 +32,7 @@ function LimitEditor({ categoryId, limit, onDone }: { categoryId: string | null;
       <Field label={t('budget.limit')} value={text} onChangeText={(v) => { setText(v); setError(null); }} keyboardType="decimal-pad" placeholder="0.00" error={error} />
       <Row style={{ flexWrap: 'wrap' }}>
         <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
-        {limit ? <Button kind="ghost" label={t('budget.clear')} onPress={async () => { await clear.mutateAsync(undefined); onDone(); }} /> : null}
+        {limit ? <Button kind="ghost" label={t('budget.clear')} onPress={async () => { await clear.mutateAsync({ categoryId }); onDone(); }} /> : null}
       </Row>
     </View>
   );

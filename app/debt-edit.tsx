@@ -24,7 +24,9 @@ export default function DebtEdit() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const debt = useDebts().data?.find((d) => d.id === id);
   const editing = !!id && !!debt;
-  const save = useWrite((a: { input: DebtInput; id?: string }) => api.saveDebt(a.input, a.id));
+  const addDebt = useWrite(api.addDebt);
+  const updateDebt = useWrite(api.updateDebt);
+  const saving = addDebt.isPending || updateDebt.isPending;
 
   const [lender, setLender] = useState(debt?.lender ?? '');
   const [kind, setKind] = useState<DebtKind>(debt?.kind ?? 'bank');
@@ -64,10 +66,8 @@ export default function DebtEdit() {
     // "Owed now" is what the person typed; the stored opening balance is that plus what they have already paid.
     const opening = editing ? owed + paid : owed;
     if (opening <= 0) { setErrors({ amount: t('expense.invalidAmount') }); return; }
-    await save.mutateAsync({
-      id: editing ? id : undefined,
-      input: { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null },
-    });
+    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null };
+    if (editing) await updateDebt.mutateAsync({ id: id!, input }); else await addDebt.mutateAsync({ input });
     success();
     toast(t('toast.saved'));
     router.back();
@@ -133,7 +133,7 @@ export default function DebtEdit() {
       </Card>
 
       <Field label={`${t('debts.notes')} (${t('common.optional')})`} hint={t('debts.notesHint')} value={notes} onChangeText={setNotes} multiline maxLength={300} />
-      <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
+      <Button label={t('common.save')} onPress={submit} loading={saving} />
     </Screen>
   );
 }
