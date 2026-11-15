@@ -11,6 +11,7 @@ import { useCategories, useExpense, useSadaqah, useWrite } from '@/data/hooks';
 import type { NewExpense } from '@/data/types';
 import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { success } from '@/lib/haptics';
+import { toast } from '@/lib/toast';
 import { space, useColors } from '@/theme/tokens';
 
 /** Fix an expense that was entered wrongly: every field can change, and it can be deleted. Giving entries also show their type and recipient. */
@@ -47,6 +48,7 @@ export default function EditExpense() {
           if (sadaqah) await updateGiving.mutateAsync({ id: sadaqah.id, kind, recipient_note: recipient.trim() || null });
           if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr);
           success();
+          toast(t('toast.updated'));
           router.back();
         }}
       >
@@ -61,7 +63,7 @@ export default function EditExpense() {
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
         onPress={() => Alert.alert(t('edit.deleteExpenseTitle'), sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('edit.delete'), style: 'destructive', onPress: async () => { await remove.mutateAsync(expense.id); router.back(); } },
+          { text: t('edit.delete'), style: 'destructive', onPress: async () => { await remove.mutateAsync(expense.id); toast(t('toast.deleted')); router.back(); } },
         ])} />
     </Screen>
   );

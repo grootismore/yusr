@@ -19,6 +19,9 @@ export function initMonitoring(): void {
     // Light tracing in production; everything locally so a test shows one.
     tracesSampleRate: __DEV__ ? 1.0 : 0.1,
     beforeSend(event) {
+      // No signal is not a bug in the app: do not report it.
+      const text = `${event.exception?.values?.[0]?.type ?? ''} ${event.exception?.values?.[0]?.value ?? ''}`;
+      if (/network request failed|failed to fetch|aborterror|load failed/i.test(text)) return null;
       delete event.user;
       delete event.request;
       delete event.extra;
@@ -31,6 +34,14 @@ export function initMonitoring(): void {
       return crumb;
     },
   });
+}
+
+/** A person's own report from the problem screen: their words plus the technical detail, nothing else. */
+export function sendFeedback(message: string, details: string): void {
+  try {
+    Sentry.captureFeedback({ message: message || '(no message)', associatedEventId: Sentry.lastEventId() });
+    Sentry.captureMessage(`User report details: ${details}`.slice(0, 1500), 'info');
+  } catch { /* reporting must never break the problem screen */ }
 }
 
 /** Send an error that the app caught and showed on screen itself. */

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Text as SvgText } from 'react-native-svg';
+import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,7 +33,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
       {scroll ? (
-        <Animated.ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
+        <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
           {...(scrollY ? { scrollEventThrottle: 16, onScroll: Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }) } : {})}>{children}</Animated.ScrollView>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
       {overlay}
@@ -64,13 +64,21 @@ export function Backdrop() {
   return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.ground }]} />;
 }
 
+/** The app icon, as the brand mark. Decorative: the name next to it is what is read out. */
+export function Logo({ size = 32 }: { size?: number }) {
+  return <Image source={require('../../assets/images/icon.png')} accessible={false} style={{ width: size, height: size, borderRadius: size * 0.225, borderCurve: 'continuous' }} />;
+}
+
 /** Large screen title with an optional calm line under it. One place so every tab starts the same way. */
 export function ScreenTitle({ title, subtitle, trailing }: { title: string; subtitle?: string; trailing?: ReactNode }) {
   const colors = useColors();
   return (
     <View style={{ gap: space.xs, paddingTop: space.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flexShrink: 1 }}>{title}</Text>
+        <Row style={{ flexShrink: 1, gap: space.sm }}>
+          <Logo size={30} />
+          <Text variant="title" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
+        </Row>
         {trailing}
       </Row>
       {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}
@@ -162,7 +170,7 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
         {...rest}
         style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.field, paddingHorizontal: space.lg, paddingVertical: space.sm,
-          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
+          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
         {...(ltr ? { dir: 'ltr' } : {})}
       />
       {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, right: 4, justifyContent: 'center' }}>{trailing}</View> : null}
@@ -312,8 +320,10 @@ export function PanelArt() {
   const { i18n } = useTranslation();
   const [box, setBox] = useState({ w: 0, h: 0 });
   const rtl = i18n.language === 'dv';
-  const dots = useMemo(() => {
-    const out: { x: number; y: number; o: number }[] = [];
+  // The dots are drawn as a few SVG paths (one per brightness step), not hundreds of views: far cheaper to lay out and scroll.
+  const dotPaths = useMemo(() => {
+    const STEPS = 5;
+    const buckets: string[] = Array.from({ length: STEPS }, () => '');
     const gap = 14;
     const reach = Math.max(box.w, box.h) * 0.85;
     for (let y = gap / 2; y < box.h; y += gap) {
@@ -321,10 +331,10 @@ export function PanelArt() {
         const dx = rtl ? x : box.w - x; // distance from the bottom corner on the reading-end side
         const d = Math.hypot(dx, box.h - y);
         const o = Math.max(0, 1 - d / reach) * 0.28;
-        if (o > 0.03) out.push({ x, y, o });
+        if (o > 0.03) buckets[Math.min(STEPS - 1, Math.floor((o / 0.28) * STEPS))] += `M${x - 1.2} ${y}a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0`;
       }
     }
-    return out;
+    return buckets.map((d, i) => ({ d, opacity: ((i + 0.5) / STEPS) * 0.28 }));
   }, [box.w, box.h, rtl]);
   return (
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
@@ -332,9 +342,9 @@ export function PanelArt() {
         <Svg width={box.w} height={box.h} style={[StyleSheet.absoluteFill, { direction: 'ltr' }]}>
           <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={132} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
             fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.17}>MVR</SvgText>
+          {dotPaths.map((b, i) => (b.d ? <Path key={i} d={b.d} fill={colors.onHero} fillOpacity={b.opacity} /> : null))}
         </Svg>
       )) : null}
-      {dots.map((d, i) => <View key={i} style={{ position: 'absolute', left: d.x - 1.2, top: d.y - 1.2, width: 2.4, height: 2.4, borderRadius: 1.2, backgroundColor: colors.onHero, opacity: d.o }} />)}
     </View>
   );
 }

@@ -63,14 +63,14 @@ export function parseAmount(input: string): number {
 }
 export const parseMVR = parseAmount;
 
-/** "1,234.50" (no currency). */
+/** "1,234.50", or "1,234" when there are no laari: nobody needs the ".00" (no currency). */
 export function formatNumber(laari: number): string {
   assertLaari(laari);
   const abs = Math.abs(laari);
   const fraction = abs % LAARI_PER_MVR;
   const whole = (abs - fraction) / LAARI_PER_MVR;
   const grouped = String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return `${laari < 0 ? '-' : ''}${grouped}.${String(fraction).padStart(2, '0')}`;
+  return `${laari < 0 ? '-' : ''}${grouped}${fraction === 0 ? '' : `.${String(fraction).padStart(2, '0')}`}`;
 }
 
 /** "MVR 1,234.50"; negatives "-MVR 1,234.50". Latin digits always. */

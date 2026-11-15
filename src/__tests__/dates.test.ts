@@ -1,4 +1,4 @@
-import { addDays, addMonths, formatDate, monthStart, parseDate, today } from '@/lib/dates';
+import { addDays, addMonths, formatDate, maskDate, monthStart, parseDate, today } from '@/lib/dates';
 
 it('month and day use Maldives time (UTC+5)', () => {
   expect(monthStart(new Date('2026-10-31T20:00:00Z'))).toBe('2026-11-01');
@@ -18,4 +18,15 @@ it('parses day-first dates', () => {
   expect(parseDate('31/02/2026')).toBeNull();
   expect(parseDate('hello')).toBeNull();
   expect(formatDate('2026-04-03')).toBe('03/04/2026');
+});
+
+describe('maskDate', () => {
+  it('adds the slashes as digits are typed and ignores everything else', () => {
+    expect(maskDate('1')).toBe('1');
+    expect(maskDate('151')).toBe('15/1');
+    expect(maskDate('15112026')).toBe('15/11/2026');
+    expect(maskDate('15/11/2026')).toBe('15/11/2026');
+    expect(maskDate('15/')).toBe('15');
+    expect(maskDate('1511202699')).toBe('15/11/2026');
+  });
 });

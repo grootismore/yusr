@@ -12,6 +12,7 @@ import { formatNumber, parseAmount } from '@/lib/money';
 import { checkTotals, type Draft } from '@/lib/receipt';
 import { success } from '@/lib/haptics';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 const field = (laari: number | null) => (laari == null ? '' : formatNumber(laari).replace(/,/g, ''));
 const toLaari = (s: string): number => { try { return parseAmount(s || '0'); } catch { return 0; } };
@@ -80,6 +81,7 @@ export default function Confirm() {
           });
           if (expense.currency !== 'MVR') await saveRate(expense.currency, expense.fx_rate_to_mvr);
           success();
+          toast(t('toast.expenseSaved'));
           setDone(true); // the effect below leaves once the leave-guard has been lifted
         }}
       >

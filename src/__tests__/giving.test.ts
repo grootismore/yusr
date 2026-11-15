@@ -1,5 +1,5 @@
 import { daysBetween, fromHijri, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
-import { goalPercent, monthGiving, reminderDates, type GivingEntry } from '@/features/giving/logic';
+import { activeCommitments, commitmentNote, commitmentTotal, goalPercent, isPaid, monthGiving, reminderDates, type GivingCommitment, type GivingEntry } from '@/features/giving/logic';
 
 describe('Hijri dates (Umm al-Qura)', () => {
   it('matches the official 2026 dates', () => {
@@ -38,5 +38,25 @@ describe('zakat reminders', () => {
     expect(reminderDates('2027-02-08', new Date(2026, 10, 13)).map((d) => d.getDate())).toEqual([1, 8]);
     expect(reminderDates('2027-02-08', new Date(2027, 1, 3)).map((d) => d.getDate())).toEqual([8]);
     expect(reminderDates('2027-02-08', new Date(2027, 1, 9))).toEqual([]);
+  });
+});
+
+
+describe('monthly commitments', () => {
+  const school: GivingCommitment = { id: 'c1', recipient: 'Alooka School', note: 'sponsorship of Lama', amount_laari: 70_000, kind: 'sadaqah', due_day: 5, started_on: '2026-09-01', ended_on: null };
+  const old: GivingCommitment = { ...school, id: 'c2', recipient: 'Old', amount_laari: 5_000, ended_on: '2026-10-01' };
+  it('stays active until ended, and the total counts only active ones', () => {
+    expect(activeCommitments([school, old]).map((c) => c.id)).toEqual(['c1']);
+    expect(commitmentTotal([school, old])).toBe(70_000);
+  });
+  it('is paid for the month only when an entry points at it', () => {
+    const e: GivingEntry = { id: 'g', expense_id: 'x', kind: 'sadaqah', recipient_note: null, amount_laari: 70_000, spent_at: '2026-11-05', commitment_id: 'c1' };
+    expect(isPaid(school, [])).toBe(false);
+    expect(isPaid(school, [e])).toBe(true);
+    expect(isPaid(old, [e])).toBe(false);
+  });
+  it('writes who and why into the private note', () => {
+    expect(commitmentNote(school)).toBe('Alooka School · sponsorship of Lama');
+    expect(commitmentNote({ ...school, note: null })).toBe('Alooka School');
   });
 });

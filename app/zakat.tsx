@@ -13,6 +13,7 @@ import { formatDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function Zakat() {
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ function ZakatForm({ initial, onClose }: { initial: api.ZakatSettings; onClose: 
     if (Object.keys(e).length) return;
     await save.mutateAsync({ sadaqah_goal_laari: goalLaari, zakat_hijri_month: dayOk ? month : null, zakat_hijri_day: dayOk ? dayNum : null, zakat_reminder: reminder && dayOk, hijri_adjustment: adjust });
     success();
+    toast(t('toast.saved'));
     onClose();
   }
 

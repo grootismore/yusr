@@ -9,6 +9,7 @@ import { useAuth, type AuthErrorKey } from '@/lib/auth';
 import { isEmail } from '@/lib/authForm';
 import { WEB_LIMITED } from '@/lib/platform';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function SignIn() {
   const colors = useColors();
@@ -46,8 +47,8 @@ export default function SignIn() {
     setBusy(true);
     const r = await auth.signIn(email, password);
     setBusy(false);
-    if (r.error === 'invalid') setErrors({ password: t('auth.errors.invalid') });
-    else if (r.error) setProblem(r.error);
+    if (r.error === 'invalid') { setErrors({ password: t('auth.errors.invalid') }); toast(t('auth.errors.invalid'), 'error'); }
+    else if (r.error) { setProblem(r.error); if (r.error !== 'unconfirmed') toast(t(`auth.errors.${r.error}`), 'error'); }
   }
 
   async function sendLink() {

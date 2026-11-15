@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { money } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { Text, type AppTextProps } from './Text';
 
 const MARK = '\u0001';
@@ -11,12 +11,13 @@ const MARK = '\u0001';
  */
 export function Msg({ k, amounts = {}, runs = {}, values = {}, ...rest }: AppTextProps & { k: string; amounts?: Record<string, number>; runs?: Record<string, string>; values?: Record<string, string | number> }) {
   const { t } = useTranslation();
+  const text = useMoneyText();
   const raw = t(k, { ...values, ...Object.fromEntries([...Object.keys(amounts), ...Object.keys(runs)].map((n) => [n, `${MARK}${n}${MARK}`])) }) as string;
   const parts = raw.split(new RegExp(`${MARK}(\\w+)${MARK}`));
   return (
     <Text {...rest}>
       {parts.map((p, i) =>
-        i % 2 === 1 ? <Text key={i} latin variant={rest.variant} color={rest.color} style={{ fontVariant: ['tabular-nums'] }}>{p in amounts ? money(amounts[p]) : runs[p]}</Text> : p,
+        i % 2 === 1 ? <Text key={i} latin variant={rest.variant} color={rest.color} style={{ fontVariant: ['tabular-nums'] }}>{p in amounts ? text(amounts[p]) : runs[p]}</Text> : p,
       )}
     </Text>
   );

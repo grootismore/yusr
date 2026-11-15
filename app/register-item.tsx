@@ -10,6 +10,7 @@ import { REGISTER_KINDS, type RegisterKind } from '@/features/register/types';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function RegisterItemScreen() {
   const colors = useColors();
@@ -44,6 +45,7 @@ export default function RegisterItemScreen() {
     if (Object.keys(e).length) return;
     await save.mutateAsync({ id, kind, title: title.trim(), counterparty: who.trim() || null, amount_laari: laari, details: details.trim() });
     success();
+    toast(t('toast.saved'));
     router.back();
   }
 
@@ -63,7 +65,7 @@ export default function RegisterItemScreen() {
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {id ? (
         <Button kind="ghost" label={t('common.remove')} icon="trash-outline"
-          onPress={() => Alert.alert(t('register.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: async () => { await remove.mutateAsync(id); router.back(); } }])} />
+          onPress={() => Alert.alert(t('register.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: async () => { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } }])} />
       ) : null}
       <Text variant="small" color={colors.inkMuted}>{t('register.honest')}</Text>
     </Screen>

@@ -6,6 +6,8 @@ export interface Expense {
 export interface NewExpense {
   amount_laari: number; currency: string; fx_rate_to_mvr: string; category_id: string | null; merchant: string | null;
   spent_at: string; note: string | null;
+  /** Made on the phone so a save that is sent twice is still one entry. */
+  id?: string;
 }
 export interface Profile { language: 'dv' | 'en'; base_currency: string; keep_receipt_images: boolean }
 export interface ScanItemInput { name: string; qty: number; total_laari: number }

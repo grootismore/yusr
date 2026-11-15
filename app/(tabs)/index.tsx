@@ -8,9 +8,10 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
+import { Button, Card, Icon, IconButton, Logo, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
 import { paydayValue } from '@/features/foreign/logic';
-import { money } from '@/lib/money';
+import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
+import { setFlag, useFlag } from '@/lib/flags';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
@@ -61,6 +62,9 @@ export default function Home() {
   const giving = useMemo(() => monthGiving(givingQ.data ?? []), [givingQ.data]);
   const goal = useZakat().data?.sadaqah_goal_laari ?? null;
   const { held } = useHoldings();
+  const money = useMoneyText();
+  const hidden = useHideAmounts();
+  const heldOpen = useFlag('heldOpen') === true;
 
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0);
   const limit = budgets?.get(null);
@@ -103,11 +107,19 @@ export default function Home() {
         </Row>
       </Animated.View>
     }>
+      {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}
+      <View pointerEvents="none" style={{ position: 'absolute', top: -900, start: 0, end: 0, height: 900, backgroundColor: colors.hero }} />
       {/* Header band: runs under the status bar, carries the month's figure; the shortcut tiles overlap its lower edge. */}
       <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
         borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
         <PanelArt />
-        <Text variant="heading" color={colors.onHero} accessibilityRole="header">{t('app.name')}</Text>
+        <Row style={{ gap: space.sm, justifyContent: 'space-between' }}>
+          <Row style={{ gap: space.sm }}>
+            <Logo size={28} />
+            <Text variant="heading" color={colors.onHero} accessibilityRole="header">{t('app.name')}</Text>
+          </Row>
+          <IconButton icon={hidden ? 'eye-off-outline' : 'eye-outline'} color={colors.onHero} label={hidden ? t('privacy.show') : t('privacy.hide')} onPress={() => void setHideAmounts(!hidden)} />
+        </Row>
         <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
         <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
@@ -149,8 +161,15 @@ export default function Home() {
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
       {held.length > 0 ? (
         <Card>
-          <Text variant="heading">{t('foreign.held')}</Text>
-          {held.map((x) => (
+          {/* Folded by default so the figures are not on show; one tap opens it, and Convert is inside. */}
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: heldOpen }} onPress={() => void setFlag('heldOpen', !heldOpen)} style={{ minHeight: 44, justifyContent: 'center' }}>
+            <Row>
+              <Text variant="heading" style={{ flex: 1 }}>{t('foreign.held')}</Text>
+              <Text variant="small" color={colors.inkMuted}>{heldOpen ? t('foreign.hideHeld') : t('foreign.showHeld')}</Text>
+              <Icon name={heldOpen ? 'chevron-up' : 'chevron-down'} color={colors.inkMuted} />
+            </Row>
+          </Pressable>
+          {heldOpen ? held.map((x) => (
             <Row key={x.currency} style={{ minHeight: 56 }}>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text latin variant="heading" style={{ writingDirection: 'ltr' }}>{money(x.minor, x.currency)}</Text>
@@ -158,7 +177,7 @@ export default function Home() {
               </View>
               <Button kind="secondary" label={t('foreign.convert')} onPress={() => router.push({ pathname: '/convert', params: { currency: x.currency } })} />
             </Row>
-          ))}
+          )) : null}
         </Card>
       ) : null}
 

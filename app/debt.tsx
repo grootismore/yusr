@@ -10,10 +10,11 @@ import * as api from '@/data/api';
 import { useDebtPayments, useDebts, useWrite } from '@/data/hooks';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
 import { dueStatus } from '@/features/debts/due';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function DebtDetail() {
   const colors = useColors();
@@ -53,6 +54,7 @@ export default function DebtDetail() {
     if (editingId) await updatePayment.mutateAsync({ id: editingId, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
     else await add.mutateAsync({ debt_id: debt!.id, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
     success();
+    toast(t('toast.paymentSaved'));
     setAmount(''); setNote(''); setEditingId(null);
   }
 
@@ -76,7 +78,7 @@ export default function DebtDetail() {
         <Card>
           <Text variant="heading">{editingId ? t('edit.paymentTitle') : t('debts.recordPayment')}</Text>
           <Field label={t('debts.paymentAmount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder={debt.min_payment_laari ? undefined : '0.00'} error={errors.amount} />
-          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />
+          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.date} />
           <Row>
             <Button kind="ghost" label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
             <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
@@ -97,13 +99,13 @@ export default function DebtDetail() {
             </View>
             <IconButton icon="create-outline" label={t('common.edit')} onPress={() => { setEditingId(p.id); setAmount(formatNumber(p.amount_laari).replace(/,/g, '')); setDate(formatDate(p.paid_on)); setNote(p.note ?? ''); setErrors({}); }} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id) }])} />
+              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>
 
       <Button kind="ghost" label={t('debts.delete')} icon="trash-outline"
-        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); router.back(); } }])} />
+        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }])} />
     </Screen>
   );
 }
