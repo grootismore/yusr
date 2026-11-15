@@ -46,7 +46,7 @@
       "network": "No connection. Please try again.",
       "generic": "We couldn't sign you in. Please try again.",
       "unconfirmed": "Please confirm your email first. We sent you a link.",
-      "rate": "Too many tries. Please wait a minute and try again."
+      "rate": "Too many attempts. Please wait a minute and try again."
     },
     "magicLink": "Email me a sign-in link",
     "linkSent": "Check your email for the sign-in link.",
@@ -81,7 +81,7 @@
     "thisMonth": "This month",
     "spent": "Spent",
     "ofBudget": "of {{budget}} budget",
-    "left": "{{amount}} left",
+    "left": "{{amount}} left to spend",
     "over": "{{amount}} over budget",
     "nearLimit": "You're close to your budget.",
     "setBudget": "Set a monthly budget",
@@ -89,12 +89,12 @@
     "topCategories": "Top categories",
     "recent": "Recent",
     "seeAll": "See all",
-    "emptyTitle": "Nothing logged yet",
+    "emptyTitle": "No spending yet",
     "emptyBody": "Add your first expense, or scan a receipt with Raseedhu.",
     "addExpense": "Add expense",
     "income": "Income",
     "incomeLine": "Income {{amount}}",
-    "leftLabel": "Left"
+    "leftLabel": "Left to spend"
   },
   "expense": {
     "addTitle": "Add expense",
@@ -102,7 +102,7 @@
     "amount": "Amount",
     "currency": "Currency",
     "rate": "Exchange rate to MVR",
-    "rateHint": "1 {{code}} = how many MVR? You enter this yourself.",
+    "rateHint": "How many MVR for 1 {{code}}?",
     "mvrValue": "About {{amount}}",
     "category": "Category",
     "merchant": "Merchant",
@@ -118,18 +118,18 @@
   "scan": {
     "title": "Raseedhu",
     "subtitle": "Photograph a receipt and we'll fill in the details for you to check.",
-    "left": "{{left}} / {{limit}} scans left",
+    "left": "{{left}} of {{limit}} scans left this month",
     "camera": "Take a photo",
     "gallery": "Choose from gallery",
-    "manual": "Add manually instead",
-    "noScans": "You've used all {{limit}} free scans this month. They come back on the 1st. You can still add expenses by hand.",
+    "manual": "Add an expense without a photo",
+    "noScans": "You've used all {{limit}} free scans this month. You'll get more on the 1st. You can still add expenses yourself.",
     "working": "Reading your receipt…",
     "uploading": "Preparing the photo…",
     "cameraDenied": "Camera access is off. You can allow it in Settings, or choose a photo from your gallery.",
-    "unreadable": "We couldn't read this receipt clearly. Try a new photo in good light, or fill it in by hand. This didn't use a scan.",
-    "offline": "No connection. Your photo is still here — try again when you're back online. This didn't use a scan.",
-    "failed": "The scan didn't work this time. It didn't use up a scan. Please try again.",
-    "fillByHand": "Fill in by hand",
+    "unreadable": "We couldn't read this receipt clearly. Try a new photo in good light, or enter the details yourself. This scan wasn't counted.",
+    "offline": "No connection. Your photo is still here, so try again when you're back online. This scan wasn't counted.",
+    "failed": "The scan didn't work this time, and it wasn't counted. Please try again.",
+    "fillByHand": "Enter details myself",
     "retake": "Take a new photo"
   },
   "confirm": {
@@ -163,12 +163,12 @@
     "limit": "Monthly limit",
     "saved": "Budget saved",
     "clear": "Remove limit",
-    "hint": "Set a limit, and we'll show how you're doing. Limits are for this month and the months after.",
+    "hint": "Set a limit and we'll show how you're doing. A limit applies from this month onwards.",
     "over": "Over the limit"
   },
   "reports": {
     "title": "Reports",
-    "byCategory": "Where it went",
+    "byCategory": "Spending by category",
     "budgets": "Budgets",
     "total": "Total spent",
     "income": "Income",
@@ -179,9 +179,9 @@
     "uncategorised": "No category",
     "prev": "Previous month",
     "next": "Next month",
-    "net": "Net (income minus spending)",
+    "net": "Income minus spending",
     "incomeList": "Income this month",
-    "netShort": "Net"
+    "netShort": "Left over"
   },
   "more": {
     "title": "More",
@@ -191,7 +191,7 @@
     "debts": "Debt-free plan",
     "giving": "Giving",
     "register": "Wasiyyah & Amanah",
-    "contactSide": "For someone who trusts me"
+    "contactSide": "People who trust me"
   },
   "settings": {
     "title": "Settings",
@@ -199,7 +199,7 @@
     "baseCurrency": "Main currency",
     "baseCurrencyNote": "MVR (Maldivian rufiyaa)",
     "rates": "Exchange rates",
-    "ratesNote": "Enter the rates yourself. We fill in the last rate you used.",
+    "ratesNote": "Rates aren't updated automatically. We remember the last rate you entered.",
     "ratePlaceholder": "e.g. 15.42",
     "security": "Privacy and security",
     "biometric": "Lock the app with Face ID or fingerprint",
@@ -253,7 +253,7 @@
     "avalancheHint": "Costs the least interest overall.",
     "monthly": "Monthly amount for debts",
     "monthlyHint": "Includes all minimum payments.",
-    "raised": "Raised to the minimum payments ({{amount}}).",
+    "raised": "Increased to cover your minimum payments ({{amount}}).",
     "order": "Your plan",
     "clearedBy": "Cleared by {{month}}",
     "interest": "Carries interest",
@@ -317,8 +317,8 @@
     "given": "Given this month",
     "goalReached": "You've reached your goal this month. May it be accepted.",
     "goalOf": "of {{goal}} goal",
-    "log": "Log giving",
-    "logTitle": "Log giving",
+    "log": "Record giving",
+    "logTitle": "Record giving",
     "kind": {
       "sadaqah": "Sadaqah",
       "zakat": "Zakat",
@@ -330,9 +330,9 @@
     "type": "Type",
     "recipient": "Recipient or note",
     "recipientHint": "Private. Only you can see this.",
-    "saved": "Giving logged",
+    "saved": "Giving recorded",
     "obligations": "Zakat and other obligations this month: {{amount}}",
-    "empty": "Nothing logged this month yet.",
+    "empty": "No giving recorded this month.",
     "thisMonth": "This month",
     "deleteTitle": "Delete this entry?",
     "deleteBody": "The matching expense is removed too.",
@@ -404,7 +404,7 @@
       "trust": "A trust I hold",
       "wish": "A wish"
     },
-    "itemTitle": "Add or edit",
+    "itemTitle": "List item",
     "itemTitleLabel": "What is it?",
     "counterparty": "Who is it with?",
     "amount": "Approximate amount",
@@ -413,7 +413,7 @@
     "needTitle": "Write what it is.",
     "deleteTitle": "Remove this from your list?",
     "saved": "Saved",
-    "honest": "This is private, and kept encrypted. Honest note: Kharadhu's own database administrator could technically read it, as our privacy policy explains."
+    "honest": "This list is private and encrypted. As our privacy policy explains, a Kharadhu system administrator could technically access it."
   },
   "contacts": {
     "title": "People you trust",
@@ -443,7 +443,7 @@
     "max": "You already have three people.",
     "sendLink": "Send the link",
     "created": "Invite created",
-    "appUrlMissing": "The invite web address isn't set up yet."
+    "appUrlMissing": "Invites aren't available right now. Please try again later."
   },
   "release": {
     "title": "Check-ins and away mode",
@@ -462,8 +462,8 @@
     "awayOn": "Away until {{date}}",
     "awayEnd": "End away mode",
     "awayDays": "{{count}} days",
-    "log": "What has happened",
-    "logEmpty": "Nothing yet.",
+    "log": "History",
+    "logEmpty": "No activity yet.",
     "by": {
       "user": "You",
       "contact": "A trusted person",
@@ -477,7 +477,7 @@
       "register_item_changed": "Your list changed",
       "register_viewed": "Your list was viewed",
       "checkin_okay": "You said you're okay",
-      "ladder_advanced": "A check-in step happened",
+      "ladder_advanced": "A check-in was sent",
       "notice_sent": "A message was sent",
       "released": "Your list was opened",
       "release_blocked": "An attempt to open it was refused",
@@ -485,7 +485,7 @@
       "answer_withdrawn": "A trusted person changed their mind",
       "away_set": "You turned on away mode",
       "away_ended": "You ended away mode",
-      "unknown": "Something happened"
+      "unknown": "Activity recorded"
     }
   },
   "accept": {
@@ -503,7 +503,7 @@
     "someone": "Someone"
   },
   "contactSide": {
-    "title": "For someone who trusts me",
+    "title": "People who trust me",
     "intro": "Here you'll see anyone who has asked you to be a trusted person, once they can't be reached. Please sign in with the same email address they invited.",
     "none": "No one needs anything from you right now.",
     "asked": "{{who}} can't be reached. Please check on them if you can, then tell us.",
@@ -535,7 +535,7 @@
     "type": "DELETE",
     "failed": "We couldn't delete your account. Please try again, or contact us.",
     "privacy": "Privacy policy",
-    "privacyMissing": "The privacy policy address isn't set up yet."
+    "privacyMissing": "The privacy policy isn't available right now. Please try again later."
   },
   "legal": {
     "title": "Before you start",
@@ -546,7 +546,7 @@
     "age": "I am 18 or older",
     "readTerms": "Read the Terms",
     "readPrivacy": "Read the Privacy Policy",
-    "urlMissing": "The legal pages aren't published yet.",
+    "urlMissing": "These pages aren't available right now. Please try again later.",
     "continue": "Continue",
     "signOut": "Not now, sign out",
     "failed": "We couldn't save that. Please try again."
@@ -560,7 +560,7 @@
     "what": "This removes your spending, debts, giving, register, trusted people and receipt photos. It can't be undone.",
     "help": "If you can't sign in, email us from the address on your account and we'll delete it for you.",
     "email": "Contact: {{email}}",
-    "emailMissing": "The support email address isn't set up yet.",
+    "emailMissing": "Contact details aren't available right now.",
     "signIn": "Sign in here to delete it"
   },
   "webHome": {
@@ -647,41 +647,41 @@
     "all": "All",
     "income": "Income",
     "expenses": "Expenses",
-    "empty": "Nothing here yet."
+    "empty": "No activity this month."
   },
   "foreign": {
     "salaryChip": "Salary",
-    "splitHelp": "Add each currency you were paid in. Part in MVR, part in USD? Two lines.",
-    "keep": "Keep in {{currency}} (not exchanged yet)",
-    "keepNote": "It shows as held, and you can convert it to MVR later.",
+    "splitHelp": "Paid in more than one currency? Add one entry for each.",
+    "keep": "Keep this in {{currency}}",
+    "keepNote": "Turn this on if you haven't exchanged it yet. You can convert it to MVR later.",
     "addLine": "Add another currency",
-    "removeLine": "Remove this line",
+    "removeLine": "Remove",
     "totalMvr": "Total in MVR",
-    "repeat": "Repeat last payday",
+    "repeat": "Same as last time",
     "noteDefault": "Salary",
-    "saved": "Payday saved",
-    "savedBody": "{{n}} lines added",
-    "held": "Held in other currencies",
-    "heldMvr": "About {{amount}} at the payday rate",
+    "saved": "Salary saved",
+    "savedBody": "{{amount}} added to this month's income",
+    "held": "Money in other currencies",
+    "heldMvr": "About {{amount}} at the rate you were paid",
     "convert": "Convert to MVR",
     "convertTitle": "Convert {{currency}} to MVR",
-    "youHold": "You hold {{amount}}",
+    "youHold": "You have {{amount}}",
     "amountToConvert": "Amount to convert",
-    "mvrReceived": "MVR you received",
+    "mvrReceived": "MVR received",
     "rateIs": "Rate: {{rate}}",
-    "gain": "You gained {{amount}} compared with the payday rate",
-    "loss": "You lost {{amount}} compared with the payday rate",
-    "even": "Same as the payday rate",
-    "tooMuch": "That is more than you hold.",
-    "history": "Exchanges",
+    "gain": "{{amount}} more than at the rate you were paid",
+    "loss": "{{amount}} less than at the rate you were paid",
+    "even": "Same as the rate you were paid",
+    "tooMuch": "That's more than you have in this currency.",
+    "history": "Past exchanges",
     "noHistory": "No exchanges yet.",
     "deleteTitle": "Delete this exchange?",
     "keptBadge": "Kept in {{currency}}",
-    "explain": "Converting does not change your income or spending reports."
+    "explain": "Exchanging money doesn't change your income or spending totals."
   },
   "crash": {
-    "title": "Kharadhu ran into a problem",
-    "body": "Please copy the text below and send it to support. It tells us what went wrong.",
+    "title": "Something went wrong",
+    "body": "Please send the details below to our support team so we can fix it.",
     "continue": "Continue"
   }
 }

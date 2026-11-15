@@ -110,7 +110,7 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
   return (
     <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
       <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>Something went wrong</RNText>
-      <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>Please copy the text below and send it to support.</RNText>
+      <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>Please send the details below to our support team so we can fix it.</RNText>
       <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19 }}>{describeError(error)}</RNText>
       <Pressable accessibilityRole="button" onPress={() => void retry()} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
         <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>Try again</RNText>
@@ -176,7 +176,7 @@ function RootLayout() {
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
         <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
         <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\nroot layout mounts so far: ${rootMounts}\n${crash ?? '(no error text)'}`}</RNText>
+        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`Details for support\n\nlast launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\nroot layout mounts so far: ${rootMounts}\n${crash ?? '(no error text)'}`}</RNText>
         <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); startupCrash = null; dismissedOnce = true; setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
           <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
         </Pressable>
