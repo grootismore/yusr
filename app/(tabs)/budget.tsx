@@ -7,7 +7,7 @@ import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
 import { Button, Card, Field, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
-import { useBudgets, useCategories, useCategoryName, useExpenses, useWrite } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useExpenses, useSharedTotals, useWrite } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
 import { formatNumber, parseAmount } from '@/lib/money';
@@ -80,12 +80,14 @@ export default function Budget() {
   const expensesQuery = useExpenses(month);
   const expenses = expensesQuery.data;
   const [editingAll, setEditingAll] = useState(false);
+  const shared = useSharedTotals(month);
   const spentBy = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses ?? []) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
+    for (const [id, v] of shared.byCategory) m.set(id, (m.get(id) ?? 0) + v);
     return m;
-  }, [expenses]);
-  const total = (expenses ?? []).reduce((s, e) => s + e.mvr_laari, 0);
+  }, [expenses, shared]);
+  const total = (expenses ?? []).reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const overall = limits?.get(null);
   const state = budgetState(total, overall);
 

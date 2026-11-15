@@ -42,4 +42,16 @@ export function coupleBalance(summary: HouseholdSummary, myId: string): { partne
   return { partner: other.name, owed: Math.round(me.paid - summary.spent / 2) };
 }
 
+/** What the household spent and took in over the entries, and the spending per category, for adding to a person's own figures. */
+export function sharedTotals(entries: readonly HouseholdEntry[] | undefined): { spent: number; income: number; byCategory: Map<string | null, number> } {
+  const byCategory = new Map<string | null, number>();
+  let spent = 0, income = 0;
+  for (const e of entries ?? []) {
+    if (e.kind === 'income') { income += e.mvr_laari; continue; }
+    spent += e.mvr_laari;
+    byCategory.set(e.category_id, (byCategory.get(e.category_id) ?? 0) + e.mvr_laari);
+  }
+  return { spent, income, byCategory };
+}
+
 export const nameOf = (members: readonly HouseholdMember[], userId: string): string => members.find((m) => m.user_id === userId)?.display_name ?? '';

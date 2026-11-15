@@ -1,4 +1,4 @@
-import { coupleBalance, nameOf, summarize, type HouseholdEntry, type HouseholdMember } from '@/features/household/logic';
+import { coupleBalance, nameOf, sharedTotals, summarize, type HouseholdEntry, type HouseholdMember } from '@/features/household/logic';
 
 const members: HouseholdMember[] = [{ user_id: 'a', display_name: 'Aisha', role: 'owner' }, { user_id: 'b', display_name: 'Ahmed', role: 'member' }];
 const e = (id: string, user_id: string, kind: 'expense' | 'income', mvr_laari: number): HouseholdEntry => ({ id, household_id: 'h', user_id, kind, amount_laari: mvr_laari, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari, category_id: null, merchant: null, note: null, entry_date: '2026-11-10' });
@@ -31,5 +31,19 @@ describe('coupleBalance', () => {
   });
   it('is nothing without a partner', () => {
     expect(coupleBalance(summarize([e('a', 100)], members.slice(0, 1)), 'a')).toBeNull();
+  });
+});
+
+describe('sharedTotals', () => {
+  const x = (kind: 'expense' | 'income', mvr: number, cat: string | null) => ({ id: kind + mvr, household_id: 'h', user_id: 'a', kind, amount_laari: mvr, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: mvr, category_id: cat, merchant: null, note: null, entry_date: '2026-11-01' });
+  it('adds up what was spent and taken in, and spending per category', () => {
+    const t = sharedTotals([x('expense', 100, 'rent'), x('expense', 50, 'rent'), x('expense', 30, null), x('income', 900, null)]);
+    expect(t.spent).toBe(180);
+    expect(t.income).toBe(900);
+    expect(t.byCategory.get('rent')).toBe(150);
+    expect(t.byCategory.get(null)).toBe(30);
+  });
+  it('is zero without a household', () => {
+    expect(sharedTotals(undefined)).toEqual({ spent: 0, income: 0, byCategory: new Map() });
   });
 });

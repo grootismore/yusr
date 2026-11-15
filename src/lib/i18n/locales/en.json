@@ -1029,7 +1029,8 @@
     "whose": "Whose is it?",
     "tiedTo": "For {{name}}",
     "whoPaidIt": "Who paid it?",
-    "whoReceived": "Who received it?"
+    "whoReceived": "Who received it?",
+    "includesShared": "Includes {{amount}} spent together."
   },
   "split": {
     "title": "Split",

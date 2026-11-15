@@ -771,12 +771,14 @@ export async function monthlyTotals(months: string[]): Promise<{ spend: number[]
   const supabase = getSupabase();
   const from = months[0];
   const to = addMonths(months[months.length - 1], 1);
-  const [spendRows, incomeRows] = await Promise.all([
+  const [spendRows, incomeRows, sharedRows] = await Promise.all([
     fetchAll<{ mvr_laari: number; spent_at: string }>((a, b) => supabase.from('expenses').select('mvr_laari,spent_at').gte('spent_at', from).lt('spent_at', to).order('spent_at').range(a, b)),
     fetchAll<{ mvr_laari: number; received_at: string }>((a, b) => supabase.from('income').select('mvr_laari,received_at').gte('received_at', from).lt('received_at', to).order('received_at').range(a, b)),
+    // The shared pot counts alongside your own, as it does on Home and in Reports.
+    fetchAll<{ mvr_laari: number; entry_date: string; kind: 'expense' | 'income' }>((a, b) => supabase.from('household_entries').select('mvr_laari,entry_date,kind').gte('entry_date', from).lt('entry_date', to).order('entry_date').range(a, b)),
   ]);
   return {
-    spend: sumByMonth(spendRows.map((r) => ({ date: r.spent_at, laari: r.mvr_laari })), months),
-    income: sumByMonth(incomeRows.map((r) => ({ date: r.received_at, laari: r.mvr_laari })), months),
+    spend: sumByMonth([...spendRows.map((r) => ({ date: r.spent_at, laari: r.mvr_laari })), ...sharedRows.filter((r) => r.kind === 'expense').map((r) => ({ date: r.entry_date, laari: r.mvr_laari }))], months),
+    income: sumByMonth([...incomeRows.map((r) => ({ date: r.received_at, laari: r.mvr_laari })), ...sharedRows.filter((r) => r.kind === 'income').map((r) => ({ date: r.entry_date, laari: r.mvr_laari }))], months),
   };
 }
