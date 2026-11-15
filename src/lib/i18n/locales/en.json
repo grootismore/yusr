@@ -1063,5 +1063,25 @@
       "shares": "Type shares, like 1 and 2. 2 pays twice 1."
     },
     "you": "you"
+  },
+  "calendar": {
+    "pick": "Choose a date",
+    "weekdays": [
+      "Mo",
+      "Tu",
+      "We",
+      "Th",
+      "Fr",
+      "Sa",
+      "Su"
+    ],
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "prevYear": "Previous year",
+    "nextYear": "Next year",
+    "prevYears": "Earlier years",
+    "nextYears": "Later years",
+    "chooseMonth": "Choose month and year",
+    "chooseYear": "Choose year"
   }
 }

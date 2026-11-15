@@ -5,8 +5,9 @@ import { CURRENCIES } from '@/components/ExpenseForm';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Field, Row, SettingRow } from '@/components/ui';
+import { DateField } from '@/components/DateField';
 import { useRates } from '@/data/hooks';
-import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { getItem, setItem } from '@/lib/kv';
 import { ltr } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
@@ -69,7 +70,7 @@ export function SplitPay({ busy, onSave }: { busy: boolean; onSave: (rows: Split
       </Card>
 
       <View style={{ gap: space.sm }}>
-        <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(maskDate(v)); setDateError(false); }} keyboardType="number-pad" maxLength={10} placeholder="DD/MM/YYYY" error={dateError ? t('expense.invalidDate') : null} />
+        <DateField label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(v); setDateError(false); }} error={dateError ? t('expense.invalidDate') : null} />
         <Row>
           <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
           <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
