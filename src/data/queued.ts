@@ -3,7 +3,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { toMvrLaari } from '@/lib/money';
 import * as api from './api';
 import type { Expense, NewExpense } from './types';
-import type { Debt, DebtPayment } from '@/features/debts/types';
+import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
+import type { BudgetRow } from '@/lib/budget';
 
 /**
  * The saves that still work with no signal: they are kept on the phone and sent when the connection is back.
@@ -16,8 +17,10 @@ const OPS = {
   updateExpense: api.updateExpense, deleteExpense: api.deleteExpense, updateSadaqah: api.updateSadaqah, deleteGiving: api.deleteGiving,
   updateIncome: api.updateIncome, deleteIncome: api.deleteIncome, updateDebtPayment: api.updateDebtPayment, deleteDebtPayment: api.deleteDebtPayment,
   deleteConversion: api.deleteConversion,
+  // budgets and debts
+  setBudget: api.setBudget, clearBudget: api.clearBudget, addDebt: api.addDebt, updateDebt: api.updateDebt, deleteDebt: api.deleteDebt,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -74,6 +77,25 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       const delta = (next?.amount_laari ?? 0) - (before?.amount_laari ?? 0); // how much more has been paid on the debt
       qc.setQueryData<DebtPayment[]>(['debt-payments'], (old) => (next ? old?.map((x) => (x.id === id ? { ...x, amount_laari: next.amount_laari, paid_mvr_laari: next.paid_mvr_laari ?? null, paid_on: next.paid_on, note: next.note } : x)) : old?.filter((x) => x.id !== id)));
       if (before) qc.setQueryData<Debt[]>(['debts'], (old) => old?.map((d) => (d.id === before.debt_id ? { ...d, paid_laari: Math.max(0, d.paid_laari + (next ? delta : -before.amount_laari)), balance_laari: Math.max(0, d.balance_laari - (next ? delta : -before.amount_laari)) } : d)));
+    } else if (op === 'setBudget') {
+      const a = args as { month: string; categoryId: string | null; limit: number };
+      for (const q of qc.getQueryCache().findAll({ queryKey: ['budgets'] })) {
+        if ((q.queryKey[1] as string) < a.month) continue; // that month is before the limit starts
+        qc.setQueryData<BudgetRow[]>(q.queryKey, (old) => [...(old ?? []).filter((r) => !(r.month === a.month && r.category_id === a.categoryId)), { id: `waiting-${a.month}-${a.categoryId}`, month: a.month, category_id: a.categoryId, limit_laari: a.limit }]);
+      }
+    } else if (op === 'clearBudget') {
+      const { categoryId } = args as { categoryId: string | null };
+      qc.setQueriesData<BudgetRow[]>({ queryKey: ['budgets'] }, (old) => old?.filter((r) => r.category_id !== categoryId));
+    } else if (op === 'addDebt') {
+      const { id, input } = args as { id: string; input: DebtInput };
+      prepend(qc, ['debts'], { ...input, id, paid_laari: 0, balance_laari: input.opening_balance_laari, started_on: null } as Debt);
+    } else if (op === 'updateDebt') {
+      const { id, input } = args as { id: string; input: DebtInput };
+      qc.setQueryData<Debt[]>(['debts'], (old) => old?.map((d) => (d.id === id ? { ...d, ...input, balance_laari: Math.max(0, input.opening_balance_laari - d.paid_laari) } : d)));
+    } else if (op === 'deleteDebt') {
+      const id = args as string;
+      qc.setQueryData<Debt[]>(['debts'], (old) => old?.filter((d) => d.id !== id));
+      qc.setQueryData<DebtPayment[]>(['debt-payments'], (old) => old?.filter((p) => p.debt_id !== id));
     } else if (op === 'deleteConversion') {
       qc.setQueriesData<{ id: string }[]>({ queryKey: ['conversions'] }, (old) => old?.filter((x) => x.id !== (args as string)));
     } else if (op === 'logGiving') {

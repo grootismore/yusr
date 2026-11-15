@@ -19,7 +19,7 @@ const PRESETS = ['5000', '10000', '15000', '20000'];
 export default function Setup() {
   const colors = useColors();
   const { t } = useTranslation();
-  const save = useWrite((l: number) => api.setBudget(monthStart(), null, l));
+  const save = useWrite(api.setBudget);
   const [typed, setTyped] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +28,7 @@ export default function Setup() {
       try {
         const l = parseAmount(typed);
         if (l <= 0) throw new Error('x');
-        await save.mutateAsync(l);
+        await save.mutateAsync({ month: monthStart(), categoryId: null, limit: l });
       } catch { setError(t('expense.invalidAmount')); return; }
     }
     success();

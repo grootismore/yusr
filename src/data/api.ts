@@ -150,7 +150,7 @@ export async function listBudgets(month: string): Promise<BudgetRow[]> {
 }
 
 /** Set the limit from `month` on. category null = the whole month. */
-export async function setBudget(month: string, categoryId: string | null, limitLaari: number): Promise<void> {
+export async function setBudget({ month, categoryId, limit: limitLaari }: { month: string; categoryId: string | null; limit: number }): Promise<void> {
   if (PREVIEW) return;
   must(
     await getSupabase().from('budgets').upsert(
@@ -161,7 +161,7 @@ export async function setBudget(month: string, categoryId: string | null, limitL
 }
 
 /** Remove the limit entirely (every month's row for it). */
-export async function clearBudget(categoryId: string | null): Promise<void> {
+export async function clearBudget({ categoryId }: { categoryId: string | null }): Promise<void> {
   if (PREVIEW) return;
   const q = getSupabase().from('budgets').delete();
   must(await (categoryId ? q.eq('category_id', categoryId) : q.is('category_id', null)));
@@ -280,10 +280,16 @@ export async function listDebtPayments(): Promise<DebtPayment[]> {
   return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_mvr_laari,paid_on,note').order('paid_on', { ascending: false }));
 }
 
-export async function saveDebt(input: DebtInput, id?: string): Promise<void> {
+/** A new debt. The id is made on the phone, so sending it twice (after a lost reply) is still one debt. */
+export async function addDebt({ id, input }: { id?: string; input: DebtInput }): Promise<void> {
   if (PREVIEW) return;
-  const supabase = getSupabase();
-  must(id ? await supabase.from('debts').update(input).eq('id', id) : await supabase.from('debts').insert({ ...input, user_id: await uid() }));
+  const res = await getSupabase().from('debts').insert({ ...input, id, user_id: await uid() });
+  if (res.error && !isDup(res.error)) must(res);
+}
+
+export async function updateDebt({ id, input }: { id: string; input: DebtInput }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('debts').update(input).eq('id', id));
 }
 
 export async function deleteDebt(id: string): Promise<void> {

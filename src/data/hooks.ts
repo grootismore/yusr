@@ -14,8 +14,9 @@ import type { Category, Expense } from './types';
 
 export const useCategories = () => useQuery({ queryKey: ['categories'], queryFn: api.listCategories, staleTime: 5 * 60_000 });
 export const useExpenses = (month: string) => useQuery({ queryKey: ['expenses', month], queryFn: () => api.listExpenses(month) });
+// The rows are what is kept (a Map would not survive being saved on the phone); the limits that apply are worked out from them.
 export const useBudgets = (month: string) =>
-  useQuery({ queryKey: ['budgets', month], queryFn: async () => effectiveBudgets(await api.listBudgets(month), month) });
+  useQuery({ queryKey: ['budgets', month], queryFn: () => api.listBudgets(month), select: (rows) => effectiveBudgets(rows, month) });
 export const useScansUsed = () => useQuery({ queryKey: ['scans', monthStart()], queryFn: () => api.scansUsed(monthStart()) });
 export const useProfile = () => useQuery({ queryKey: ['profile'], queryFn: api.getProfile });
 export const useRates = () => useQuery({ queryKey: ['rates'], queryFn: api.getRates });

@@ -31,7 +31,7 @@ import { useGate } from '@/lib/gate';
 
 // gcTime must be at least as long as what is kept on the phone, or remembered figures would be dropped on launch.
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, gcTime: CACHE_MAX_AGE } } });
-const persistOptions = { persister, maxAge: CACHE_MAX_AGE, buster: '1', dehydrateOptions: { shouldDehydrateQuery: (q: { state: { status: string }; queryKey: readonly unknown[] }) => q.state.status === 'success' && KEEP.has(String(q.queryKey[0])) } };
+const persistOptions = { persister, maxAge: CACHE_MAX_AGE, buster: '2', dehydrateOptions: { shouldDehydrateQuery: (q: { state: { status: string }; queryKey: readonly unknown[] }) => q.state.status === 'success' && KEEP.has(String(q.queryKey[0])) } };
 
 /** On a phone the last-seen figures are kept on the device, so the app opens and shows them with no signal. */
 function Cache({ children }: { children: ReactNode }) {
