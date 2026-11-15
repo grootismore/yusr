@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
@@ -64,13 +64,21 @@ export function Backdrop() {
   return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.ground }]} />;
 }
 
+/** The app icon, as the brand mark. Decorative: the name next to it is what is read out. */
+export function Logo({ size = 32 }: { size?: number }) {
+  return <Image source={require('../../assets/images/icon.png')} accessible={false} style={{ width: size, height: size, borderRadius: size * 0.225, borderCurve: 'continuous' }} />;
+}
+
 /** Large screen title with an optional calm line under it. One place so every tab starts the same way. */
 export function ScreenTitle({ title, subtitle, trailing }: { title: string; subtitle?: string; trailing?: ReactNode }) {
   const colors = useColors();
   return (
     <View style={{ gap: space.xs, paddingTop: space.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title" style={{ flexShrink: 1 }}>{title}</Text>
+        <Row style={{ flexShrink: 1, gap: space.sm }}>
+          <Logo size={30} />
+          <Text variant="title" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
+        </Row>
         {trailing}
       </Row>
       {subtitle ? <Text color={colors.inkMuted}>{subtitle}</Text> : null}

@@ -19,7 +19,8 @@ export default function More() {
         <ListRow icon="heart-outline" title={t('more.giving')} onPress={() => router.push('/giving')} />
         <ListRow icon="leaf-outline" title={t('more.debts')} onPress={() => router.push('/debts')} />
         <ListRow icon="people-outline" title={t('more.contactSide')} onPress={() => router.push('/contact')} />
-        <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} last />
+        <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} />
+        <ListRow icon="information-circle-outline" title={t('about.title')} onPress={() => router.push('/about')} last />
       </Card>
       <Text variant="small" color={colors.inkMuted}>{t('more.about')}</Text>
       <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={() => void signOut()} />

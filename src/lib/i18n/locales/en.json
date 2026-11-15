@@ -736,5 +736,22 @@
     "stopTitle": "Stop this monthly gift?",
     "stopBody": "It will no longer show each month. What you have already paid stays in your history.",
     "stopped": "Commitment stopped"
+  },
+  "about": {
+    "title": "About Kharadhu",
+    "tagline": "Know where your money goes, in your own language.",
+    "version": "Version {{version}}",
+    "whatTitle": "What Kharadhu does",
+    "budget": "Tracks your spending and income against a monthly budget, in rufiyaa.",
+    "debts": "Helps you plan to be debt-free, with a payment suggested for each month.",
+    "giving": "Keeps your sadaqah and zakat, including gifts you commit to every month.",
+    "register": "Holds a private Wasiyyah and Amanah register for the people you trust.",
+    "raseedhu": "Raseedhu reads your receipts with AI. You check every detail before it is saved.",
+    "privateTitle": "Private by design",
+    "private": "Your records belong to you. There is no advertising and no tracking, and your data is never sold. You can delete your account and everything in it at any time in Settings.",
+    "notAdvice": "Kharadhu gives guidance and reminders only. It is not financial, legal or religious advice, and it does not give rulings.",
+    "contact": "Contact us",
+    "linksSoon": "Terms and contact details will appear here.",
+    "madeIn": "Made in the Maldives."
   }
 }

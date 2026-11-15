@@ -8,7 +8,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
+import { Button, Card, Icon, Logo, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
 import { paydayValue } from '@/features/foreign/logic';
 import { money } from '@/lib/money';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
@@ -109,7 +109,10 @@ export default function Home() {
       <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
         borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>
         <PanelArt />
-        <Text variant="heading" color={colors.onHero} accessibilityRole="header">{t('app.name')}</Text>
+        <Row style={{ gap: space.sm }}>
+          <Logo size={28} />
+          <Text variant="heading" color={colors.onHero} accessibilityRole="header">{t('app.name')}</Text>
+        </Row>
         <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
         <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
