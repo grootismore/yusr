@@ -89,7 +89,7 @@ export default function Convert() {
             </View>
             <Money laari={c.mvr_laari} prefix="→ " />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('foreign.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(c.id) }])} />
+              onPress={() => Alert.alert(t('foreign.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(c.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>

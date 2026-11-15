@@ -14,6 +14,7 @@ import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { ltr, money } from '@/lib/money';
 import { radius, space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function Reports() {
   const colors = useColors();
@@ -112,7 +113,7 @@ export default function Reports() {
                 </View>
                 <Money laari={i.mvr_laari} />
                 <IconButton icon="trash-outline" label={t('common.remove')}
-                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id) }])} />
+                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
               </Row>
             ))}
           </Card>

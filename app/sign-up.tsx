@@ -8,6 +8,7 @@ import { AuthScreen, Divider, Footer, PasswordField, PasswordRules } from '@/fea
 import { useAuth, type AuthErrorKey } from '@/lib/auth';
 import { MIN_PASSWORD, checkPassword, isEmail } from '@/lib/authForm';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function SignUp() {
   const colors = useColors();
@@ -31,9 +32,9 @@ export default function SignUp() {
     setBusy(true);
     const r = await auth.signUp(email, password);
     setBusy(false);
-    if (r.error === 'exists') setErrors({ email: t('auth.errors.exists') });
-    else if (r.error === 'weak') setErrors({ password: t('auth.errors.weak', { min: MIN_PASSWORD }) });
-    else if (r.error) setProblem(r.error);
+    if (r.error === 'exists') { setErrors({ email: t('auth.errors.exists') }); toast(t('auth.errors.exists'), 'error'); }
+    else if (r.error === 'weak') { setErrors({ password: t('auth.errors.weak', { min: MIN_PASSWORD }) }); toast(t('auth.errors.weak', { min: MIN_PASSWORD }), 'error'); }
+    else if (r.error) { setProblem(r.error); toast(t(`auth.errors.${r.error}`), 'error'); }
     else if (r.needsEmailConfirmation) router.replace({ pathname: '/check-email', params: { email: email.trim() } });
     // otherwise the session started: the app takes it from here
   }

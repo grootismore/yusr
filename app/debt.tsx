@@ -94,13 +94,13 @@ export default function DebtDetail() {
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(p.paid_on)}{p.note ? ` · ${p.note}` : ''}</Text>
             </View>
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id) }])} />
+              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>
 
       <Button kind="ghost" label={t('debts.delete')} icon="trash-outline"
-        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); router.back(); } }])} />
+        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }])} />
     </Screen>
   );
 }

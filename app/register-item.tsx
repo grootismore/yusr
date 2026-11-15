@@ -65,7 +65,7 @@ export default function RegisterItemScreen() {
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {id ? (
         <Button kind="ghost" label={t('common.remove')} icon="trash-outline"
-          onPress={() => Alert.alert(t('register.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: async () => { await remove.mutateAsync(id); router.back(); } }])} />
+          onPress={() => Alert.alert(t('register.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: async () => { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } }])} />
       ) : null}
       <Text variant="small" color={colors.inkMuted}>{t('register.honest')}</Text>
     </Screen>

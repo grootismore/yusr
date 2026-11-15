@@ -12,6 +12,7 @@ import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hij
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { formatDate, monthStart, today } from '@/lib/dates';
 import { useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function Giving() {
   const colors = useColors();
@@ -79,7 +80,7 @@ export default function Giving() {
             </View>
             <Money laari={e.amount_laari} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(e.expense_id) }])} />
+              onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(e.expense_id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>

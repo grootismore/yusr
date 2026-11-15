@@ -707,6 +707,7 @@
     "pinSet": "PIN set",
     "converted": "Exchange recorded",
     "expenseSaved": "Expense saved",
-    "paymentSaved": "Payment recorded"
+    "paymentSaved": "Payment recorded",
+    "deleted": "Deleted"
   }
 }
