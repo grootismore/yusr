@@ -10,6 +10,7 @@ import { REGISTER_KINDS, type RegisterKind } from '@/features/register/types';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function RegisterItemScreen() {
   const colors = useColors();
@@ -44,6 +45,7 @@ export default function RegisterItemScreen() {
     if (Object.keys(e).length) return;
     await save.mutateAsync({ id, kind, title: title.trim(), counterparty: who.trim() || null, amount_laari: laari, details: details.trim() });
     success();
+    toast(t('toast.saved'));
     router.back();
   }
 

@@ -7,6 +7,7 @@ import { Screen, StackHeader } from '@/components/ui';
 import { success } from '@/lib/haptics';
 import { PIN_LENGTH, savePin } from '@/lib/pin';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 /** Choose a PIN, then type it again to confirm. */
 export default function SetPin() {
@@ -24,6 +25,7 @@ export default function SetPin() {
     if (v !== first) { setFirst(null); setPin(''); setMismatch(true); return; }
     await savePin(v);
     success();
+    toast(t('toast.pinSet'));
     router.back();
   }
 

@@ -13,6 +13,7 @@ import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyStoredAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
+import { ToastHost } from '@/lib/toast';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
@@ -91,6 +92,7 @@ function Routes() {
           <Stack.Screen name="forgot-password" />
         </Stack.Protected>
       </Stack>
+      <ToastHost />
     </LockGate>
   );
 }

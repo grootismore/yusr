@@ -13,6 +13,7 @@ import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, ltr, money, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 /** Record that some of a foreign currency you were holding was exchanged to MVR. It moves holdings only: reports do not change. */
 export default function Convert() {
@@ -46,7 +47,7 @@ export default function Convert() {
     setErrors(next);
     if (!check.ok || !iso) return;
     await add.mutateAsync({ currency, amount_minor: check.minor, mvr_laari: check.mvr, converted_at: iso, note: null });
-    success(); router.back();
+    success(); toast(t('toast.converted')); router.back();
   }
 
   return (

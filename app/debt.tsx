@@ -14,6 +14,7 @@ import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function DebtDetail() {
   const colors = useColors();
@@ -50,6 +51,7 @@ export default function DebtDetail() {
     if (Object.keys(next).length) return;
     await add.mutateAsync({ debt_id: debt!.id, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
     success();
+    toast(t('toast.paymentSaved'));
     setAmount(''); setNote('');
   }
 

@@ -699,5 +699,12 @@
     "forgotTitle": "Forgot your PIN?",
     "forgotBody": "You will be signed out and the app lock removed on this phone. Sign in again to continue. Your data stays safe in your account.",
     "forgotConfirm": "Sign out"
+  },
+  "toast": {
+    "saved": "Saved",
+    "pinSet": "PIN set",
+    "converted": "Exchange recorded",
+    "expenseSaved": "Expense saved",
+    "paymentSaved": "Payment recorded"
   }
 }

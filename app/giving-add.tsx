@@ -11,6 +11,7 @@ import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
 import { space } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function GivingAdd() {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export default function GivingAdd() {
     if (Object.keys(e).length) return;
     await log.mutateAsync({ amount_laari: laari, kind, spent_at: iso!, recipient_note: note.trim() || null });
     success();
+    toast(t('toast.saved'));
     router.back();
   }
 
