@@ -10,7 +10,7 @@ jest.mock('expo-file-system', () => {
 });
 let mockN = 0;
 jest.mock('expo-crypto', () => ({ randomUUID: () => `id-${++mockN}` }));
-jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn() }));
+jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn() }));
 
 beforeEach(async () => { await clearOutbox(); });
 
@@ -104,5 +104,15 @@ describe('saving offline', () => {
     applyOptimistic(qc, 'logPoolPayment', { id: 'pp1', pool_id: 'pool', name: 'Office pool', amount_minor: 100_000, currency: 'MVR', fx_rate_to_mvr: '1', spent_at: '2026-11-05', period: '2026-11-01' });
     expect(qc.getQueryData<{ period: string }[]>(['pool-payments'])?.[0].period).toBe('2026-11-01');
     expect(qc.getQueryData<{ merchant: string }[]>(['expenses', '2026-11-01'])?.[0].merchant).toBe('Office pool');
+  });
+  it('a recurring rent received offline shows as income and the date as done', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['recurring-runs'], []);
+    qc.setQueryData(['income', '2026-11-01'], []);
+    applyOptimistic(qc, 'logRecurring', { id: 'rr1', recurring_id: 'rc', occurrence: '2026-11-05', kind: 'income', name: 'Flat rent', amount_minor: 800_000, currency: 'MVR', fx_rate_to_mvr: '1', category_id: null });
+    expect(qc.getQueryData<{ occurrence: string; income_id: string }[]>(['recurring-runs'])?.[0]).toMatchObject({ occurrence: '2026-11-05', income_id: 'rr1' });
+    expect(qc.getQueryData<{ note: string }[]>(['income', '2026-11-01'])?.[0].note).toBe('Flat rent');
+    applyOptimistic(qc, 'skipRecurring', { recurring_id: 'rc', occurrence: '2026-12-05' });
+    expect(qc.getQueryData<{ skipped: boolean }[]>(['recurring-runs'])?.[0].skipped).toBe(true);
   });
 });

@@ -200,7 +200,8 @@
     "giving": "Giving",
     "register": "Wasiyyah & Amanah",
     "contactSide": "People who trust me",
-    "pools": "Money pools"
+    "pools": "Money pools",
+    "recurring": "Recurring"
   },
   "settings": {
     "title": "Settings",
@@ -883,5 +884,56 @@
     "recordPayout": "Record payout {{amount}}",
     "payoutRecorded": "Payout added to your income",
     "total": "Pools each month: {{amount}}"
+  },
+  "recurring": {
+    "title": "Recurring",
+    "intro": "Rent you pay or receive, bills, subscriptions. Each date is added for you, or waits for you to confirm.",
+    "emptyTitle": "Nothing recurring yet",
+    "emptyBody": "Add rent, a bill or a subscription once and it's added every time it falls due.",
+    "add": "Add recurring",
+    "addTitle": "Recurring",
+    "editTitle": "Change recurring",
+    "every": {
+      "week": "Weekly",
+      "month": "Monthly",
+      "year": "Yearly"
+    },
+    "kind": {
+      "expense": "Expenses",
+      "income": "Income"
+    },
+    "kindOne": {
+      "expense": "Expense",
+      "income": "Income"
+    },
+    "nameHint": {
+      "expense": "For example, Internet or Rent.",
+      "income": "For example, Flat rent from tenant."
+    },
+    "repeats": "Repeats",
+    "starts": "First date",
+    "startsHint": "It repeats from this date. A past date adds the missed ones.",
+    "autoAdd": "Add automatically",
+    "autoNote": {
+      "expense": "Added on the day, so you don't have to.",
+      "income": "Off by default: you confirm each one when the money arrives."
+    },
+    "auto": "Automatic",
+    "manual": "You confirm",
+    "next": "Next {{date}}",
+    "dueTitle": "Due now",
+    "paid": "Record paid",
+    "received": "Record received",
+    "skip": "Skip",
+    "skipped": "Skipped",
+    "stop": "Stop this",
+    "stopTitle": "Stop this recurring item?",
+    "stopBody": "It stops adding new ones. Everything already added stays.",
+    "stopped": "Stopped",
+    "dueCard_one": "{{count}} recurring item due",
+    "dueCard_other": "{{count}} recurring items due",
+    "name": "Name",
+    "currency": "Currency",
+    "needName": "Enter a name."
   }
 }

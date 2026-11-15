@@ -12,6 +12,7 @@ import type { Conversion, KeptIncome, SplitIncome } from '@/features/foreign/log
 import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
+import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
 import type { AuditEntry, Checkin, ContactCase, ContactRegister, RegisterItem, RegisterKind, TrustedContact } from '@/features/register/types';
@@ -353,6 +354,65 @@ export async function logGiving(a: { amount_laari: number; kind: GivingKind; spe
     if (mine) return; // this very entry was saved by an earlier try
     await supabase.from('expenses').delete().eq('id', expenseId);
     throw new Error(r.error.message);
+  }
+}
+
+// ---- recurring expenses and income
+export async function listRecurring(): Promise<RecurringItem[]> {
+  if (PREVIEW) return fx.recurring;
+  return must(await getSupabase().from('recurring_items').select('id,kind,name,note,amount_minor,currency,category_id,every,starts_on,ended_on,auto_add').order('created_at', { ascending: true }));
+}
+
+export async function listRecurringRuns(): Promise<RecurringRun[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().from('recurring_runs').select('id,recurring_id,occurrence,expense_id,income_id,skipped'));
+}
+
+export async function addRecurring({ id, input }: { id?: string; input: RecurringInput }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('recurring_items').insert({ ...input, id, user_id: await uid() });
+  if (res.error && !isDup(res.error)) must(res);
+}
+
+export async function updateRecurring({ id, input }: { id: string; input: RecurringInput }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('recurring_items').update(input).eq('id', id));
+}
+
+/** Stopping keeps everything already recorded; it only ends the item. */
+export async function endRecurring(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('recurring_items').update({ ended_on: today() }).eq('id', id));
+}
+
+/** Leave one date out (the tenant did not pay this month): it is marked dealt with and nothing is recorded. */
+export async function skipRecurring({ recurring_id, occurrence }: { recurring_id: string; occurrence: string }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('recurring_runs').insert({ user_id: await uid(), recurring_id, occurrence, skipped: true });
+  if (res.error && !isDup(res.error)) must(res);
+}
+
+/**
+ * Record one date of a recurring item: an ordinary expense or income row, plus the run row that says this date is done.
+ * Safe to send twice (the id is made on the phone), and if another phone got there first the extra row is removed.
+ */
+export async function logRecurring(a: { id?: string; recurring_id: string; occurrence: string; kind: 'expense' | 'income'; name: string; amount_minor: number; currency: string; fx_rate_to_mvr: string; category_id: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  const supabase = getSupabase();
+  const user_id = await uid();
+  const table = a.kind === 'expense' ? 'expenses' : 'income';
+  const row: Record<string, unknown> = a.kind === 'expense'
+    ? { id: a.id, user_id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, category_id: a.category_id, merchant: a.name, spent_at: a.occurrence, source: 'manual' }
+    : { id: a.id, user_id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, received_at: a.occurrence, note: a.name };
+  const ins = await supabase.from(table).insert(row);
+  if (ins.error && !(a.id && isDup(ins.error))) throw new Error(ins.error.message);
+  const run = await supabase.from('recurring_runs').insert({ user_id, recurring_id: a.recurring_id, occurrence: a.occurrence, expense_id: a.kind === 'expense' ? a.id : null, income_id: a.kind === 'income' ? a.id : null });
+  if (run.error) {
+    const mine = a.id ? (await supabase.from('recurring_runs').select('id').eq('recurring_id', a.recurring_id).eq('occurrence', a.occurrence).eq(a.kind === 'expense' ? 'expense_id' : 'income_id', a.id).maybeSingle()).data : null;
+    if (mine) return; // this very row was recorded by an earlier try
+    await supabase.from(table).delete().eq('id', a.id as string); // another phone recorded this date first
+    if (isDup(run.error)) return;
+    throw new Error(run.error.message);
   }
 }
 
