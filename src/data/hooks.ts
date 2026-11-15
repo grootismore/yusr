@@ -55,6 +55,7 @@ export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn
 export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
 export const useHousehold = () => useQuery({ queryKey: ['household'], queryFn: api.getHousehold });
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });
+export const useSplit = () => useQuery({ queryKey: ['split'], queryFn: api.listSplit });
 export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
 export const usePools = () => useQuery({ queryKey: ['pools'], queryFn: api.listPools });

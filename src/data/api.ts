@@ -13,6 +13,7 @@ import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import type { Household, HouseholdEntry, HouseholdEntryInput, HouseholdMember } from '@/features/household/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
+import type { SplitData, SplitType } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
@@ -471,6 +472,61 @@ export async function logRecurring(a: { id?: string; recurring_id: string; occur
     if (isDup(run.error)) return;
     throw new Error(run.error.message);
   }
+}
+
+// ---- Split: sharing costs with friends
+export async function listSplit(): Promise<SplitData> {
+  if (PREVIEW) return fx.split;
+  const supabase = getSupabase();
+  const [groups, people, expenses, shares, settlements] = await Promise.all([
+    supabase.from('split_groups').select('id,name,currency,archived').order('created_at', { ascending: false }),
+    supabase.from('split_people').select('id,group_id,name,is_me').order('created_at', { ascending: true }),
+    supabase.from('split_expenses').select('id,group_id,description,amount_minor,paid_by,split_type,spent_on,note').order('spent_on', { ascending: false }).order('created_at', { ascending: false }),
+    supabase.from('split_shares').select('expense_id,person_id,share_minor'),
+    supabase.from('split_settlements').select('id,group_id,from_person,to_person,amount_minor,settled_on,note').order('settled_on', { ascending: false }),
+  ]);
+  return { groups: must(groups), people: must(people), expenses: must(expenses) as SplitData['expenses'], shares: must(shares), settlements: must(settlements) };
+}
+
+/** Rows are inserted with ids made on the phone, so every one of these is safe to send twice. */
+const insertOnce = async (table: string, rows: Record<string, unknown> | Record<string, unknown>[]): Promise<void> => {
+  const res = await getSupabase().from(table).insert(rows as never);
+  if (res.error && !isDup(res.error)) throw new Error(res.error.message);
+};
+
+export async function addSplitGroup(a: { id?: string; name: string; currency: string; people: { id: string; name: string; is_me: boolean }[] }): Promise<void> {
+  if (PREVIEW) return;
+  const user_id = await uid();
+  await insertOnce('split_groups', { id: a.id, user_id, name: a.name, currency: a.currency });
+  await insertOnce('split_people', a.people.map((p) => ({ id: p.id, user_id, group_id: a.id, name: p.name, is_me: p.is_me })));
+}
+export async function addSplitPerson(a: { id?: string; group_id: string; name: string }): Promise<void> {
+  if (PREVIEW) return;
+  await insertOnce('split_people', { id: a.id, user_id: await uid(), group_id: a.group_id, name: a.name, is_me: false });
+}
+export async function addSplitExpense(a: { id?: string; group_id: string; description: string; amount_minor: number; paid_by: string; split_type: SplitType; spent_on: string; note: string | null; shares: Record<string, number> }): Promise<void> {
+  if (PREVIEW) return;
+  const user_id = await uid();
+  await insertOnce('split_expenses', { id: a.id, user_id, group_id: a.group_id, description: a.description, amount_minor: a.amount_minor, paid_by: a.paid_by, split_type: a.split_type, spent_on: a.spent_on, note: a.note });
+  const rows = Object.entries(a.shares).map(([person_id, share_minor]) => ({ expense_id: a.id, person_id, group_id: a.group_id, user_id, share_minor }));
+  const res = await getSupabase().from('split_shares').upsert(rows as never, { onConflict: 'expense_id,person_id', ignoreDuplicates: true });
+  if (res.error) throw new Error(res.error.message);
+}
+export async function addSplitSettlement(a: { id?: string; group_id: string; from_person: string; to_person: string; amount_minor: number; settled_on: string; note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  await insertOnce('split_settlements', { ...a, user_id: await uid() });
+}
+export async function deleteSplitExpense(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('split_expenses').delete().eq('id', id));
+}
+export async function deleteSplitSettlement(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('split_settlements').delete().eq('id', id));
+}
+export async function deleteSplitGroup(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('split_groups').delete().eq('id', id));
 }
 
 // ---- money pools

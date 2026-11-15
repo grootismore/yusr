@@ -7,6 +7,7 @@ import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
 import type { HouseholdEntry, HouseholdEntryInput } from '@/features/household/logic';
 import type { MoneyPool, PoolInput } from '@/features/pools/logic';
+import type { SplitData } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem } from '@/features/recurring/logic';
 
 /**
@@ -26,9 +27,11 @@ const OPS = {
   addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
   // recurring
   addHouseholdEntry: api.addHouseholdEntry, updateHouseholdEntry: api.updateHouseholdEntry, deleteHouseholdEntry: api.deleteHouseholdEntry,
+  addSplitGroup: api.addSplitGroup, addSplitPerson: api.addSplitPerson, addSplitExpense: api.addSplitExpense, addSplitSettlement: api.addSplitSettlement,
+  deleteSplitExpense: api.deleteSplitExpense, deleteSplitSettlement: api.deleteSplitSettlement, deleteSplitGroup: api.deleteSplitGroup,
   addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -43,6 +46,18 @@ export function withIds<A>(op: OpName, args: A): A {
 }
 
 const monthOf = (iso: string): string => `${iso.slice(0, 7)}-01`;
+/** The Split data after one of its changes, so the screen shows it before it has been sent. */
+function patchSplit(d: SplitData, op: string, args: unknown): SplitData {
+  if (op === 'addSplitGroup') { const a = args as Parameters<typeof api.addSplitGroup>[0]; return { ...d, groups: [{ id: a.id as string, name: a.name, currency: a.currency, archived: false }, ...d.groups], people: [...d.people, ...a.people.map((p) => ({ ...p, group_id: a.id as string }))] }; }
+  if (op === 'addSplitPerson') { const a = args as Parameters<typeof api.addSplitPerson>[0]; return { ...d, people: [...d.people, { id: a.id as string, group_id: a.group_id, name: a.name, is_me: false }] }; }
+  if (op === 'addSplitExpense') { const a = args as Parameters<typeof api.addSplitExpense>[0]; return { ...d, expenses: [{ id: a.id as string, group_id: a.group_id, description: a.description, amount_minor: a.amount_minor, paid_by: a.paid_by, split_type: a.split_type, spent_on: a.spent_on, note: a.note }, ...d.expenses], shares: [...d.shares, ...Object.entries(a.shares).map(([person_id, share_minor]) => ({ expense_id: a.id as string, person_id, share_minor }))] }; }
+  if (op === 'addSplitSettlement') { const a = args as Parameters<typeof api.addSplitSettlement>[0]; return { ...d, settlements: [{ id: a.id as string, group_id: a.group_id, from_person: a.from_person, to_person: a.to_person, amount_minor: a.amount_minor, settled_on: a.settled_on, note: a.note }, ...d.settlements] }; }
+  const id = args as string;
+  if (op === 'deleteSplitExpense') return { ...d, expenses: d.expenses.filter((e) => e.id !== id), shares: d.shares.filter((s) => s.expense_id !== id) };
+  if (op === 'deleteSplitSettlement') return { ...d, settlements: d.settlements.filter((s) => s.id !== id) };
+  return { ...d, groups: d.groups.filter((g) => g.id !== id), people: d.people.filter((p) => p.group_id !== id), expenses: d.expenses.filter((e) => e.group_id !== id), settlements: d.settlements.filter((s) => s.group_id !== id) };
+}
+
 const prepend = <T,>(qc: QueryClient, key: unknown[], row: T) => qc.setQueryData<T[]>(key, (old) => [row, ...(old ?? []).filter((x) => (x as { id?: string }).id !== (row as { id?: string }).id)]);
 
 /** Show a saved-offline entry in the lists straight away; the real rows replace these once they are sent. */
@@ -125,6 +140,8 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       qc.setQueriesData<HouseholdEntry[]>({ queryKey: ['household-entries'] }, (old) => old?.map((x) => (x.id === id ? { ...x, ...input, fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } : x)));
     } else if (op === 'deleteHouseholdEntry') {
       qc.setQueriesData<HouseholdEntry[]>({ queryKey: ['household-entries'] }, (old) => old?.filter((x) => x.id !== (args as string)));
+    } else if (op === 'addSplitGroup' || op === 'addSplitPerson' || op === 'addSplitExpense' || op === 'addSplitSettlement' || op === 'deleteSplitExpense' || op === 'deleteSplitSettlement' || op === 'deleteSplitGroup') {
+      qc.setQueryData<SplitData>(['split'], (d) => (d ? patchSplit(d, op, args) : d));
     } else if (op === 'addRecurring') {
       const { id, input } = args as { id: string; input: RecurringInput };
       prepend(qc, ['recurring'], { ...input, id, ended_on: null } as RecurringItem);
