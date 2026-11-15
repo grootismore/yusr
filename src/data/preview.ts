@@ -132,3 +132,9 @@ export const trend = (months: string[]) => ({
   spend: months.map((_, i) => [820_000, 1_050_000, 960_000, 1_240_000, 1_103_000, 1_180_000][i % 6]),
   income: months.map((_, i) => [1_800_000, 1_800_000, 2_050_000, 1_800_000, 1_800_000, 2_050_000][i % 6]),
 });
+
+/** A scanned receipt's details, for screenshots. */
+export const receipt = {
+  status: 'confirmed', gst_laari: 11_04, image_path: null, service_charge_laari: null, discount_laari: null,
+  items: [{ id: 'ri1', name: 'Tandoori Grilled Package', qty: 1, total_laari: 137_96 }],
+};

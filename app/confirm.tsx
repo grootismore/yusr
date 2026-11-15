@@ -12,6 +12,7 @@ import { formatNumber, parseAmount } from '@/lib/money';
 import { checkTotals, type Draft } from '@/lib/receipt';
 import { success } from '@/lib/haptics';
 import { space, useColors } from '@/theme/tokens';
+import { today } from '@/lib/dates';
 import { toast } from '@/lib/toast';
 
 const field = (laari: number | null) => (laari == null ? '' : formatNumber(laari).replace(/,/g, ''));
@@ -43,6 +44,9 @@ export default function Confirm() {
 
   useEffect(() => { if (done) router.dismissAll(); }, [done, router]);
 
+  // A receipt from an earlier month is saved under that month, so say so before it seems to go missing.
+  const months = t('months', { returnObjects: true }) as string[];
+  const dateMonth = draft.date && draft.date.slice(0, 7) !== today().slice(0, 7) ? `${months[Number(draft.date.slice(5, 7)) - 1]} ${draft.date.slice(0, 4)}` : null;
   const check = checkTotals({
     items: items.map((i) => toLaari(i.total)), gst: toLaari(gst), service: draft.service_charge_laari ?? 0, discount: draft.discount_laari ?? 0,
     total: total ?? 0, includesGst: draft.prices_include_gst,
@@ -56,6 +60,7 @@ export default function Confirm() {
         <Button kind="ghost" label={t('confirm.discard')} onPress={() => router.back()} />
       </Row>
       <Text color={colors.inkMuted}>{t('confirm.intro')}</Text>
+      {dateMonth ? <Card tone="warn"><Row><Icon name="calendar-outline" color={colors.amberDeep} /><Text style={{ flex: 1 }}>{t('confirm.otherMonth', { month: dateMonth })}</Text></Row></Card> : null}
 
       {checkable ? (
         <Card tone={check.match ? 'good' : 'warn'}>
@@ -81,7 +86,8 @@ export default function Confirm() {
           });
           if (expense.currency !== 'MVR') await saveRate(expense.currency, expense.fx_rate_to_mvr);
           success();
-          toast(t('toast.expenseSaved'));
+          const savedMonth = expense.spent_at.slice(0, 7);
+          toast(savedMonth !== today().slice(0, 7) ? t('confirm.savedOtherMonth', { month: `${months[Number(savedMonth.slice(5, 7)) - 1]} ${savedMonth.slice(0, 4)}` }) : t('toast.expenseSaved'));
           setDone(true); // the effect below leaves once the leave-guard has been lifted
         }}
       >
