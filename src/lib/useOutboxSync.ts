@@ -7,7 +7,7 @@ import { runOp } from '@/data/queued';
 import * as Crypto from 'expo-crypto';
 import { DEFAULT_USD_RATE } from '@/features/debts/compute';
 import { dueInstalments } from '@/features/debts/auto';
-import { dueRuns } from '@/features/recurring/logic';
+import { dueRuns, shareTarget } from '@/features/recurring/logic';
 import { today } from './dates';
 import { useOnline } from './online';
 import { flushOutbox, loadOutbox, usePending } from './outbox';
@@ -40,7 +40,7 @@ export function useOutboxSync(signedIn: boolean): void {
       const own = dueRuns(items.filter((i) => i.auto_add), runs, today());
       for (const { item, occurrence } of own) {
         const rate = item.currency === 'MVR' ? '1' : rates[item.currency] ?? (item.currency === 'USD' ? String(DEFAULT_USD_RATE) : '1');
-        await api.logRecurring({ id: Crypto.randomUUID(), recurring_id: item.id, occurrence, kind: item.kind, name: item.name, amount_minor: item.amount_minor, currency: item.currency, fx_rate_to_mvr: rate, category_id: item.category_id });
+        await api.logRecurring({ id: Crypto.randomUUID(), recurring_id: item.id, occurrence, kind: item.kind, name: item.name, amount_minor: item.amount_minor, currency: item.currency, fx_rate_to_mvr: rate, category_id: item.category_id, household: shareTarget(item) });
       }
       if (due.length || own.length) await qc.invalidateQueries();
     } catch { /* offline or not ready: it is tried again next time the app opens */ }

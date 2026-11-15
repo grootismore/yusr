@@ -11,10 +11,17 @@ export interface RecurringItem {
   every: Every; starts_on: string; ended_on: string | null;
   /** true: recorded by the app on the day. false: waits as "due" until the person taps Record or Skip. */
   auto_add: boolean;
+  /** Set when shared with the household: its dates go into the shared pot. `for_user` is whose it is; `user_id` who made it. */
+  household_id?: string | null; for_user?: string | null; user_id?: string;
 }
-export type RecurringInput = Pick<RecurringItem, 'kind' | 'name' | 'note' | 'amount_minor' | 'currency' | 'category_id' | 'every' | 'starts_on' | 'auto_add'>;
+export type RecurringInput = Pick<RecurringItem, 'kind' | 'name' | 'note' | 'amount_minor' | 'currency' | 'category_id' | 'every' | 'starts_on' | 'auto_add'> & { household_id?: string | null; for_user?: string | null };
+
+/** Where a shared item's dates are recorded: the household's pot, under the person it is for (else whoever records it). Undefined for a private item. */
+export function shareTarget(item: Pick<RecurringItem, 'household_id' | 'for_user'>): { id: string; user_id?: string } | undefined {
+  return item.household_id ? { id: item.household_id, user_id: item.for_user ?? undefined } : undefined;
+}
 /** One date that has been dealt with: recorded (expense_id or income_id), skipped, or recorded and then deleted. */
-export interface RecurringRun { id: string; recurring_id: string; occurrence: string; expense_id: string | null; income_id: string | null; skipped: boolean }
+export interface RecurringRun { id: string; recurring_id: string; occurrence: string; expense_id: string | null; income_id: string | null; household_entry_id?: string | null; skipped: boolean }
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const lastDay = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate();

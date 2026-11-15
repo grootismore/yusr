@@ -9,6 +9,7 @@ import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
 import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
 import { useCategories, useCategoryName, useRecurring, useWrite } from '@/data/hooks';
+import { useShare } from '@/features/household/useShare';
 import { EVERY, type Every, type RecurringInput } from '@/features/recurring/logic';
 import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -31,6 +32,7 @@ export default function RecurringEdit() {
   const link = useWrite(api.linkRecurringRun);
   // Opened from an expense or income already recorded: start from it, and count it as the first date.
   const from = !existing && fromId && fromKind ? { kind: fromKind, id: fromId } : null;
+  const share = useShare(existing);
   const [kind, setKind] = useState<'expense' | 'income'>(existing?.kind ?? from?.kind ?? 'expense');
   const [name, setName] = useState(existing?.name ?? pName ?? '');
   const [amount, setAmount] = useState(existing ? formatNumber(existing.amount_minor).replace(/,/g, '') : pAmount ? formatNumber(Number(pAmount)).replace(/,/g, '') : '');
@@ -51,7 +53,7 @@ export default function RecurringEdit() {
     if (!iso) e.start = t('expense.invalidDate');
     setErrors(e);
     if (Object.keys(e).length) return;
-    const input: RecurringInput = { kind, name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, category_id: kind === 'expense' ? categoryId : null, every, starts_on: iso!, auto_add: auto };
+    const input: RecurringInput = { kind, name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, category_id: kind === 'expense' ? categoryId : null, every, starts_on: iso!, auto_add: auto, household_id: share.householdId, for_user: share.forUser };
     if (existing) await update.mutateAsync({ id: existing.id, input }); else {
       const newId = Crypto.randomUUID();
       await add.mutateAsync({ id: newId, input });
@@ -99,6 +101,8 @@ export default function RecurringEdit() {
           <Switch accessibilityLabel={t('recurring.autoAdd')} value={auto} onValueChange={setAuto} trackColor={{ true: colors.accent, false: colors.control }} />
         </Row>
       </Card>
+      {share.row}
+      {share.people}
       <Field label={`${t('commit.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} maxLength={200} />
       <Button label={t('common.save')} onPress={submit} loading={add.isPending || update.isPending} />
       {existing ? (
