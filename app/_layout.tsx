@@ -59,6 +59,8 @@ function Routes() {
           <Stack.Screen name="settings" />
           <Stack.Screen name="activity" />
           <Stack.Screen name="convert" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="edit-expense" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="edit-income" options={{ presentation: 'modal' }} />
           <Stack.Screen name="register" />
           <Stack.Screen name="register-item" options={{ presentation: 'modal' }} />
           <Stack.Screen name="contacts" />

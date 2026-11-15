@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
@@ -16,6 +17,7 @@ type Filter = 'all' | 'income' | 'expenses';
 export default function Activity() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const [month, setMonth] = useState(monthStart());
   const expenses = useExpenses(month).data;
@@ -60,7 +62,8 @@ export default function Activity() {
                 const i = incomeById.get(r.id);
                 if (!i) return null;
                 return (
-                  <Row key={r.id} style={{ minHeight: 56 }}>
+                  <Pressable key={r.id} accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/edit-income', params: { id: r.id } })}
+                    style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, opacity: pressed ? 0.6 : 1 })}>
                     <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
                       <Icon name="arrow-down" color={colors.accent} />
                     </View>
@@ -69,7 +72,7 @@ export default function Activity() {
                       {i.currency !== 'MVR' ? <Text latin variant="small" color={colors.inkMuted}>{money(i.amount_laari, i.currency)}</Text> : null}
                     </View>
                     <Money laari={i.mvr_laari} prefix="+" color={colors.accent} />
-                  </Row>
+                  </Pressable>
                 );
               })}
             </Card>

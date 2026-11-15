@@ -683,5 +683,17 @@
     "title": "Something went wrong",
     "body": "Please send the details below to our support team so we can fix it.",
     "continue": "Continue"
+  },
+  "edit": {
+    "expenseTitle": "Edit expense",
+    "incomeTitle": "Edit income",
+    "paymentTitle": "Edit payment",
+    "deleteExpenseTitle": "Delete this expense?",
+    "deleteExpenseBody": "It will be removed from your reports and budget.",
+    "deleteIncomeBody": "It will be removed from your income totals.",
+    "tapToEdit": "Tap to edit",
+    "delete": "Delete",
+    "cancelEdit": "Cancel editing",
+    "deleteGivingNote": "The giving record is removed too."
   }
 }

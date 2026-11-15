@@ -40,6 +40,9 @@ export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listA
 export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });
 
 export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });
+export const useExpense = (id: string | undefined) => useQuery({ queryKey: ['expense', id], queryFn: () => api.getExpense(id!), enabled: !!id });
+export const useSadaqah = (expenseId: string | undefined) => useQuery({ queryKey: ['sadaqah', expenseId], queryFn: () => api.getSadaqah(expenseId!), enabled: !!expenseId });
+export const useIncomeRow = (id: string | undefined) => useQuery({ queryKey: ['income-row', id], queryFn: () => api.getIncome(id!), enabled: !!id });
 /** What is held in each foreign currency, and the exchanges made. */
 export function useHoldings() {
   const kept = useQuery({ queryKey: ['kept-income'], queryFn: api.listKeptIncome });

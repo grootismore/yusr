@@ -14,7 +14,7 @@ import { Button, Chip, Field, Icon, Row, type IconName } from './ui';
 export const CURRENCIES = ['MVR', 'USD', 'EUR', 'GBP', 'INR', 'LKR', 'AED', 'SGD'];
 
 export interface FormInitial {
-  amountLaari?: number | null; currency?: string; category_id?: string | null; merchant?: string | null; date?: string | null; note?: string | null;
+  amountLaari?: number | null; currency?: string; rate?: string | null; category_id?: string | null; merchant?: string | null; date?: string | null; note?: string | null;
 }
 
 /**
@@ -37,7 +37,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
 
   const [amount, setAmount] = useState(initial.amountLaari != null ? formatNumber(initial.amountLaari).replace(/,/g, '') : '');
   const [currency, setCurrency] = useState(initial.currency ?? 'MVR');
-  const [rateText, setRateText] = useState<string | null>(null);
+  const [rateText, setRateText] = useState<string | null>(initial.currency && initial.currency !== 'MVR' && initial.rate ? String(Number(initial.rate)) : null);
   const [categoryId, setCategoryId] = useState<string | null>(initial.category_id ?? null);
   const [merchant, setMerchant] = useState(initial.merchant ?? '');
   const [date, setDate] = useState(formatDate(initial.date ?? today()));

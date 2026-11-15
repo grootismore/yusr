@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useCategoryName } from '@/data/hooks';
 import type { Category, Expense } from '@/data/types';
@@ -11,10 +12,13 @@ import { Icon, Row, type IconName } from './ui';
 export function ExpenseRow({ expense, category, hideDate }: { expense: Expense; category?: Category; hideDate?: boolean }) {
   const colors = useColors();
   const { t } = useTranslation();
+  const router = useRouter();
   const catName = useCategoryName();
   const title = expense.merchant || catName(category);
   return (
-    <Row accessible accessibilityLabel={`${title}, ${formatDate(expense.spent_at)}${expense.source === 'scan' ? `, ${t('common.scanned')}` : ''}`} style={{ minHeight: 56 }}>
+    <Pressable accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/edit-expense', params: { id: expense.id } })}
+      accessibilityLabel={`${title}, ${formatDate(expense.spent_at)}${expense.source === 'scan' ? `, ${t('common.scanned')}` : ''}`}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, opacity: pressed ? 0.6 : 1 })}>
       <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={(category?.icon ?? 'ellipsis') as IconName} color={colors.accent} />
       </View>
@@ -34,6 +38,6 @@ export function ExpenseRow({ expense, category, hideDate }: { expense: Expense; 
         <Money laari={expense.mvr_laari} prefix={'\u2212'} />
         {expense.currency !== 'MVR' ? <Money laari={expense.amount_laari} currency={expense.currency} variant="small" color={colors.inkMuted} /> : null}
       </View>
-    </Row>
+    </Pressable>
   );
 }
