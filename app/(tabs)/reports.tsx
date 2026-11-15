@@ -6,6 +6,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { TrendChart } from '@/components/TrendChart';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
+import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
 import { Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
@@ -56,6 +57,7 @@ export default function Reports() {
   return (
     <Screen tabbed>
       <ScreenTitle title={t('reports.title')} />
+      {expensesQuery.isError && !expensesQuery.data ? <LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
         <View style={{ paddingVertical: space.sm, paddingHorizontal: space.xl, borderRadius: radius.pill, backgroundColor: colors.accentWash }}>

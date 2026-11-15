@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { LoadError } from '@/components/LoadError';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
@@ -36,6 +37,9 @@ export default function Debts() {
   <StackHeader title={t('debts.title')} />
   );
 
+  if (debtsQ.isError && !debtsQ.data) {
+    return <Screen>{header}<LoadError onRetry={() => void debtsQ.refetch()} busy={debtsQ.isFetching} /></Screen>;
+  }
   if (!debtsQ.isLoading && debts.length === 0) {
     return (
       <Screen>
