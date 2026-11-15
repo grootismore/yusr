@@ -15,6 +15,8 @@ interface AuthValue {
   signedIn: boolean; loading: boolean;
   /** The signed-in person's email, if known. */
   email: string | null;
+  /** The signed-in person's id, if known. */
+  userId: string | null;
   signIn(email: string, password: string): Promise<AuthResult>;
   signUp(email: string, password: string): Promise<AuthResult>;
   signInWithApple(): Promise<AuthResult>;
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signedIn: PREVIEW ? process.env.EXPO_PUBLIC_PREVIEW_OUT !== '1' : !!session,
     loading,
     email: session?.user.email ?? null,
+    userId: session?.user.id ?? null,
     async signIn(email, password) {
       const { error } = await getSupabase().auth.signInWithPassword({ email: email.trim(), password });
       return error ? { error: authErrorKey(error) } : {};

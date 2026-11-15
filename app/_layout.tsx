@@ -87,6 +87,8 @@ function Routes() {
           <Stack.Screen name="release" />
           <Stack.Screen name="giving" />
           <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="household" />
+          <Stack.Screen name="household-entry" />
           <Stack.Screen name="recurring" />
           <Stack.Screen name="recurring-edit" options={{ presentation: 'modal' }} />
           <Stack.Screen name="pools" />

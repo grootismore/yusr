@@ -5,6 +5,7 @@ import * as api from './api';
 import type { Expense, NewExpense } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
+import type { HouseholdEntry, HouseholdEntryInput } from '@/features/household/logic';
 import type { MoneyPool, PoolInput } from '@/features/pools/logic';
 import type { RecurringInput, RecurringItem } from '@/features/recurring/logic';
 
@@ -24,9 +25,10 @@ const OPS = {
   // money pools
   addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
   // recurring
+  addHouseholdEntry: api.addHouseholdEntry, updateHouseholdEntry: api.updateHouseholdEntry, deleteHouseholdEntry: api.deleteHouseholdEntry,
   addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -115,6 +117,14 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       const a = args as Parameters<typeof api.logPoolPayment>[0];
       prepend(qc, ['pool-payments'], { id: a.id, pool_id: a.pool_id, expense_id: a.id, period: a.period });
       prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
+    } else if (op === 'addHouseholdEntry') {
+      const { id, householdId, input, userId } = args as { id: string; householdId: string; input: HouseholdEntryInput; userId?: string };
+      prepend(qc, ['household-entries', monthOf(input.entry_date)], { ...input, id, household_id: householdId, user_id: userId ?? '', fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } as HouseholdEntry);
+    } else if (op === 'updateHouseholdEntry') {
+      const { id, input } = args as { id: string; input: HouseholdEntryInput };
+      qc.setQueriesData<HouseholdEntry[]>({ queryKey: ['household-entries'] }, (old) => old?.map((x) => (x.id === id ? { ...x, ...input, fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } : x)));
+    } else if (op === 'deleteHouseholdEntry') {
+      qc.setQueriesData<HouseholdEntry[]>({ queryKey: ['household-entries'] }, (old) => old?.filter((x) => x.id !== (args as string)));
     } else if (op === 'addRecurring') {
       const { id, input } = args as { id: string; input: RecurringInput };
       prepend(qc, ['recurring'], { ...input, id, ended_on: null } as RecurringItem);

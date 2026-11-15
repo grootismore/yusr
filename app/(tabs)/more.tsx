@@ -21,6 +21,7 @@ export default function More() {
         <ListRow icon="shield-checkmark-outline" title={t('more.register')} onPress={() => router.push('/register')} />
         <ListRow icon="heart-outline" title={t('more.giving')} onPress={() => router.push('/giving')} />
         <ListRow icon="leaf-outline" title={t('more.debts')} onPress={() => router.push('/debts')} />
+        <ListRow icon="people-outline" title={t('household.title')} onPress={() => router.push('/household')} />
         <ListRow icon="repeat" title={t('recurring.title')} onPress={() => router.push('/recurring')} />
         <ListRow icon="cash-outline" title={t('pools.title')} onPress={() => router.push('/pools')} />
         <ListRow icon="people-outline" title={t('more.contactSide')} onPress={() => router.push('/contact')} />

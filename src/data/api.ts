@@ -11,6 +11,7 @@ import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { Conversion, KeptIncome, SplitIncome } from '@/features/foreign/logic';
 import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
+import type { Household, HouseholdEntry, HouseholdEntryInput, HouseholdMember } from '@/features/household/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
 import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
@@ -355,6 +356,61 @@ export async function logGiving(a: { amount_laari: number; kind: GivingKind; spe
     await supabase.from('expenses').delete().eq('id', expenseId);
     throw new Error(r.error.message);
   }
+}
+
+// ---- households: a shared account, and the one pot the members share
+export async function getHousehold(): Promise<{ household: Household; members: HouseholdMember[] } | null> {
+  if (PREVIEW) return fx.household;
+  const supabase = getSupabase();
+  const h = must(await supabase.from('households').select('id,name').limit(1).maybeSingle()) as Household | null;
+  if (!h) return null;
+  const members = must(await supabase.from('household_members').select('user_id,display_name,role').eq('household_id', h.id).order('joined_at')) as HouseholdMember[];
+  return { household: h, members };
+}
+
+// Membership changes only go through these database functions; the tables cannot be written directly.
+export async function createHousehold({ name, displayName }: { name: string; displayName: string }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('create_household', { p_name: name, p_display_name: displayName }));
+}
+export async function createHouseholdInvite(): Promise<string> {
+  if (PREVIEW) return 'DEMO12345678';
+  return must(await getSupabase().rpc('create_household_invite')) as string;
+}
+export async function joinHousehold({ code, displayName }: { code: string; displayName: string }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('join_household', { p_code: code, p_display_name: displayName }));
+}
+export async function leaveHousehold(): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('leave_household'));
+}
+export async function removeHouseholdMember(userId: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().rpc('remove_household_member', { p_user: userId }));
+}
+
+export async function listHouseholdEntries(month: string): Promise<HouseholdEntry[]> {
+  if (PREVIEW) return fx.householdEntries;
+  return must(
+    await getSupabase().from('household_entries').select('id,household_id,user_id,kind,amount_laari,currency,fx_rate_to_mvr,mvr_laari,category_id,merchant,note,entry_date')
+      .gte('entry_date', month).lt('entry_date', addMonths(month, 1)).order('entry_date', { ascending: false }).order('created_at', { ascending: false }),
+  );
+}
+
+/** Add to the shared pot. The id is made on the phone, so sending it twice is still one entry. */
+export async function addHouseholdEntry({ id, householdId, input }: { id?: string; householdId: string; input: HouseholdEntryInput; userId?: string }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('household_entries').insert({ ...input, id, household_id: householdId, user_id: await uid() });
+  if (res.error && !isDup(res.error)) must(res);
+}
+export async function updateHouseholdEntry({ id, input }: { id: string; input: HouseholdEntryInput }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('household_entries').update(input).eq('id', id));
+}
+export async function deleteHouseholdEntry(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('household_entries').delete().eq('id', id));
 }
 
 // ---- recurring expenses and income

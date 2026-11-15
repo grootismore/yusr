@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { SplitPay } from '@/features/foreign/SplitPay';
@@ -8,10 +8,13 @@ import { Keypad } from '@/components/Keypad';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Chip, Icon, IconButton, Row, Screen } from '@/components/ui';
+import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
-import { useCategories, useCategoryName, useWrite } from '@/data/hooks';
+import { useCategories, useCategoryName, useHousehold, useWrite } from '@/data/hooks';
+import type { HouseholdEntryInput } from '@/features/household/logic';
+import { useAuth } from '@/lib/auth';
+import { setFlag, useFlag } from '@/lib/flags';
 import type { NewExpense } from '@/data/types';
 import { formatDate } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -36,6 +39,14 @@ export default function AddExpense() {
   const addExpense = useWrite(api.addExpense);
   const addIncome = useWrite(api.addIncome);
   const addSplit = useWrite(api.addIncomeSplit);
+  const addShared = useWrite(api.addHouseholdEntry);
+  // Someone in a household can put an entry in the shared pot; the choice is remembered for next time.
+  const household = useHousehold().data;
+  const { userId } = useAuth();
+  const { shared: sharedParam } = useLocalSearchParams<{ shared?: string }>();
+  const shareByDefault = useFlag('shareByDefault') === true;
+  const [sharedPick, setSharedPick] = useState<boolean | null>(null);
+  const shared = !!household && (sharedPick ?? (sharedParam === '1' || shareByDefault));
   const isIncome = mode === 'income';
   const isSplit = mode === 'split';
   let laari = 0;
@@ -121,14 +132,22 @@ export default function AddExpense() {
           income={isIncome}
           categories={categories}
           submitLabel={t('common.save')}
-          busy={addExpense.isPending || addIncome.isPending}
+          busy={addExpense.isPending || addIncome.isPending || addShared.isPending}
           onSubmit={async (e) => {
-            await (isIncome ? addIncome : addExpense).mutateAsync(e);
+            if (shared && household) {
+              const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at };
+              await addShared.mutateAsync({ householdId: household.household.id, input, userId: userId ?? undefined });
+            } else await (isIncome ? addIncome : addExpense).mutateAsync(e);
             if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
             success();
             setSaved(e); setStep('done');
           }}
-        />
+        >
+          {household ? (
+            <SettingRow icon="people-outline" title={t('household.shareThis')} subtitle={shared ? t('household.shareOn', { name: household.household.name }) : t('household.shareOff')} value={shared}
+              onValueChange={(v) => { setSharedPick(v); void setFlag('shareByDefault', v); }} last />
+          ) : null}
+        </ExpenseForm>
       </Screen>
     );
   }
