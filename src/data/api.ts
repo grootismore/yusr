@@ -236,6 +236,29 @@ export async function scanReceipt(localUri: string, onStep?: (s: 'uploading' | '
   }
 }
 
+export interface ReceiptDetail {
+  status: string; gst_laari: number | null; image_path: string | null;
+  service_charge_laari: number | null; discount_laari: number | null;
+  items: { id: string; name: string; qty: number; total_laari: number }[];
+}
+
+/** What was on a scanned receipt: its items, GST and so on, for the expense it created. */
+export async function getReceipt(id: string): Promise<ReceiptDetail | null> {
+  if (PREVIEW) return fx.receipt;
+  const supabase = getSupabase();
+  const r = must(await supabase.from('receipts').select('status,gst_laari,image_path,raw_json').eq('id', id).maybeSingle()) as { status: string; gst_laari: number | null; image_path: string | null; raw_json: Partial<Draft> | null } | null;
+  if (!r) return null;
+  const items = must(await supabase.from('receipt_items').select('id,name,qty,total_laari').eq('receipt_id', id)) as ReceiptDetail['items'];
+  return { status: r.status, gst_laari: r.gst_laari, image_path: r.image_path, service_charge_laari: r.raw_json?.service_charge_laari ?? null, discount_laari: r.raw_json?.discount_laari ?? null, items };
+}
+
+/** A short-lived link to the kept receipt photo. */
+export async function receiptPhotoUrl(path: string): Promise<string | null> {
+  if (PREVIEW) return null;
+  const { data } = await getSupabase().storage.from('receipts').createSignedUrl(path, 300);
+  return data?.signedUrl ?? null;
+}
+
 export async function deleteReceiptImage(path: string): Promise<void> {
   if (PREVIEW) return;
   await getSupabase().storage.from('receipts').remove([path]).catch(() => undefined);

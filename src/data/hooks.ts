@@ -54,6 +54,8 @@ export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], que
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
 
 export const usePaidCommitments = (month: string) => useQuery({ queryKey: ['giving-paid', month], queryFn: () => api.listPaidCommitments(month) });
+export const useReceipt = (id: string | null | undefined) => useQuery({ queryKey: ['receipt', id], queryFn: () => api.getReceipt(id!), enabled: !!id });
+export const useReceiptPhoto = (path: string | null | undefined) => useQuery({ queryKey: ['receipt-photo', path], queryFn: () => api.receiptPhotoUrl(path!), enabled: !!path, staleTime: 240_000 });
 export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
 export const useHousehold = () => useQuery({ queryKey: ['household'], queryFn: api.getHousehold });
 /** The shared pot's totals for a month, to add to your own. Zero when you are not in a household. */

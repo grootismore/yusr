@@ -8,6 +8,7 @@ import { Button, Chip, Field, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { useCategories, useExpense, usePoolPayments, useSadaqah, useWrite } from '@/data/hooks';
+import { ReceiptDetails } from '@/components/ReceiptDetails';
 import { ConvertActions } from '@/components/ConvertActions';
 import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { success } from '@/lib/haptics';
@@ -62,6 +63,7 @@ export default function EditExpense() {
         ) : null}
       </ExpenseForm>
       {/* A giving entry or a money-pool contribution is tied to its own record, so it stays where it is. */}
+      {expense.receipt_id ? <ReceiptDetails receiptId={expense.receipt_id} totalLaari={expense.mvr_laari} /> : null}
       <ConvertActions source={{ kind: 'expense', id: expense.id, name: expense.merchant, amountMinor: expense.amount_laari, currency: expense.currency, fxRate: expense.fx_rate_to_mvr, categoryId: expense.category_id, note: expense.note, date: expense.spent_at }}
         canShare={!sadaqah && !poolPaid} canRepeat={!sadaqah && !poolPaid} removeOriginal={() => remove.mutateAsync(expense.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}

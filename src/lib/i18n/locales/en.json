@@ -153,7 +153,9 @@
     "leaveTitle": "Leave without saving?",
     "leaveBody": "This receipt hasn't been saved yet.",
     "leaveStay": "Keep editing",
-    "leaveDiscard": "Discard"
+    "leaveDiscard": "Discard",
+    "otherMonth": "This receipt is from {{month}}, so it will be saved under that month. Change the date below if that's wrong.",
+    "savedOtherMonth": "Expense saved under {{month}}"
   },
   "budget": {
     "title": "Budget",
@@ -1118,5 +1120,14 @@
     "nextYears": "Later years",
     "chooseMonth": "Choose month and year",
     "chooseYear": "Choose year"
+  },
+  "receipt": {
+    "title": "Receipt",
+    "items": "Items",
+    "needsReview": "The items didn't add up to the total when this was saved.",
+    "noItems": "No items were saved with this receipt.",
+    "subtotal": "Items",
+    "discount": "Discount",
+    "photo": "Receipt photo"
   }
 }
