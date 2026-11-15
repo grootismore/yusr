@@ -94,7 +94,7 @@
     "addExpense": "ޚަރަދު އިތުރުކުރޭ",
     "income": "އާމްދަނީ",
     "incomeLine": "އާމްދަނީ {{amount}}",
-    "leftLabel": "ބާކީ"
+    "leftLabel": "ބަޖެޓުން ބާކީ"
   },
   "expense": {
     "addTitle": "ޚަރަދު އިތުރުކުރޭ",
@@ -181,7 +181,9 @@
     "next": "އަންނަ މަސް",
     "net": "ބާކީ (އާމްދަނީ ކެނޑުނު ޚަރަދު)",
     "incomeList": "މި މަހުގެ އާމްދަނީ",
-    "netShort": "ބާކީ ވި"
+    "netShort": "އާމްދަނީން ބާކީ",
+    "paidIn": "{{currency}} ގައި ލިބުނު",
+    "paidInRate": "{{amount}} ގައި ލިބުނު، ރޭޓް {{rate}}"
   },
   "more": {
     "title": "އިތުރު",

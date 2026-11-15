@@ -94,7 +94,7 @@
     "addExpense": "Add expense",
     "income": "Income",
     "incomeLine": "Income {{amount}}",
-    "leftLabel": "Left"
+    "leftLabel": "Left of budget"
   },
   "expense": {
     "addTitle": "Add expense",
@@ -181,7 +181,9 @@
     "next": "Next month",
     "net": "Net (income minus spending)",
     "incomeList": "Income this month",
-    "netShort": "Net"
+    "netShort": "Left of income",
+    "paidIn": "Paid in {{currency}}",
+    "paidInRate": "Paid in {{amount}} at rate {{rate}}"
   },
   "more": {
     "title": "More",
