@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isNetworkError } from '@/lib/online';
+import { toast } from '@/lib/toast';
 import { useTranslation } from 'react-i18next';
 import { effectiveBudgets } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
@@ -18,7 +20,12 @@ export const useRates = () => useQuery({ queryKey: ['rates'], queryFn: api.getRa
 /** Run a write, then refresh everything it can affect. */
 export function useWrite<A, R = unknown>(fn: (a: A) => Promise<R>) {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: fn, onSuccess: () => qc.invalidateQueries() });
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast(isNetworkError(e) ? t('offline.cantSave') : t('common.saveFailed'), 'error'),
+  });
 }
 
 export function useCategoryName() {

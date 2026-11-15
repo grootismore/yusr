@@ -19,6 +19,9 @@ export function initMonitoring(): void {
     // Light tracing in production; everything locally so a test shows one.
     tracesSampleRate: __DEV__ ? 1.0 : 0.1,
     beforeSend(event) {
+      // No signal is not a bug in the app: do not report it.
+      const text = `${event.exception?.values?.[0]?.type ?? ''} ${event.exception?.values?.[0]?.value ?? ''}`;
+      if (/network request failed|failed to fetch|aborterror|load failed/i.test(text)) return null;
       delete event.user;
       delete event.request;
       delete event.extra;

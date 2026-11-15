@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, Text as RNText, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text as RNText, View } from 'react-native';
 import { Stack, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/lib/auth';
@@ -14,6 +15,8 @@ import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/
 import { applyStoredAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
 import { ToastHost } from '@/lib/toast';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { CACHE_MAX_AGE, KEEP, persister } from '@/lib/queryCache';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
@@ -24,7 +27,15 @@ import { useGate } from '@/lib/gate';
 // router bounce between the anchor and the public fallback forever on phones: a blank screen at launch. The `accept`
 // screen sends anyone without an invite token to the right place instead. Covered by src/__tests__/launchReal.test.tsx.
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+// gcTime must be at least as long as what is kept on the phone, or remembered figures would be dropped on launch.
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, gcTime: CACHE_MAX_AGE } } });
+const persistOptions = { persister, maxAge: CACHE_MAX_AGE, buster: '1', dehydrateOptions: { shouldDehydrateQuery: (q: { state: { status: string }; queryKey: readonly unknown[] }) => q.state.status === 'success' && KEEP.has(String(q.queryKey[0])) } };
+
+/** On a phone the last-seen figures are kept on the device, so the app opens and shows them with no signal. */
+function Cache({ children }: { children: ReactNode }) {
+  if (Platform.OS === 'web') return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>{children}</PersistQueryClientProvider>;
+}
 
 function Routes() {
   markBoot('routes');
@@ -94,6 +105,7 @@ function Routes() {
           <Stack.Screen name="forgot-password" />
         </Stack.Protected>
       </Stack>
+      <OfflineBanner />
       <ToastHost />
     </LockGate>
   );
@@ -191,12 +203,12 @@ function RootLayout() {
   return (
     <SafeAreaProvider>
       <I18nextProvider i18n={i18n}>
-        <QueryClientProvider client={queryClient}>
+        <Cache>
           <AuthProvider>
             <StatusBar style="auto" />
             <Direction><Routes /></Direction>
           </AuthProvider>
-        </QueryClientProvider>
+        </Cache>
       </I18nextProvider>
     </SafeAreaProvider>
   );

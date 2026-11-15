@@ -26,7 +26,8 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "scanned": "Scanned",
-    "other": "Other"
+    "other": "Other",
+    "saveFailed": "That didn't save. Please try again."
   },
   "auth": {
     "welcome": "Know where your money goes.",
@@ -761,5 +762,9 @@
   "privacy": {
     "hide": "Hide amounts",
     "show": "Show amounts"
+  },
+  "offline": {
+    "banner": "No internet. Showing what was last saved.",
+    "cantSave": "No internet, so that wasn't saved. Try again when you're back online."
   }
 }
