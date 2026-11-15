@@ -1,4 +1,5 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import * as Crypto from 'expo-crypto';
 import { addMonths, monthStart, today } from '@/lib/dates';
 import { toMvrLaari } from '@/lib/money';
 import { type BudgetRow } from '@/lib/budget';
@@ -199,7 +200,7 @@ export async function saveRate(code: string, rate: string): Promise<void> {
 // ---- Raseedhu
 export type ScanFailure = 'unreadable' | 'offline' | 'quota' | 'failed';
 export class ScanError extends Error {
-  constructor(public kind: ScanFailure, public draft: Draft | null = null) { super(kind); }
+  constructor(public kind: ScanFailure, public draft: Draft | null = null, cause?: unknown) { super(kind, { cause }); }
 }
 export interface ScanResult { draft: Draft; imageDeleted: boolean; scansLeft: number; path: string }
 
@@ -208,8 +209,10 @@ export async function scanReceipt(localUri: string, onStep?: (s: 'uploading' | '
   if (PREVIEW) throw new ScanError('failed');
   const supabase = getSupabase();
   onStep?.('uploading');
-  const path = `${await uid()}/${crypto.randomUUID()}.jpg`;
+  let path = '';
   try {
+    // The phone has no global crypto, so the id comes from expo-crypto.
+    path = `${await uid()}/${Crypto.randomUUID()}.jpg`;
     const { uri } = await compressReceipt(localUri);
     const body = await (await fetch(uri)).arrayBuffer();
     const up = await supabase.storage.from('receipts').upload(path, body, { contentType: 'image/jpeg' });
@@ -220,7 +223,7 @@ export async function scanReceipt(localUri: string, onStep?: (s: 'uploading' | '
       const detail = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
       if (detail?.error === 'quota_exceeded') throw new ScanError('quota');
       if (detail?.error === 'unreadable') throw new ScanError('unreadable', detail.draft ?? null);
-      throw new ScanError(detail ? 'failed' : 'offline');
+      throw new ScanError(detail ? 'failed' : 'offline', null, error);
     }
     return { draft: data.draft, imageDeleted: data.image_deleted, scansLeft: data.scans_left, path };
   } catch (e) {
@@ -228,8 +231,8 @@ export async function scanReceipt(localUri: string, onStep?: (s: 'uploading' | '
       if (e.kind !== 'unreadable') void deleteReceiptImage(path);
       throw e;
     }
-    void deleteReceiptImage(path);
-    throw new ScanError(/network|fetch|failed to send/i.test(String((e as Error).message)) ? 'offline' : 'failed');
+    if (path) void deleteReceiptImage(path);
+    throw new ScanError(/network|fetch|failed to send/i.test(String((e as Error).message)) ? 'offline' : 'failed', null, e);
   }
 }
 

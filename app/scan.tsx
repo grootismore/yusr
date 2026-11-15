@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, Row, Screen } from '@/components/ui';
+import { reportError } from '@/lib/monitoring';
 import { ScanError, scanReceipt, type ScanFailure } from '@/data/api';
 import { useScansUsed } from '@/data/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -32,6 +33,8 @@ export default function Scan() {
       router.replace({ pathname: '/confirm', params: { draft: JSON.stringify(r.draft), path: r.imageDeleted ? '' : r.path } });
     } catch (e) {
       const kind = e instanceof ScanError ? e.kind : 'failed';
+      // Something unexpected (not a full scan allowance, a blurry photo or no network): send it so it can be fixed.
+      if (kind === 'failed') reportError(e instanceof ScanError ? e.cause ?? e : e);
       setPartial(e instanceof ScanError ? e.draft : null);
       setProblem(kind);
       void qc.invalidateQueries({ queryKey: ['scans'] });
