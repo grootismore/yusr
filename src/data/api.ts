@@ -46,7 +46,7 @@ export async function getExpense(id: string): Promise<Expense> {
 }
 
 /** Change an expense the person entered wrongly. The MVR value is worked out by the database from amount and rate. */
-export async function updateExpense(id: string, input: NewExpense): Promise<void> {
+export async function updateExpense({ id, e: input }: { id: string; e: NewExpense }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('expenses').update({
     amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, category_id: input.category_id,
@@ -65,9 +65,9 @@ export async function getSadaqah(expenseId: string): Promise<{ id: string; kind:
   return must(await getSupabase().from('sadaqah_entries').select('id,kind,recipient_note').eq('expense_id', expenseId).maybeSingle());
 }
 
-export async function updateSadaqah(id: string, patch: { kind: GivingKind; recipient_note: string | null }): Promise<void> {
+export async function updateSadaqah({ id, kind, recipient_note }: { id: string; kind: GivingKind; recipient_note: string | null }): Promise<void> {
   if (PREVIEW) return;
-  must(await getSupabase().from('sadaqah_entries').update(patch).eq('id', id));
+  must(await getSupabase().from('sadaqah_entries').update({ kind, recipient_note }).eq('id', id));
 }
 
 export async function addExpense(input: NewExpense): Promise<void> {
@@ -76,12 +76,12 @@ export async function addExpense(input: NewExpense): Promise<void> {
   if (res.error && !isDup(res.error)) must(res);
 }
 
-export interface IncomeRow { id: string; amount_laari: number; currency: string; mvr_laari: number; received_at: string; note: string | null }
+export interface IncomeRow { id: string; amount_laari: number; currency: string; mvr_laari: number; received_at: string; note: string | null; fx_rate_to_mvr?: number; keep_in_currency?: boolean }
 
 export async function listIncome(month: string): Promise<IncomeRow[]> {
   if (PREVIEW) return fx.income;
   return must(
-    await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note').gte('received_at', month).lt('received_at', addMonths(month, 1))
+    await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note,fx_rate_to_mvr,keep_in_currency').gte('received_at', month).lt('received_at', addMonths(month, 1))
       .order('received_at', { ascending: false }).order('created_at', { ascending: false }),
   );
 }
@@ -131,7 +131,7 @@ export async function getIncome(id: string): Promise<IncomeFull> {
   return must(await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note,fx_rate_to_mvr,keep_in_currency').eq('id', id).single());
 }
 
-export async function updateIncome(id: string, input: NewExpense & { keep_in_currency: boolean }): Promise<void> {
+export async function updateIncome({ id, e: input }: { id: string; e: NewExpense & { keep_in_currency: boolean } }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('income').update({
     amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
@@ -297,7 +297,7 @@ export async function addDebtPayment(p: { id?: string; debt_id: string; amount_l
   if (res.error && !isDup(res.error)) must(res);
 }
 
-export async function updateDebtPayment(id: string, p: { amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null }): Promise<void> {
+export async function updateDebtPayment({ id, ...p }: { id: string; amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('debt_payments').update(p).eq('id', id));
 }

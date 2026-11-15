@@ -10,7 +10,7 @@ import { effectiveBudgets } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
 import * as api from './api';
 import { holdings } from '@/features/foreign/logic';
-import type { Category } from './types';
+import type { Category, Expense } from './types';
 
 export const useCategories = () => useQuery({ queryKey: ['categories'], queryFn: api.listCategories, staleTime: 5 * 60_000 });
 export const useExpenses = (month: string) => useQuery({ queryKey: ['expenses', month], queryFn: () => api.listExpenses(month) });
@@ -62,9 +62,25 @@ export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listA
 export const useContactCases = () => useQuery({ queryKey: ['contact-cases'], queryFn: api.contactCases });
 
 export const useConsents = (enabled: boolean) => useQuery({ queryKey: ['consents'], queryFn: api.listConsents, enabled, staleTime: Infinity });
-export const useExpense = (id: string | undefined) => useQuery({ queryKey: ['expense', id], queryFn: () => api.getExpense(id!), enabled: !!id });
-export const useSadaqah = (expenseId: string | undefined) => useQuery({ queryKey: ['sadaqah', expenseId], queryFn: () => api.getSadaqah(expenseId!), enabled: !!expenseId });
-export const useIncomeRow = (id: string | undefined) => useQuery({ queryKey: ['income-row', id], queryFn: () => api.getIncome(id!), enabled: !!id });
+// The edit screens start from the row already in a list the phone has, so they open with no signal; a fresh copy replaces it when there is one.
+function fromLists<T>(qc: ReturnType<typeof useQueryClient>, key: string, pick: (row: any) => T | undefined): T | undefined {
+  for (const [, rows] of qc.getQueriesData<unknown[]>({ queryKey: [key] })) for (const r of rows ?? []) { const hit = pick(r); if (hit) return hit; }
+  return undefined;
+}
+export function useExpense(id: string | undefined) {
+  const qc = useQueryClient();
+  return useQuery({ queryKey: ['expense', id], queryFn: () => api.getExpense(id!), enabled: !!id, initialData: () => fromLists<Expense>(qc, 'expenses', (r) => (r.id === id ? r : undefined)), initialDataUpdatedAt: 0 });
+}
+export function useSadaqah(expenseId: string | undefined) {
+  const qc = useQueryClient();
+  return useQuery({ queryKey: ['sadaqah', expenseId], queryFn: () => api.getSadaqah(expenseId!), enabled: !!expenseId,
+    initialData: () => (fromLists(qc, 'giving', (r) => (r.expense_id === expenseId ? { id: r.id as string, kind: r.kind, recipient_note: r.recipient_note ?? null } : undefined)) ?? undefined), initialDataUpdatedAt: 0 });
+}
+export function useIncomeRow(id: string | undefined) {
+  const qc = useQueryClient();
+  return useQuery({ queryKey: ['income-row', id], queryFn: () => api.getIncome(id!), enabled: !!id, initialDataUpdatedAt: 0,
+    initialData: () => fromLists<api.IncomeFull>(qc, 'income', (r) => (r.id === id ? { ...r, fx_rate_to_mvr: r.fx_rate_to_mvr ?? r.mvr_laari / r.amount_laari, keep_in_currency: r.keep_in_currency ?? false } : undefined)) });
+}
 /** What is held in each foreign currency, and the exchanges made. */
 export function useHoldings() {
   const kept = useQuery({ queryKey: ['kept-income'], queryFn: api.listKeptIncome });

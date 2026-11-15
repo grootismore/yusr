@@ -8,7 +8,6 @@ import { Button, Screen, SettingRow, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { useIncomeRow, useWrite } from '@/data/hooks';
-import type { NewExpense } from '@/data/types';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
 import { useColors } from '@/theme/tokens';
@@ -21,7 +20,7 @@ export default function EditIncome() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const row = useIncomeRow(id).data;
   const [keep, setKeep] = useState<boolean | null>(null);
-  const update = useWrite((a: { id: string; e: NewExpense & { keep_in_currency: boolean } }) => api.updateIncome(a.id, a.e));
+  const update = useWrite(api.updateIncome);
   const remove = useWrite(api.deleteIncome);
 
   if (!row) return <Screen><StackHeader title={t('edit.incomeTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;

@@ -39,7 +39,7 @@ export default function DebtDetail() {
   const [errors, setErrors] = useState<{ amount?: string; date?: string; rate?: string }>({});
   const add = useWrite(api.addDebtPayment);
   const removePayment = useWrite(api.deleteDebtPayment);
-  const updatePayment = useWrite((a: { id: string; amount_laari: number; paid_mvr_laari: number | null; paid_on: string; note: string | null }) => api.updateDebtPayment(a.id, { amount_laari: a.amount_laari, paid_mvr_laari: a.paid_mvr_laari, paid_on: a.paid_on, note: a.note }));
+  const updatePayment = useWrite(api.updateDebtPayment);
   const [editingId, setEditingId] = useState<string | null>(null);
   const removeDebt = useWrite(api.deleteDebt);
 
