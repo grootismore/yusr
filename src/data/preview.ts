@@ -9,6 +9,7 @@ import type { Debt, DebtPayment } from '@/features/debts/types';
 // ---- giving (preview)
 import type { GivingEntry } from '@/features/giving/logic';
 import type { MoneyPool } from '@/features/pools/logic';
+import type { HouseholdEntry } from '@/features/household/logic';
 import type { RecurringItem } from '@/features/recurring/logic';
 
 // ---- register (preview)
@@ -52,6 +53,16 @@ export const debtPayments: DebtPayment[] = [
   { id: 'p1', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-10-10', note: null },
   { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-09-10', note: 'Salary day' },
   { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_mvr_laari: null, paid_on: '2026-10-28', note: null },
+];
+export const household: { household: { id: string; name: string }; members: { user_id: string; display_name: string; role: 'owner' | 'member' }[] } = {
+  household: { id: 'hh1', name: 'Home' },
+  members: [{ user_id: 'u1', display_name: 'Aisha', role: 'owner' }, { user_id: 'u2', display_name: 'Ahmed', role: 'member' }],
+};
+export const householdEntries: HouseholdEntry[] = [
+  { id: 'he1', household_id: 'hh1', user_id: 'u1', kind: 'expense', amount_laari: 285_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 285_000, category_id: 'food-groceries', merchant: 'STO Mart', note: null, entry_date: today().slice(0, 7) + '-02' },
+  { id: 'he2', household_id: 'hh1', user_id: 'u2', kind: 'expense', amount_laari: 450_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 450_000, category_id: 'bills', merchant: 'Electricity', note: null, entry_date: today().slice(0, 7) + '-04' },
+  { id: 'he3', household_id: 'hh1', user_id: 'u1', kind: 'expense', amount_laari: 1_200_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 1_200_000, category_id: 'rent', merchant: 'Flat rent', note: null, entry_date: today().slice(0, 7) + '-01' },
+  { id: 'he4', household_id: 'hh1', user_id: 'u2', kind: 'income', amount_laari: 500_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 500_000, category_id: null, merchant: null, note: 'Towards the household', entry_date: today().slice(0, 7) + '-01' },
 ];
 export const recurring: RecurringItem[] = [
   { id: 'rc1', kind: 'income', name: 'Flat rent from tenant', note: null, amount_minor: 800_000, currency: 'MVR', category_id: null, every: 'month', starts_on: '2026-09-05', ended_on: null, auto_add: false },

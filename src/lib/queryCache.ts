@@ -8,7 +8,7 @@ import type { Persister } from '@tanstack/react-query-persist-client';
  */
 export const KEEP: ReadonlySet<string> = new Set([
   'expenses', 'income', 'kept-income', 'conversions', 'budgets', 'categories', 'debts', 'debt-payments',
-  'giving', 'giving-commitments', 'pools', 'pool-payments', 'recurring', 'recurring-runs', 'zakat', 'trend', 'profile', 'rates', 'scans',
+  'giving', 'giving-commitments', 'pools', 'pool-payments', 'recurring', 'recurring-runs', 'household', 'household-entries', 'zakat', 'trend', 'profile', 'rates', 'scans',
 ]);
 
 export const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;

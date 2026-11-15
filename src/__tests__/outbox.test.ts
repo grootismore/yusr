@@ -10,7 +10,7 @@ jest.mock('expo-file-system', () => {
 });
 let mockN = 0;
 jest.mock('expo-crypto', () => ({ randomUUID: () => `id-${++mockN}` }));
-jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn() }));
+jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn(), addHouseholdEntry: jest.fn(), updateHouseholdEntry: jest.fn(), deleteHouseholdEntry: jest.fn() }));
 
 beforeEach(async () => { await clearOutbox(); });
 
@@ -114,5 +114,16 @@ describe('saving offline', () => {
     expect(qc.getQueryData<{ note: string }[]>(['income', '2026-11-01'])?.[0].note).toBe('Flat rent');
     applyOptimistic(qc, 'skipRecurring', { recurring_id: 'rc', occurrence: '2026-12-05' });
     expect(qc.getQueryData<{ skipped: boolean }[]>(['recurring-runs'])?.[0].skipped).toBe(true);
+  });
+  it('a shared entry added, changed or deleted offline shows in the shared pot at once', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['household-entries', '2026-11-01'], []);
+    const input = { kind: 'expense' as const, amount_laari: 285_000, currency: 'MVR', fx_rate_to_mvr: '1', category_id: null, merchant: 'STO Mart', note: null, entry_date: '2026-11-10' };
+    applyOptimistic(qc, 'addHouseholdEntry', { id: 'h1', householdId: 'hh', input, userId: 'u1' });
+    expect(qc.getQueryData<{ merchant: string; mvr_laari: number; user_id: string }[]>(['household-entries', '2026-11-01'])?.[0]).toMatchObject({ merchant: 'STO Mart', mvr_laari: 285_000, user_id: 'u1' });
+    applyOptimistic(qc, 'updateHouseholdEntry', { id: 'h1', input: { ...input, amount_laari: 300_000 } });
+    expect(qc.getQueryData<{ mvr_laari: number }[]>(['household-entries', '2026-11-01'])?.[0].mvr_laari).toBe(300_000);
+    applyOptimistic(qc, 'deleteHouseholdEntry', 'h1');
+    expect(qc.getQueryData<unknown[]>(['household-entries', '2026-11-01'])).toEqual([]);
   });
 });
