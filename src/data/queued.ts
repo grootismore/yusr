@@ -3,12 +3,13 @@ import type { QueryClient } from '@tanstack/react-query';
 import { toMvrLaari } from '@/lib/money';
 import * as api from './api';
 import type { Expense, NewExpense } from './types';
+import type { Debt } from '@/features/debts/types';
 
 /**
  * The saves that still work with no signal: they are kept on the phone and sent when the connection is back.
  * Each is a "create": the phone makes the id up front, so sending one twice can never make two.
  */
-const OPS = { addExpense: api.addExpense, addIncome: api.addIncome, addIncomeSplit: api.addIncomeSplit, logGiving: api.logGiving } as const;
+const OPS = { addExpense: api.addExpense, addIncome: api.addIncome, addIncomeSplit: api.addIncomeSplit, logGiving: api.logGiving, addDebtPayment: api.addDebtPayment } as const;
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -37,6 +38,10 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
     } else if (op === 'addIncomeSplit') {
       const s = args as Parameters<typeof api.addIncomeSplit>[0];
       s.rows.forEach((r, i) => prepend(qc, ['income', monthOf(s.received_at)], { id: s.ids?.[i], amount_laari: r.amount_laari, currency: r.currency, mvr_laari: toMvrLaari(r.amount_laari, r.fx_rate_to_mvr), received_at: s.received_at, note: s.note }));
+    } else if (op === 'addDebtPayment') {
+      const p = args as Parameters<typeof api.addDebtPayment>[0];
+      prepend(qc, ['debt-payments'], { id: p.id, debt_id: p.debt_id, amount_laari: p.amount_laari, paid_mvr_laari: p.paid_mvr_laari ?? null, paid_on: p.paid_on, note: p.note });
+      qc.setQueryData<Debt[]>(['debts'], (old) => old?.map((d) => (d.id === p.debt_id ? { ...d, paid_laari: d.paid_laari + p.amount_laari, balance_laari: Math.max(0, d.balance_laari - p.amount_laari) } : d)));
     } else if (op === 'logGiving') {
       const g = args as Parameters<typeof api.logGiving>[0];
       prepend(qc, ['giving', monthOf(g.spent_at)], { id: g.id, expense_id: g.id, kind: g.kind, recipient_note: g.recipient_note, amount_laari: g.amount_laari, spent_at: g.spent_at, commitment_id: g.commitment_id ?? null });

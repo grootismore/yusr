@@ -7,11 +7,11 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Field, Icon, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useDebtPayments, useDebts, usePlanSettings, useWrite } from '@/data/hooks';
+import { useDebtPayments, useDebts, usePlanSettings, useRates, useWrite } from '@/data/hooks';
 import { computePlan } from '@/features/debts/compute';
 import { InterestTag, DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { today } from '@/lib/dates';
-import { formatNumber, parseAmount } from '@/lib/money';
+import { formatNumber, ltr, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
 
 export default function Debts() {
@@ -25,7 +25,8 @@ export default function Debts() {
   const save = useWrite(api.savePlanSettings);
   const debts = useMemo(() => debtsQ.data ?? [], [debtsQ.data]);
   const payments = useMemo(() => paymentsQ.data ?? [], [paymentsQ.data]);
-  const view = useMemo(() => computePlan(debts, payments, settings, today()), [debts, payments, settings]);
+  const rates = useRates().data;
+  const view = useMemo(() => computePlan(debts, payments, settings, today(), rates ?? {}), [debts, payments, settings, rates]);
 
   // null = show the saved (or default) amount; the text only exists while the person is typing.
   const [typed, setTyped] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export default function Debts() {
       <Card>
         <Text color={colors.inkMuted}>{t('debts.owed')}</Text>
         <Money laari={view.total} variant="display" />
+        {debts.some((d) => d.currency !== 'MVR' && d.balance_laari > 0) ? <Text variant="small" color={colors.inkMuted}>{t('debts.usdCounted', { rate: ltr(String(view.usdRate)) })}</Text> : null}
         {view.open.length === 0 ? <Text>{t('debts.settled')}</Text>
           : r.neverPaysOff ? <Row><Icon name="information-circle" color={colors.amberDeep} /><Text style={{ flex: 1 }}>{t('debts.neverPays')}</Text></Row>
           : r.debtFreeMonth ? <Row><Icon name="flag" color={colors.accent} /><Text variant="heading" style={{ flex: 1 }}>{t('debts.debtFree', { month: monthLabel(r.debtFreeMonth) })}</Text></Row> : null}
@@ -82,6 +84,7 @@ export default function Debts() {
           </Card>
 
           <Text variant="heading">{t('debts.order')}</Text>
+          <Text variant="small" color={colors.inkMuted} style={{ marginTop: -space.sm }}>{t(`debts.orderHint.${settings.strategy}`)}</Text>
           <Card>
             {view.open.map((v, i) => (
               <Pressable key={v.debt.id} accessibilityRole="button" accessibilityLabel={v.debt.lender} onPress={() => router.push({ pathname: '/debt', params: { id: v.debt.id } })} style={{ minHeight: 64, justifyContent: 'center', gap: 4 }}>
@@ -93,11 +96,17 @@ export default function Debts() {
                     <Text numberOfLines={1}>{v.debt.lender}</Text>
                     <Text variant="small" color={colors.inkMuted}>{t(`debts.kind.${v.debt.kind}`)}</Text>
                   </View>
-                  <Money laari={v.debt.balance_laari} />
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Money laari={v.debt.balance_laari} currency={v.debt.currency} />
+                    {v.debt.currency !== 'MVR' ? <Msg k="debts.about" amounts={{ amount: v.balanceMvr }} variant="small" color={colors.inkMuted} /> : null}
+                  </View>
                 </Row>
                 <View style={{ gap: 4, paddingStart: 44 }}>
                   <InterestTag interestBearing={v.debt.interest_bearing} kind={v.debt.kind} rateBps={v.debt.interest_rate_bps} />
                   <DueBadge state={v.due.state} days={v.due.days} />
+                  {v.minMvr > 0 ? <Msg k="debts.minLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : null}
+                  <Msg k={v.focus && v.suggestedMvr > v.minMvr ? 'debts.payExtra' : 'debts.payThis'} amounts={{ amount: v.suggestedMvr }} variant="small" color={v.focus && v.suggestedMvr > v.minMvr ? colors.accent : colors.ink} />
+                  {v.goodwill ? <Text variant="small" color={colors.inkMuted}>{t('debts.goodwillNote')}</Text> : null}
                   {v.clearedMonth ? <Text variant="small" color={colors.inkMuted}>{t('debts.clearedBy', { month: monthLabel(v.clearedMonth) })}</Text> : null}
                 </View>
               </Pressable>
