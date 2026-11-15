@@ -29,6 +29,12 @@ export const light = {
   coralWash: '#F1DDD9',
 } as const;
 
+/** Colours for charts, in the order they are used. Every chart also names what each colour is, so colour is never the only cue. */
+export const series = {
+  light: ['#2F5D8C', '#3E8E7E', '#C98A12', '#A8557A', '#6F63A8', '#5B8DB8', '#7C848C'],
+  dark: ['#8EC5F0', '#6CC4B0', '#E0A526', '#D68AAE', '#A99BE0', '#5F9FD6', '#9AA0A8'],
+} as const;
+
 export type Palette = { [K in keyof typeof light]: string };
 
 /** The same roles in the dark theme: same hues, lifted for contrast on a dark ground (every text pair is tested). */

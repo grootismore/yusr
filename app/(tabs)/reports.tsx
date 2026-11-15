@@ -9,7 +9,7 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, IconButton, type IconName, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
+import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, ScreenTitle, Tile } from '@/components/ui';
 import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useIncome, useRates, useTrend, useWrite } from '@/data/hooks';
 import { debtMonth } from '@/features/debts/report';
@@ -18,7 +18,9 @@ import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { ltr } from '@/lib/money';
 import { useMoneyText } from '@/lib/privacy';
-import { radius, space, useColors } from '@/theme/tokens';
+import { radius, series, space, useColors, useIsDark } from '@/theme/tokens';
+import { DonutChart } from '@/components/DonutChart';
+import { sliceShares } from '@/features/trends/chart';
 import { toast } from '@/lib/toast';
 
 export default function Reports() {
@@ -40,6 +42,8 @@ export default function Reports() {
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
     return [...m].sort((a, b) => b[1] - a[1]);
   }, [expenses]);
+  const slices = useMemo(() => sliceShares(rows), [rows]);
+  const palette = useIsDark() ? series.dark : series.light;
   const days = useMemo(() => {
     const g = new Map<string, typeof expenses>();
     for (const e of expenses) g.set(e.spent_at, [...(g.get(e.spent_at) ?? []), e]);
@@ -158,28 +162,29 @@ export default function Reports() {
         <>
           <Text variant="heading">{t('reports.byCategory')}</Text>
           <Card>
-            {rows.map(([id, amount]) => {
-              const c = id ? byId.get(id) : undefined;
-              const limit = id ? limits?.get(id) : undefined;
-              const st = budgetState(amount, limit);
+            <DonutChart values={slices.map((x) => x.value)} colors={slices.map((_, i) => palette[i % palette.length])} label={`${t('reports.byCategory')}: ${money(total)}`}>
+              <Text variant="small" color={colors.inkMuted}>{t('reports.total')}</Text>
+              <Money laari={total} variant="heading" numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 16, lineHeight: 22 }} />
+            </DonutChart>
+            {slices.map((sl, i) => {
+              const c = sl.key !== 'other' && sl.key ? byId.get(sl.key) : undefined;
+              const limit = sl.key !== 'other' && sl.key ? limits?.get(sl.key) : undefined;
+              const st = budgetState(sl.value, limit);
               return (
-                <View key={id ?? 'none'} style={{ gap: space.xs }}>
-                  <Row>
-                    <View style={{ width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}><Icon name={(c?.icon ?? 'ellipsis') as IconName} color={colors.accent} /></View>
-                    <Text style={{ flex: 1 }}>{catName(c)}</Text>
-                    <Money laari={amount} />
+                <View key={String(sl.key)} style={{ gap: 2 }}>
+                  <Row style={{ minHeight: 40 }}>
+                    <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: palette[i % palette.length] }} />
+                    <Text style={{ flex: 1 }} numberOfLines={1}>{sl.key === 'other' ? t('reports.other') : catName(c)}</Text>
+                    <Text latin variant="small" color={colors.inkMuted}>{sl.percent}%</Text>
+                    <Money laari={sl.value} />
                   </Row>
-                  <ProgressBar percent={limit ? percentUsed(amount, limit) : percentUsed(amount, Math.max(total, 1))} state={st === 'none' ? 'ok' : st} label={catName(c)} />
                   {limit ? (
-                    <>
                     <Row>
                       {st !== 'ok' ? <Icon name={st === 'over' ? 'alert-circle' : 'warning'} size={18} color={st === 'over' ? colors.coral : colors.amberDeep} /> : null}
                       {st === 'over'
-                        ? <Msg k="reports.overBy" amounts={{ amount: amount - limit }} variant="small" color={colors.coral} style={{ flex: 1 }} />
-                        : <Msg k="reports.leftOf" amounts={{ amount: limit - amount, limit }} variant="small" color={colors.inkMuted} style={{ flex: 1 }} />}
+                        ? <Msg k="reports.overBy" amounts={{ amount: sl.value - limit }} variant="small" color={colors.coral} style={{ flex: 1 }} />
+                        : <Msg k="reports.leftOf" amounts={{ amount: limit - sl.value, limit }} variant="small" color={colors.inkMuted} style={{ flex: 1 }} />}
                     </Row>
-                    {st === 'near' ? <Text variant="small">{t('reports.nearLimit')}</Text> : null}
-                    </>
                   ) : null}
                 </View>
               );

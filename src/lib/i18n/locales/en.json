@@ -189,7 +189,8 @@
     "debtPaidByYou": "Paid by you",
     "debtFromSalary": "Deducted from salary",
     "debtFromSalaryNote": "Taken before your pay arrived, so it isn't counted as spending.",
-    "debtOwed": "Still owed"
+    "debtOwed": "Still owed",
+    "other": "Other"
   },
   "more": {
     "title": "More",
