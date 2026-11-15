@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { enqueue } from '@/lib/outbox';
 import { isNetworkError } from '@/lib/online';
+import * as Crypto from 'expo-crypto';
+import { applyOptimistic, opNameOf, withIds } from './queued';
 import { toast } from '@/lib/toast';
 import { useTranslation } from 'react-i18next';
 import { effectiveBudgets } from '@/lib/budget';
@@ -22,7 +25,18 @@ export function useWrite<A, R = unknown>(fn: (a: A) => Promise<R>) {
   const qc = useQueryClient();
   const { t } = useTranslation();
   return useMutation({
-    mutationFn: fn,
+    // A create that cannot get through is kept on the phone and sent later (see queued.ts); everything else fails with a message.
+    mutationFn: async (a: A) => {
+      const op = opNameOf(fn);
+      if (!op) return fn(a);
+      const args = withIds(op, a);
+      try { return await fn(args); } catch (e) {
+        if (!isNetworkError(e)) throw e;
+        await enqueue(Crypto.randomUUID(), op, args);
+        applyOptimistic(qc, op, args);
+        return undefined as R;
+      }
+    },
     onSuccess: () => qc.invalidateQueries(),
     onError: (e) => toast(isNetworkError(e) ? t('offline.cantSave') : t('common.saveFailed'), 'error'),
   });

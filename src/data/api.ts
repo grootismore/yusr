@@ -21,6 +21,7 @@ async function uid(): Promise<string> {
   return data.session.user.id;
 }
 
+const isDup = (e: { code?: string; message?: string }): boolean => e.code === '23505' || /duplicate key/i.test(e.message ?? '');
 const must = <T>(r: { data: T | null; error: { message: string } | null }): T => {
   if (r.error) throw new Error(r.error.message);
   return r.data as T;
@@ -41,7 +42,8 @@ export async function listExpenses(month: string): Promise<Expense[]> {
 
 export async function addExpense(input: NewExpense): Promise<void> {
   if (PREVIEW) return;
-  must(await getSupabase().from('expenses').insert({ ...input, user_id: await uid(), source: 'manual' }));
+  const res = await getSupabase().from('expenses').insert({ ...input, user_id: await uid(), source: 'manual' });
+  if (res.error && !isDup(res.error)) must(res);
 }
 
 export interface IncomeRow { id: string; amount_laari: number; currency: string; mvr_laari: number; received_at: string; note: string | null }
@@ -56,9 +58,10 @@ export async function listIncome(month: string): Promise<IncomeRow[]> {
 
 export async function addIncome(input: NewExpense): Promise<void> {
   if (PREVIEW) return;
-  must(await getSupabase().from('income').insert({
-    user_id: await uid(), amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
-  }));
+  const res = await getSupabase().from('income').insert({
+    id: input.id, user_id: await uid(), amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
+  });
+  if (res.error && !isDup(res.error)) must(res);
 }
 
 /** Everything received in a foreign currency that was kept in it (all time), for the "held in USD" balance. */
@@ -84,10 +87,11 @@ export async function deleteConversion(id: string): Promise<void> {
 }
 
 /** A payday in more than one currency: one income row per line, all on the same day with the same note, saved together. */
-export async function addIncomeSplit(input: { rows: SplitIncome[]; received_at: string; note: string | null }): Promise<void> {
+export async function addIncomeSplit(input: { rows: SplitIncome[]; received_at: string; note: string | null; ids?: string[] }): Promise<void> {
   if (PREVIEW) return;
   const user_id = await uid();
-  must(await getSupabase().from('income').insert(input.rows.map((r) => ({ user_id, amount_laari: r.amount_laari, currency: r.currency, fx_rate_to_mvr: r.fx_rate_to_mvr, keep_in_currency: r.keep_in_currency, received_at: input.received_at, note: input.note }))));
+  const res = await getSupabase().from('income').insert(input.rows.map((r, i) => ({ id: input.ids?.[i], user_id, amount_laari: r.amount_laari, currency: r.currency, fx_rate_to_mvr: r.fx_rate_to_mvr, keep_in_currency: r.keep_in_currency, received_at: input.received_at, note: input.note })));
+  if (res.error && !isDup(res.error)) must(res);
 }
 
 export async function deleteIncome(id: string): Promise<void> {
@@ -276,17 +280,20 @@ export async function listGiving(month: string): Promise<GivingEntry[]> {
  * Giving is an ordinary expense in the Giving category plus a sadaqah_entries row, so the amount lives in one place.
  * ponytail: two inserts, not one transaction; if the second fails the expense is removed again.
  */
-export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null; commitment_id?: string; period?: string }): Promise<void> {
+export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null; commitment_id?: string; period?: string; id?: string }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();
   const user_id = await uid();
   const cat = must(await supabase.from('categories').select('id').eq('slug', 'giving').maybeSingle()) as { id: string } | null;
-  const expense = must(
-    await supabase.from('expenses').insert({ user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' }).select('id').single(),
-  ) as { id: string };
-  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expense.id, kind: a.kind, recipient_note: a.recipient_note, commitment_id: a.commitment_id ?? null, period: a.period ?? null });
+  const ins = await supabase.from('expenses').insert({ id: a.id, user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' }).select('id').single();
+  // Sent before (a reply was lost): the expense is already there, so carry on to the entry rather than start again.
+  if (ins.error && !(a.id && isDup(ins.error))) throw new Error(ins.error.message);
+  const expenseId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
+  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expenseId, kind: a.kind, recipient_note: a.recipient_note, commitment_id: a.commitment_id ?? null, period: a.period ?? null });
   if (r.error) {
-    await supabase.from('expenses').delete().eq('id', expense.id);
+    const mine = a.id ? (await supabase.from('sadaqah_entries').select('id').eq('expense_id', expenseId).maybeSingle()).data : null;
+    if (mine) return; // this very entry was saved by an earlier try
+    await supabase.from('expenses').delete().eq('id', expenseId);
     throw new Error(r.error.message);
   }
 }

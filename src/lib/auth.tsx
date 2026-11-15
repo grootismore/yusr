@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { type AuthErrorKey, authErrorKey } from './authErrors';
 import { markBoot } from './boot';
+import { clearOutbox } from './outbox';
 import { persister } from './queryCache';
 import { PREVIEW, getSupabase } from './supabase';
 
@@ -102,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await getSupabase().auth.updateUser({ password });
       return error ? { error: authErrorKey(error) } : {};
     },
-    async signOut() { try { await getSupabase().auth.signOut(); } finally { qc.clear(); await persister.removeClient(); } },
+    async signOut() { try { await getSupabase().auth.signOut(); } finally { qc.clear(); await persister.removeClient(); await clearOutbox(); } },
   }), [session, loading, qc]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

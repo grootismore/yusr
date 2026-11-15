@@ -21,6 +21,7 @@ import { CrashScreen } from '@/features/crash/CrashScreen';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
+import { useOutboxSync } from '@/lib/useOutboxSync';
 import { loadFlags } from '@/lib/flags';
 import { useGate } from '@/lib/gate';
 
@@ -45,6 +46,7 @@ function Routes() {
   const { signedIn, waiting, needsConsent, needsSetup } = useGate();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
+  useOutboxSync(signedIn && !WEB_LIMITED);
   if (waiting) { markBoot('routes-waiting'); return null; }
   markBoot('routes-stack');
   return (
