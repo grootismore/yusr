@@ -223,7 +223,7 @@ export async function scanReceipt(localUri: string, onStep?: (s: 'uploading' | '
       const detail = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
       if (detail?.error === 'quota_exceeded') throw new ScanError('quota');
       if (detail?.error === 'unreadable') throw new ScanError('unreadable', detail.draft ?? null);
-      throw new ScanError(detail ? 'failed' : 'offline', null, error);
+      throw new ScanError(detail ? 'failed' : 'offline', null, detail?.reason ? new Error(`scan_failed: ${detail.reason}`) : error);
     }
     return { draft: data.draft, imageDeleted: data.image_deleted, scansLeft: data.scans_left, path };
   } catch (e) {

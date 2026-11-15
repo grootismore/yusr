@@ -1,8 +1,8 @@
 // Supabase Edge Function (Deno). Secrets: GEMINI_API_KEY (set with `supabase secrets set`);
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { DEFAULT_MODEL } from './config.ts';
-import { callGemini } from './gemini.ts';
+import { MODEL_CHAIN } from './config.ts';
+import { callGeminiAny } from './gemini.ts';
 import { handleScan } from './handler.ts';
 
 const cors = {
@@ -56,9 +56,10 @@ Deno.serve(async (request) => {
       return data?.keep_receipt_images === true;
     },
     extract: async (image) =>
-      (await callGemini({
+      (await callGeminiAny({
         apiKey: Deno.env.get('GEMINI_API_KEY')!,
-        model: Deno.env.get('GEMINI_MODEL') ?? DEFAULT_MODEL,
+        // A GEMINI_MODEL secret goes first; the rest of the chain is the fallback.
+        models: [...new Set([Deno.env.get('GEMINI_MODEL'), ...MODEL_CHAIN].filter((m): m is string => !!m))],
         mimeType: image.mimeType,
         image: image.bytes,
       })).raw,
