@@ -4,29 +4,29 @@ import { useColorScheme } from 'react-native';
 // Look: "Ink and sky". A light page, a matte-black figure panel, one soft sky-blue accent for progress and the active tab.
 // Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  ground: '#E1E6EA', // page background: dusty blue-grey
-  groundDeep: '#D2D9DF', // tracks, unselected segments
-  surface: '#EEF1F4', // solid surfaces: a light dusty tone, never pure white
-  card: '#EEF1F4', // card fill
-  cardEdge: '#D0D7DE', // card rim
-  field: '#EEF1F4', // input and chip fill
+  ground: '#D3D9DF', // page background: dusty blue-grey
+  groundDeep: '#C2C9D0', // tracks, unselected segments
+  surface: '#E3E8EC', // solid surfaces: a dusty tone, never white
+  card: '#E3E8EC', // card fill
+  cardEdge: '#C3CAD2', // card rim
+  field: '#E3E8EC', // input and chip fill
   ink: '#1E2023', // text and icons: matte black
-  inkMuted: '#5B5E63', // secondary text (AA on ground and white)
-  line: '#D0D7DE', // hairlines
-  control: '#79818A', // borders of inputs and buttons (3:1 against ground)
+  inkMuted: '#4A4E54', // secondary text (AA on ground and card)
+  line: '#C3CAD2', // hairlines
+  control: '#69717A', // borders of inputs and buttons (3:1 against ground)
   accent: '#1E2023', // primary actions, selected states
   onAccent: '#FFFFFF',
-  accentWash: '#D6DDE4', // tinted tiles behind icons
+  accentWash: '#CBD2D9', // tinted tiles behind icons
   hero: '#222428', // the month's figure panel: matte black
   onHero: '#FFFFFF',
   sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
-  tile: '#EEF1F4', // neutral figure tile
+  tile: '#E3E8EC', // neutral figure tile
   onTile: '#1E2023', // text on the tiles
-  coral: '#B8362E', // over budget, errors
+  coral: '#A52D26', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
   amberDeep: '#8A5A00', // warning icons and borders (3:1+ on ground and white)
-  amberWash: '#FBF0D2', // warning background; ink text on it
-  coralWash: '#FCEAE7',
+  amberWash: '#F1E5C6', // warning background; ink text on it
+  coralWash: '#F1DDD9',
 } as const;
 
 export type Palette = { [K in keyof typeof light]: string };
@@ -49,7 +49,7 @@ export const dark: Palette = {
   hero: '#27292D',
   onHero: '#FFFFFF',
   sky: '#8EC5F0',
-  tile: '#ECECE8',
+  tile: '#C9D0D6',
   onTile: '#1E2023',
   coral: '#FF9A8C',
   amber: '#E0A526',
