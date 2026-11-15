@@ -11,7 +11,7 @@ import { Msg } from './Msg';
 import { Text } from './Text';
 import { Button, Chip, Field, Icon, Row, type IconName } from './ui';
 
-export const CURRENCIES = ['MVR', 'USD', 'EUR', 'GBP', 'INR', 'LKR', 'AED', 'SGD'];
+export const CURRENCIES = ['MVR', 'USD'];
 
 export interface FormInitial {
   amountLaari?: number | null; currency?: string; category_id?: string | null; merchant?: string | null; date?: string | null; note?: string | null;
