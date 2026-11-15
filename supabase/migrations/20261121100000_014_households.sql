@@ -5,8 +5,9 @@
 -- income that any member of the household can see, add, change and delete. A person chooses, entry by entry, whether it
 -- goes in the shared pot or stays their own.
 --
--- Membership changes only through the functions below (security definer), never by writing the tables directly:
---   create_household, create_household_invite, join_household, leave_household, remove_household_member.
+-- Membership is added only through the functions below (security definer): create_household, create_household_invite and
+-- join_household. A member can leave (delete their own row), and the owner can remove someone (delete theirs): row
+-- security allows exactly those two deletes and nothing else on the members table.
 -- A person is in at most one household. A join code is single-use, expires after seven days, and is stored only as a
 -- hash; failed attempts are limited per person.
 
@@ -177,45 +178,35 @@ begin
 end;
 $$;
 
-create function public.leave_household()
-returns void
-language plpgsql
+-- Is the signed-in person the owner of this household? Used by the policy that lets an owner remove someone.
+create function public.is_household_owner(p_household uuid)
+returns boolean
+language sql
+stable
 security definer
 set search_path = ''
 as $$
-declare
-  uid uuid := (select auth.uid());
-  hid uuid;
-  was_owner boolean;
-begin
-  select m.household_id, (m.role = 'owner') into hid, was_owner from public.household_members m where m.user_id = uid;
-  if hid is null then return; end if;
-  delete from public.household_members where user_id = uid;
-  -- If the owner left and others remain, the longest-standing member becomes the owner.
-  if was_owner then
-    update public.household_members set role = 'owner'
-     where household_id = hid
-       and user_id = (select m.user_id from public.household_members m where m.household_id = hid order by m.joined_at limit 1);
-  end if;
-end;
+  select exists (select 1 from public.household_members m where m.household_id = p_household and m.user_id = (select auth.uid()) and m.role = 'owner');
 $$;
 
-create function public.remove_household_member(p_user uuid)
-returns void
+-- When the owner leaves and others remain, the longest-standing member becomes the owner.
+create function public.household_promote()
+returns trigger
 language plpgsql
 security definer
 set search_path = ''
 as $$
-declare
-  uid uuid := (select auth.uid());
-  hid uuid;
 begin
-  select m.household_id into hid from public.household_members m where m.user_id = uid and m.role = 'owner';
-  if hid is null then raise exception 'only the owner can remove someone' using errcode = '42501'; end if;
-  if p_user = uid then raise exception 'use leave instead' using errcode = '22023'; end if;
-  delete from public.household_members where household_id = hid and user_id = p_user;
+  if old.role = 'owner' and exists (select 1 from public.household_members m where m.household_id = old.household_id) then
+    update public.household_members set role = 'owner'
+     where household_id = old.household_id
+       and user_id = (select m.user_id from public.household_members m where m.household_id = old.household_id order by m.joined_at limit 1);
+  end if;
+  return old;
 end;
 $$;
+create trigger household_members_promote after delete on public.household_members
+  for each row execute function public.household_promote();
 
 -- ------------------------------------------------------------------ row security
 
@@ -232,6 +223,9 @@ create policy household_members_member_read on public.household_members for sele
 -- A member can change only their own display name (column grant below); everything else goes through the functions.
 create policy household_members_self_update on public.household_members for update to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+-- Leave: delete your own row. Remove: the owner deletes someone else's. (Cleanup and promotion are triggers.)
+create policy household_members_leave_or_remove on public.household_members for delete to authenticated
+  using (user_id = (select auth.uid()) or public.is_household_owner(household_id));
 -- Invites and attempts have no client policy at all: only the functions touch them.
 
 create policy household_entries_member_read on public.household_entries for select to authenticated
@@ -251,6 +245,7 @@ revoke all on public.households, public.household_members, public.household_invi
   from anon, authenticated, service_role;
 grant select on public.households, public.household_members to authenticated;
 grant update (display_name) on public.household_members to authenticated;
+grant delete on public.household_members to authenticated;
 grant select, insert, update, delete on public.household_entries to authenticated;
 
 revoke all on function public.is_household_member(uuid) from public, anon, authenticated;
@@ -258,11 +253,10 @@ revoke all on function public.household_cleanup() from public, anon, authenticat
 revoke all on function public.create_household(text, text) from public, anon, authenticated;
 revoke all on function public.create_household_invite() from public, anon, authenticated;
 revoke all on function public.join_household(text, text) from public, anon, authenticated;
-revoke all on function public.leave_household() from public, anon, authenticated;
-revoke all on function public.remove_household_member(uuid) from public, anon, authenticated;
+revoke all on function public.is_household_owner(uuid) from public, anon, authenticated;
+revoke all on function public.household_promote() from public, anon, authenticated;
 grant execute on function public.is_household_member(uuid) to authenticated;
 grant execute on function public.create_household(text, text) to authenticated;
 grant execute on function public.create_household_invite() to authenticated;
 grant execute on function public.join_household(text, text) to authenticated;
-grant execute on function public.leave_household() to authenticated;
-grant execute on function public.remove_household_member(uuid) to authenticated;
+grant execute on function public.is_household_owner(uuid) to authenticated;

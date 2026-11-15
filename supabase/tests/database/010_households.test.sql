@@ -38,19 +38,32 @@ select throws_ok($$insert into public.household_entries (household_id, user_id, 
 select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
 select is((select count(*) from public.household_entries), 1::bigint, 'B sees A''s shared expense');
 select lives_ok($$update public.household_entries set amount_laari = 260000 where id = '11111111-1111-1111-1111-111111111111'$$, 'B can correct a shared entry');
-select throws_ok($$select public.remove_household_member('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')$$, '42501', null, 'only the owner can remove someone');
+delete from public.household_members where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+select is((select count(*) from public.household_members), 2::bigint, 'a member cannot remove the owner');
 select set_config('request.jwt.claim.sub', 'cccccccc-cccc-cccc-cccc-cccccccccccc', true);
 select throws_ok($$insert into public.household_entries (household_id, user_id, kind, amount_laari, entry_date) values (current_setting('t.hid')::uuid, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'expense', 100, '2026-11-10')$$, '42501', null, 'an outsider cannot add to the shared pot');
 select is((select count(*) from public.household_entries), 0::bigint, 'an outsider cannot read the shared pot');
 
 -- Leaving: the other member becomes owner, and the household goes when the last one leaves.
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true);
-select lives_ok($$select public.leave_household()$$, 'the owner leaves');
+select lives_ok($$delete from public.household_members where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'$$, 'the owner leaves');
 select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
 select is((select role from public.household_members where user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), 'owner', 'B becomes the owner');
-select lives_ok($$select public.leave_household()$$, 'B leaves too');
+select lives_ok($$delete from public.household_members where user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'$$, 'B leaves too');
 reset role;
 select is((select count(*) from public.households), 0::bigint, 'the empty household is removed, with its shared pot');
+
+-- The owner can remove a member.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true);
+select set_config('t.hid', public.create_household('Again', 'Aisha')::text, true) is not null as made2;
+select set_config('t.code', public.create_household_invite(), true) is not null as invited2;
+select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
+select lives_ok($$select public.join_household(current_setting('t.code'), 'Ahmed')$$, 'B joins again');
+select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true);
+delete from public.household_members where user_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+select is((select count(*) from public.household_members), 1::bigint, 'the owner removed B');
+reset role;
 
 select * from finish();
 rollback;

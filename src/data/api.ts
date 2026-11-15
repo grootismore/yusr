@@ -368,7 +368,7 @@ export async function getHousehold(): Promise<{ household: Household; members: H
   return { household: h, members };
 }
 
-// Membership changes only go through these database functions; the tables cannot be written directly.
+// Members are added only through these database functions; the tables cannot be written directly.
 export async function createHousehold({ name, displayName }: { name: string; displayName: string }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().rpc('create_household', { p_name: name, p_display_name: displayName }));
@@ -381,13 +381,14 @@ export async function joinHousehold({ code, displayName }: { code: string; displ
   if (PREVIEW) return;
   must(await getSupabase().rpc('join_household', { p_code: code, p_display_name: displayName }));
 }
+// Leaving and removing are deletes of a membership row; row security allows only your own, or anyone's if you are the owner.
 export async function leaveHousehold(): Promise<void> {
   if (PREVIEW) return;
-  must(await getSupabase().rpc('leave_household'));
+  must(await getSupabase().from('household_members').delete().eq('user_id', await uid()));
 }
 export async function removeHouseholdMember(userId: string): Promise<void> {
   if (PREVIEW) return;
-  must(await getSupabase().rpc('remove_household_member', { p_user: userId }));
+  must(await getSupabase().from('household_members').delete().eq('user_id', userId));
 }
 
 export async function listHouseholdEntries(month: string): Promise<HouseholdEntry[]> {
