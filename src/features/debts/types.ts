@@ -25,6 +25,7 @@ export interface Debt {
   auto_deducted: boolean;
   /** Set when shared with the household; `user_id` is who made it. */
   household_id?: string | null;
+  for_user?: string | null;
   user_id?: string;
 }
 
@@ -34,5 +35,5 @@ export interface DebtPayment { id: string; debt_id: string; amount_laari: number
 export interface DebtInput {
   lender: string; kind: DebtKind; opening_balance_laari: number; min_payment_laari: number; min_pct_bps: number | null; currency: string; due_day: number | null;
   interest_bearing: boolean; interest_rate_bps: number | null; in_register: boolean; notes: string | null;
-  auto_deducted: boolean; started_on?: string | null; household_id?: string | null;
+  auto_deducted: boolean; started_on?: string | null; household_id?: string | null; for_user?: string | null;
 }

@@ -1,3 +1,4 @@
+import { useShareTag } from '@/features/household/useTag';
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,7 @@ import { space, useColors } from '@/theme/tokens';
 export default function Debts() {
   const colors = useColors();
   const { t } = useTranslation();
+  const tag = useShareTag();
   const router = useRouter();
   const monthLabel = useMonthLabel();
   const debtsQ = useDebts();
@@ -97,7 +99,7 @@ export default function Debts() {
                     <Text variant="label" latin color={colors.accent}>{i + 1}</Text>
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={1}>{v.debt.lender}{v.debt.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('household.sharedTag')}`}</Text> : null}</Text>
+                    <Text numberOfLines={1}>{v.debt.lender}{v.debt.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${tag(v.debt)}`}</Text> : null}</Text>
                     <Text variant="small" color={colors.inkMuted}>{t(`debts.kind.${v.debt.kind}`)}</Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>

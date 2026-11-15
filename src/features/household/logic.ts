@@ -12,6 +12,8 @@ export interface HouseholdEntry {
 export interface HouseholdEntryInput {
   kind: 'expense' | 'income'; amount_laari: number; currency: string; fx_rate_to_mvr: string;
   category_id: string | null; merchant: string | null; note: string | null; entry_date: string;
+  /** Who paid or received it, when that is not the person recording it. */
+  user_id?: string;
 }
 
 export interface MemberTotal { user_id: string; name: string; paid: number; received: number }

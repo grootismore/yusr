@@ -11,6 +11,7 @@ import { Text } from '@/components/Text';
 import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
+import { PersonPick } from '@/features/household/PersonPick';
 import { useCategories, useCategoryName, useHousehold, useWrite } from '@/data/hooks';
 import type { HouseholdEntryInput } from '@/features/household/logic';
 import { useAuth } from '@/lib/auth';
@@ -45,6 +46,7 @@ export default function AddExpense() {
   const { userId } = useAuth();
   const { shared: sharedParam } = useLocalSearchParams<{ shared?: string }>();
   const shareByDefault = useFlag('shareByDefault') !== false; // in a household, shared is the default; private is the exception
+  const [whose, setWhose] = useState<string | null>(null); // who paid it or received it
   const [sharedPick, setSharedPick] = useState<boolean | null>(null);
   const shared = !!household && (sharedPick ?? (sharedParam === '1' || shareByDefault));
   const isIncome = mode === 'income';
@@ -136,13 +138,14 @@ export default function AddExpense() {
           onSubmit={async (e) => {
             if (shared && household) {
               const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at };
-              await addShared.mutateAsync({ householdId: household.household.id, input, userId: userId ?? undefined });
+              await addShared.mutateAsync({ householdId: household.household.id, input: { ...input, user_id: whose ?? userId ?? undefined }, userId: whose ?? userId ?? undefined });
             } else await (isIncome ? addIncome : addExpense).mutateAsync(e);
             if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
             success();
             setSaved(e); setStep('done');
           }}
         >
+          {household && shared ? <PersonPick label={isIncome ? t('household.whoReceived') : t('household.whoPaidIt')} value={whose ?? userId ?? null} onChange={setWhose} /> : null}
           {household ? (
             <SettingRow icon="people-outline" title={t('household.shareThis')} subtitle={shared ? t('household.shareOn', { name: household.household.name }) : t('household.shareOff')} value={shared}
               onValueChange={(v) => { setSharedPick(v); void setFlag('shareByDefault', v); }} last />

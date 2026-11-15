@@ -1024,7 +1024,12 @@
     "paidShort": "{{name}} paid",
     "coupleFull": "A couple has two people, and this one is full.",
     "tooManyForCouple": "A couple has two people. Remove someone first.",
-    "sharedTag": "Shared"
+    "sharedTag": "Shared",
+    "everyone": "Everyone",
+    "whose": "Whose is it?",
+    "tiedTo": "For {{name}}",
+    "whoPaidIt": "Who paid it?",
+    "whoReceived": "Who received it?"
   },
   "split": {
     "title": "Split",

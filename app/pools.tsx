@@ -1,3 +1,4 @@
+import { useShareTag } from '@/features/household/useTag';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,7 @@ import { space, useColors } from '@/theme/tokens';
 export default function Pools() {
   const colors = useColors();
   const { t } = useTranslation();
+  const tag = useShareTag();
   const router = useRouter();
   const text = useMoneyText();
   const poolsQ = usePools();
@@ -55,7 +57,7 @@ export default function Pools() {
               <View key={p.id} style={{ gap: space.sm, paddingVertical: space.xs }}>
                 <Row style={{ alignItems: 'center' }}>
                   <Pressable accessibilityRole="button" accessibilityLabel={p.name} onPress={() => router.push({ pathname: '/pool-edit', params: { id: p.id } })} style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={2}>{p.name}{p.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('household.sharedTag')}`}</Text> : null}</Text>
+                    <Text numberOfLines={2}>{p.name}{p.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${tag(p)}`}</Text> : null}</Text>
                     <Text variant="small" color={colors.inkMuted}>{t('pools.each', { amount: text(p.amount_minor, p.currency), day: p.due_day })}</Text>
                     {p.currency !== 'MVR' ? <Msg k="pools.about" amounts={{ amount: toMvr(p.amount_minor, p.currency, { [p.currency]: rateNum(p.currency) }) }} variant="small" color={colors.inkMuted} /> : null}
                   </Pressable>

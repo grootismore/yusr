@@ -48,7 +48,7 @@ export default function PoolEdit() {
     if (payout.trim()) { month = parseMonth(payout); if (!month) e.payout = t('pools.invalidMonth'); }
     setErrors(e);
     if (Object.keys(e).length) return;
-    const input: PoolInput = { name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, due_day: d, members: count, payout_month: month, payout_received: existing?.payout_received ?? false, household_id: share.householdId };
+    const input: PoolInput = { name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, due_day: d, members: count, payout_month: month, payout_received: existing?.payout_received ?? false, household_id: share.householdId, for_user: share.forUser };
     if (existing) await update.mutateAsync({ id: existing.id, input }); else await add.mutateAsync({ input });
     success();
     toast(t('toast.saved'));
@@ -73,6 +73,7 @@ export default function PoolEdit() {
       <Field label={`${t('pools.payout')} (${t('common.optional')})`} hint={t('pools.payoutHint')} value={payout} onChangeText={(v) => setPayout(maskMonth(v))} keyboardType="number-pad" maxLength={7} placeholder="MM/YYYY" error={errors.payout} />
       <Field label={`${t('commit.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} maxLength={200} />
       {share.row}
+      {share.people}
       <Button label={t('common.save')} onPress={submit} loading={add.isPending || update.isPending} />
       {existing ? (
         <Button kind="danger" label={t('pools.stop')}

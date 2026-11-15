@@ -409,7 +409,7 @@ export async function listHouseholdEntries(month: string): Promise<HouseholdEntr
 /** Add to the shared pot. The id is made on the phone, so sending it twice is still one entry. */
 export async function addHouseholdEntry({ id, householdId, input }: { id?: string; householdId: string; input: HouseholdEntryInput; userId?: string }): Promise<void> {
   if (PREVIEW) return;
-  const res = await getSupabase().from('household_entries').insert({ ...input, id, household_id: householdId, user_id: await uid() });
+  const res = await getSupabase().from('household_entries').insert({ ...input, id, household_id: householdId, user_id: input.user_id ?? await uid() });
   if (res.error && !isDup(res.error)) must(res);
 }
 export async function updateHouseholdEntry({ id, input }: { id: string; input: HouseholdEntryInput }): Promise<void> {
@@ -545,7 +545,7 @@ export async function deleteSplitGroup(id: string): Promise<void> {
 // ---- money pools
 export async function listPools(): Promise<MoneyPool[]> {
   if (PREVIEW) return fx.pools;
-  return must(await getSupabase().from('money_pools').select('id,user_id,household_id,name,note,amount_minor,currency,due_day,members,payout_month,payout_received,started_on,ended_on').order('created_at', { ascending: true }));
+  return must(await getSupabase().from('money_pools').select('id,user_id,household_id,for_user,name,note,amount_minor,currency,due_day,members,payout_month,payout_received,started_on,ended_on').order('created_at', { ascending: true }));
 }
 
 export async function listPoolPayments(): Promise<PoolPayment[]> {
@@ -593,7 +593,7 @@ export async function logPoolPayment(a: { id?: string; pool_id: string; name: st
 
 export async function listCommitments(): Promise<GivingCommitment[]> {
   if (PREVIEW) return [];
-  return must(await getSupabase().from('giving_commitments').select('id,user_id,household_id,recipient,note,amount_laari,kind,due_day,started_on,ended_on').order('created_at', { ascending: true }));
+  return must(await getSupabase().from('giving_commitments').select('id,user_id,household_id,for_user,recipient,note,amount_laari,kind,due_day,started_on,ended_on').order('created_at', { ascending: true }));
 }
 
 /** Which commitments have been paid for a month by anyone in the household (a shared one may be paid by the partner). */
@@ -603,7 +603,7 @@ export async function listPaidCommitments(month: string): Promise<string[]> {
   return rows.map((r) => r.commitment_id);
 }
 
-export type CommitmentInput = Pick<GivingCommitment, 'recipient' | 'note' | 'amount_laari' | 'kind' | 'due_day' | 'household_id'>;
+export type CommitmentInput = Pick<GivingCommitment, 'recipient' | 'note' | 'amount_laari' | 'kind' | 'due_day' | 'household_id' | 'for_user'>;
 export async function saveCommitment(a: { input: CommitmentInput; id?: string }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();
