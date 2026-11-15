@@ -56,8 +56,11 @@ export async function handleScan(
     usable = true;
     const imageDeleted = (await deps.keepImages(userId)) ? false : await deps.deleteImage(path);
     return reply(200, { draft: outcome.draft satisfies Draft, image_deleted: imageDeleted, ...quota });
-  } catch (_e) {
-    return reply(502, { error: 'scan_failed', ...refundedQuota(used) });
+  } catch (e) {
+    // Say why (Google's reason or a short note), never anything secret, so a failure can be fixed instead of guessed at.
+    const reason = e instanceof Error && e.name !== 'TypeError' ? e.message.slice(0, 200) : 'internal';
+    console.error('scan_failed', reason);
+    return reply(502, { error: 'scan_failed', reason, ...refundedQuota(used) });
   } finally {
     if (!usable) await deps.refundScan(userId, month).catch(() => {});
   }

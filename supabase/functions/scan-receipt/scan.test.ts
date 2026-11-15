@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildDraft, monthStart, parseDate, parseMoney } from './logic.ts';
 import { handleScan, type ScanDeps } from './handler.ts';
+import { GeminiError, callGeminiAny } from './gemini.ts';
 
 const good = {
   is_receipt: true, merchant: 'STO Mart', date: '03/11/2026', currency: 'MVR', total: '108.00', gst: '8.00',
@@ -136,4 +137,36 @@ test('missing image refunds', async () => {
   const { d, calls } = deps({ download: async () => null });
   assert.equal((await handleScan(req(), d)).status, 404);
   assert.equal(calls.refund, 1);
+});
+
+const okBody = { candidates: [{ content: { parts: [{ text: JSON.stringify(good) }] } }], usageMetadata: {} };
+const reply = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
+
+test('a withdrawn model (404) falls through to the next one', async () => {
+  const tried: string[] = [];
+  const fetchFn = (async (url: string) => {
+    const model = String(url).split('/models/')[1].split(':')[0];
+    tried.push(model);
+    return model === 'old' ? reply(404, { error: { message: 'models/old is not found' } }) : reply(200, okBody);
+  }) as unknown as typeof fetch;
+  const r = await callGeminiAny({ apiKey: 'k', models: ['old', 'new'], mimeType: 'image/jpeg', image: new Uint8Array([1]) }, fetchFn);
+  assert.deepEqual(tried, ['old', 'new']);
+  assert.equal(r.model, 'new');
+});
+
+test('any other Gemini error stops at once and says why', async () => {
+  let calls = 0;
+  const fetchFn = (async () => { calls++; return reply(400, { error: { message: 'API key not valid' } }); }) as unknown as typeof fetch;
+  await assert.rejects(
+    callGeminiAny({ apiKey: 'k', models: ['a', 'b'], mimeType: 'image/jpeg', image: new Uint8Array([1]) }, fetchFn),
+    (e: unknown) => e instanceof GeminiError && e.status === 400 && /API key not valid/.test(e.message),
+  );
+  assert.equal(calls, 1);
+});
+
+test('a failed scan tells the app the reason', async () => {
+  const { d } = deps({ extract: async () => { throw new GeminiError('gemini 404: models/x is not found', 404); } });
+  const r = await handleScan(req(), d);
+  assert.equal(r.status, 502);
+  assert.match(String(r.json.reason), /gemini 404/);
 });

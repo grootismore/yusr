@@ -1,8 +1,12 @@
 // The one place the scanner is configured. The model name lives here and nowhere else;
 // override per environment with the GEMINI_MODEL secret, or per run with eval-receipts --model.
 
-/** Cheapest Flash-Lite-class vision model that works. Confirm with scripts/eval-receipts.ts. */
-export const DEFAULT_MODEL = 'gemini-2.5-flash-lite';
+/**
+ * Flash-Lite-class models to try, in order. A model Google has withdrawn, or no longer offers to this key, answers 404, and
+ * the scanner then moves to the next. Confirm quality and cost with scripts/eval-receipts.ts.
+ */
+export const MODEL_CHAIN = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'] as const;
+export const DEFAULT_MODEL = MODEL_CHAIN[0];
 
 /** USD per 1M tokens (image tokens bill as input). Used by the eval script only. Verify at ai.google.dev/pricing. */
 export const PRICES_USD_PER_M: Record<string, { input: number; output: number }> = {
