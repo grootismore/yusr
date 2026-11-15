@@ -211,7 +211,9 @@
       "system": "Match my phone",
       "light": "Light",
       "dark": "Dark"
-    }
+    },
+    "pin": "PIN code",
+    "pinNote": "Unlock with a PIN when Face ID or fingerprint is not available."
   },
   "lock": {
     "title": "Kharadhu is locked",
@@ -683,5 +685,19 @@
     "title": "Kharadhu ran into a problem",
     "body": "Please copy the text below and send it to support. It tells us what went wrong.",
     "continue": "Continue"
+  },
+  "pin": {
+    "setTitle": "PIN code",
+    "choose": "Choose a {{count}}-digit PIN",
+    "again": "Type it again to confirm",
+    "mismatch": "The PINs did not match. Choose again.",
+    "enter": "Enter your PIN",
+    "wrong": "Wrong PIN. Try again.",
+    "wait": "Too many tries. Wait {{seconds}} seconds.",
+    "entered": "{{count}} of {{total}} digits entered",
+    "forgot": "Forgot PIN?",
+    "forgotTitle": "Forgot your PIN?",
+    "forgotBody": "You will be signed out and the app lock removed on this phone. Sign in again to continue. Your data stays safe in your account.",
+    "forgotConfirm": "Sign out"
   }
 }
