@@ -31,6 +31,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true, // tabs you are not looking at stop re-rendering
         // A floating pill: deep green, the active tab is sky.
         tabBarActiveTintColor: colors.sky,
         tabBarInactiveTintColor: '#A9C2B3',

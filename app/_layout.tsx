@@ -37,7 +37,7 @@ function Routes() {
   markBoot('routes-stack');
   return (
     <LockGate active={signedIn}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
         {/* The website: only the trusted person's pages and account deletion. */}
         <Stack.Protected guard={signedIn && !needsConsent && WEB_LIMITED}>
           <Stack.Screen name="web-home" />

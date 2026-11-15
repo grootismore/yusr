@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Text as SvgText } from 'react-native-svg';
+import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -312,8 +312,10 @@ export function PanelArt() {
   const { i18n } = useTranslation();
   const [box, setBox] = useState({ w: 0, h: 0 });
   const rtl = i18n.language === 'dv';
-  const dots = useMemo(() => {
-    const out: { x: number; y: number; o: number }[] = [];
+  // The dots are drawn as a few SVG paths (one per brightness step), not hundreds of views: far cheaper to lay out and scroll.
+  const dotPaths = useMemo(() => {
+    const STEPS = 5;
+    const buckets: string[] = Array.from({ length: STEPS }, () => '');
     const gap = 14;
     const reach = Math.max(box.w, box.h) * 0.85;
     for (let y = gap / 2; y < box.h; y += gap) {
@@ -321,10 +323,10 @@ export function PanelArt() {
         const dx = rtl ? x : box.w - x; // distance from the bottom corner on the reading-end side
         const d = Math.hypot(dx, box.h - y);
         const o = Math.max(0, 1 - d / reach) * 0.28;
-        if (o > 0.03) out.push({ x, y, o });
+        if (o > 0.03) buckets[Math.min(STEPS - 1, Math.floor((o / 0.28) * STEPS))] += `M${x - 1.2} ${y}a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0`;
       }
     }
-    return out;
+    return buckets.map((d, i) => ({ d, opacity: ((i + 0.5) / STEPS) * 0.28 }));
   }, [box.w, box.h, rtl]);
   return (
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
@@ -332,9 +334,9 @@ export function PanelArt() {
         <Svg width={box.w} height={box.h} style={[StyleSheet.absoluteFill, { direction: 'ltr' }]}>
           <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={132} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
             fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.17}>MVR</SvgText>
+          {dotPaths.map((b, i) => (b.d ? <Path key={i} d={b.d} fill={colors.onHero} fillOpacity={b.opacity} /> : null))}
         </Svg>
       )) : null}
-      {dots.map((d, i) => <View key={i} style={{ position: 'absolute', left: d.x - 1.2, top: d.y - 1.2, width: 2.4, height: 2.4, borderRadius: 1.2, backgroundColor: colors.onHero, opacity: d.o }} />)}
     </View>
   );
 }
