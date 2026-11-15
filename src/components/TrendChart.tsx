@@ -45,7 +45,7 @@ export function TrendChart({ months, spend, income, selected, onSelect }: { mont
                 <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(spend[i], max)}%`, backgroundColor: colors.accent, borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
                 <View style={{ width: '40%', maxWidth: 18, height: `${barPercent(income[i], max)}%`, borderWidth: income[i] > 0 ? 2 : 0, borderColor: colors.accent, borderBottomWidth: 0, backgroundColor: colors.sky, borderTopLeftRadius: radius.sm / 2, borderTopRightRadius: radius.sm / 2 }} />
               </View>
-              <Text latin variant="small" color={isSel ? colors.ink : colors.inkMuted} style={{ fontFamily: isSel ? 'NunitoSans_700Bold' : undefined, textDecorationLine: isSel ? 'underline' : 'none' }}>{`${m.slice(5, 7)}/${m.slice(2, 4)}`}</Text>
+              <Text latin variant="small" color={isSel ? colors.ink : colors.inkMuted} style={{ fontWeight: isSel ? '700' : undefined, textDecorationLine: isSel ? 'underline' : 'none' }}>{`${m.slice(5, 7)}/${m.slice(2, 4)}`}</Text>
             </Pressable>
           );
         })}

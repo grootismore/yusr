@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { markBoot } from '@/lib/boot';
-import { fontFor } from '@/theme/fonts';
+import { faceFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
@@ -20,6 +20,15 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
   return <Ionicons name={(name in Ionicons.glyphMap ? name : 'ellipsis-horizontal') as IconName} size={size} color={color ?? colors.ink} accessible={false} importantForAccessibility="no" />;
 };
 
+// A screen's title, told to the Screen by the ScreenTitle or StackHeader inside it, so the Screen can keep it on show
+// in a slim bar once the real title has scrolled away.
+type CompactTitle = { title: string; brand: boolean } | null;
+const CompactTitleCtx = createContext<(t: CompactTitle) => void>(() => undefined);
+function useCompactTitle(title: string, brand: boolean) {
+  const set = useContext(CompactTitleCtx);
+  useEffect(() => { set({ title, brand }); return () => set(null); }, [set, title, brand]);
+}
+
 /** Page: ground background, safe area, optional scroll. Sets the web preview direction. */
 export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false, tabbed = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
   /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode;
@@ -28,14 +37,27 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   const colors = useColors();
   const { i18n } = useTranslation();
   markBoot('screen');
+  const [own] = useState(() => new Animated.Value(0));
+  const sy = scrollY ?? own;
+  const [compact, setCompact] = useState<CompactTitle>(null);
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
       {scroll ? (
-        <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
-          {...(scrollY ? { scrollEventThrottle: 16, onScroll: Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }) } : {})}>{children}</Animated.ScrollView>
+        <CompactTitleCtx.Provider value={setCompact}>
+          <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
+            scrollEventThrottle={16} onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: sy } } }], { useNativeDriver: true })}>{children}</Animated.ScrollView>
+        </CompactTitleCtx.Provider>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
+      {compact ? (
+        <Animated.View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants"
+          style={{ position: 'absolute', top: 0, start: 0, end: 0, height: 44, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.ground, borderBottomWidth: 1, borderBottomColor: colors.line,
+            opacity: sy.interpolate({ inputRange: [48, 96], outputRange: [0, 1], extrapolate: 'clamp' }) }}>
+          {compact.brand ? <Logo size={22} /> : null}
+          <Text variant="heading" numberOfLines={1} style={{ flex: 1 }}>{compact.title}</Text>
+        </Animated.View>
+      ) : null}
       {overlay}
     </SafeAreaView>
   );
@@ -72,12 +94,14 @@ export function Logo({ size = 32 }: { size?: number }) {
 /** Large screen title with an optional calm line under it. One place so every tab starts the same way. */
 export function ScreenTitle({ title, subtitle, trailing }: { title: string; subtitle?: string; trailing?: ReactNode }) {
   const colors = useColors();
+  useCompactTitle(title, true);
   return (
-    <View style={{ gap: space.xs, paddingTop: space.sm }}>
+    // A large title with room to breathe: more above it than below it, and a clear step down to the content.
+    <View style={{ gap: space.sm, paddingTop: space.lg, paddingBottom: space.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Row style={{ flexShrink: 1, gap: space.sm }}>
-          <Logo size={30} />
-          <Text variant="title" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
+        <Row style={{ flexShrink: 1, gap: space.md }}>
+          <Logo size={34} />
+          <Text variant="largeTitle" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
         </Row>
         {trailing}
       </Row>
@@ -170,7 +194,7 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
         {...rest}
         style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.field, paddingHorizontal: space.lg, paddingVertical: space.sm,
-          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
+          ...faceFor(i18n.language, 'regular', rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
         {...(ltr ? { dir: 'ltr' } : {})}
       />
       {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, right: 4, justifyContent: 'center' }}>{trailing}</View> : null}
@@ -231,8 +255,9 @@ export const Row = ({ children, style, ...rest }: ViewProps & { children: ReactN
 export function StackHeader({ title, numberOfLines }: { title: string; numberOfLines?: number }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  useCompactTitle(title, false);
   return (
-    <Row style={{ gap: space.xs }}>
+    <Row style={{ gap: space.sm, paddingTop: space.sm, paddingBottom: space.sm }}>
       <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} />
       <Text variant="title" style={{ flex: 1 }} numberOfLines={numberOfLines}>{title}</Text>
     </Row>
