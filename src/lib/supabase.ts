@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getItem, removeItem, setItem } from './kv';
+import { setOnline } from './online';
 
 export const PREVIEW = process.env.EXPO_PUBLIC_PREVIEW === '1'; // web screenshots with fixture data, never in builds
 
@@ -46,6 +47,25 @@ const sessionStorage = {
   },
 };
 
+const REQUEST_TIMEOUT_MS = 15_000;
+/** Every request gives up after 15 seconds and tells the app whether it got through, so a weak signal never hangs a screen. */
+export const timedFetch: typeof fetch = async (input, init) => {
+  const ctl = new AbortController();
+  const outer = init?.signal;
+  if (outer) { if (outer.aborted) ctl.abort(); else outer.addEventListener('abort', () => ctl.abort(), { once: true }); }
+  const timer = setTimeout(() => ctl.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(input, { ...init, signal: ctl.signal });
+    setOnline(true);
+    return res;
+  } catch (e) {
+    if (!outer?.aborted) setOnline(false);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 let client: SupabaseClient | undefined;
 
 export function getSupabase(): SupabaseClient {
@@ -56,6 +76,7 @@ export function getSupabase(): SupabaseClient {
   assertClientSafeKey(key);
   client = createClient(url, key, {
     auth: { storage: sessionStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
+    global: { fetch: timedFetch },
   });
   return client;
 }

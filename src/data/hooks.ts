@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { enqueue } from '@/lib/outbox';
+import { isNetworkError } from '@/lib/online';
+import * as Crypto from 'expo-crypto';
+import { applyOptimistic, opNameOf, withIds } from './queued';
+import { toast } from '@/lib/toast';
 import { useTranslation } from 'react-i18next';
 import { effectiveBudgets } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
@@ -18,7 +23,23 @@ export const useRates = () => useQuery({ queryKey: ['rates'], queryFn: api.getRa
 /** Run a write, then refresh everything it can affect. */
 export function useWrite<A, R = unknown>(fn: (a: A) => Promise<R>) {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: fn, onSuccess: () => qc.invalidateQueries() });
+  const { t } = useTranslation();
+  return useMutation({
+    // A create that cannot get through is kept on the phone and sent later (see queued.ts); everything else fails with a message.
+    mutationFn: async (a: A) => {
+      const op = opNameOf(fn);
+      if (!op) return fn(a);
+      const args = withIds(op, a);
+      try { return await fn(args); } catch (e) {
+        if (!isNetworkError(e)) throw e;
+        await enqueue(Crypto.randomUUID(), op, args);
+        applyOptimistic(qc, op, args);
+        return undefined as R;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast(isNetworkError(e) ? t('offline.cantSave') : t('common.saveFailed'), 'error'),
+  });
 }
 
 export function useCategoryName() {
@@ -30,6 +51,7 @@ export const useDebts = () => useQuery({ queryKey: ['debts'], queryFn: api.listD
 export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], queryFn: api.listDebtPayments });
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
 
+export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
 export const useGiving = (month: string) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month) });
 export const useZakat = (enabled = true) => useQuery({ queryKey: ['zakat'], queryFn: api.getZakat, enabled });
 

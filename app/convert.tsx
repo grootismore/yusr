@@ -9,10 +9,11 @@ import { Button, Card, Chip, Field, IconButton, Row, Screen, StackHeader } from 
 import * as api from '@/data/api';
 import { useHoldings, useWrite } from '@/data/hooks';
 import { checkConversion, conversionGain, paydayValue } from '@/features/foreign/logic';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, ltr, money, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 /** Record that some of a foreign currency you were holding was exchanged to MVR. It moves holdings only: reports do not change. */
 export default function Convert() {
@@ -46,7 +47,7 @@ export default function Convert() {
     setErrors(next);
     if (!check.ok || !iso) return;
     await add.mutateAsync({ currency, amount_minor: check.minor, mvr_laari: check.mvr, converted_at: iso, note: null });
-    success(); router.back();
+    success(); toast(t('toast.converted')); router.back();
   }
 
   return (
@@ -67,7 +68,7 @@ export default function Convert() {
               : <Msg k={gain > 0 ? 'foreign.gain' : 'foreign.loss'} amounts={{ amount: Math.abs(gain) }} color={gain > 0 ? colors.accent : colors.coral} />
           ) : null}
           <View style={{ gap: space.sm }}>
-            <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(v); setErrors({}); }} keyboardType="numbers-and-punctuation" error={errors.date} />
+            <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(maskDate(v)); setErrors({}); }} keyboardType="number-pad" maxLength={10} error={errors.date} />
             <Row>
               <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
               <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
@@ -88,7 +89,7 @@ export default function Convert() {
             </View>
             <Money laari={c.mvr_laari} prefix="→ " />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('foreign.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(c.id) }])} />
+              onPress={() => Alert.alert(t('foreign.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(c.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>

@@ -7,7 +7,7 @@ import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import { useCategories, useExpenses, useIncome } from '@/data/hooks';
-import { money } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
 
@@ -17,6 +17,7 @@ type Filter = 'all' | 'income' | 'expenses';
 export default function Activity() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
+  const money = useMoneyText();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const [month, setMonth] = useState(monthStart());

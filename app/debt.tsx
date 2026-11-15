@@ -11,10 +11,11 @@ import { useDebtPayments, useDebts, usePlanSettings, useRates, useWrite } from '
 import { computePlan, fromMvr, minimumNow } from '@/features/debts/compute';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
 import { dueStatus } from '@/features/debts/due';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, ltr, money, parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function DebtDetail() {
   const colors = useColors();
@@ -84,6 +85,7 @@ export default function DebtDetail() {
     else await add.mutateAsync({ debt_id: debt!.id, ...row });
     if (fx) await api.saveRate(debt!.currency, rateText);
     success();
+    toast(t('toast.paymentSaved'));
     reset();
   }
 
@@ -133,7 +135,7 @@ export default function DebtDetail() {
               {plan.usingDefaultRate && rateTyped === null ? <Text variant="small" color={colors.inkMuted}>{t('debts.defaultRate', { rate: ltr(String(plan.usdRate)) })}</Text> : null}
             </>
           ) : null}
-          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />
+          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.date} />
           <Row>
             <Button kind="ghost" label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
             <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
@@ -162,13 +164,13 @@ export default function DebtDetail() {
               setDate(formatDate(p.paid_on)); setNote(p.note ?? ''); setErrors({});
             }} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id) }])} />
+              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>
 
       <Button kind="ghost" label={t('debts.delete')} icon="trash-outline"
-        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); router.back(); } }])} />
+        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }])} />
     </Screen>
   );
 }

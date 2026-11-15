@@ -1,8 +1,10 @@
+import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, ListRow, Screen, ScreenTitle } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { usePending } from '@/lib/outbox';
 import { space, useColors } from '@/theme/tokens';
 
 export default function More() {
@@ -10,6 +12,7 @@ export default function More() {
   const { t } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();
+  const pending = usePending();
   return (
     <Screen tabbed>
       <ScreenTitle title={t('more.title')} />
@@ -19,10 +22,13 @@ export default function More() {
         <ListRow icon="heart-outline" title={t('more.giving')} onPress={() => router.push('/giving')} />
         <ListRow icon="leaf-outline" title={t('more.debts')} onPress={() => router.push('/debts')} />
         <ListRow icon="people-outline" title={t('more.contactSide')} onPress={() => router.push('/contact')} />
-        <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} last />
+        <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} />
+        <ListRow icon="information-circle-outline" title={t('about.title')} onPress={() => router.push('/about')} last />
       </Card>
       <Text variant="small" color={colors.inkMuted}>{t('more.about')}</Text>
-      <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={() => void signOut()} />
+      <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={() => (pending > 0
+        ? Alert.alert(t('offline.signOutWaiting', { count: pending }), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('offline.signOutAnyway'), style: 'destructive', onPress: () => void signOut() }])
+        : void signOut())} />
     </Screen>
   );
 }

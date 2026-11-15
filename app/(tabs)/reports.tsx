@@ -13,11 +13,15 @@ import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, use
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
+import { ltr } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { radius, space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 export default function Reports() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
+  const money = useMoneyText();
   const router = useRouter();
   const catName = useCategoryName();
   const [month, setMonth] = useState(monthStart());
@@ -42,6 +46,7 @@ export default function Reports() {
   const incomeRows = useMemo(() => incomeQ.data ?? [], [incomeQ.data]);
   const incomeTotal = incomeRows.reduce((s, i) => s + i.mvr_laari, 0);
   const removeIncome = useWrite(api.deleteIncome);
+  const mixedPay = incomeRows.some((i) => i.currency !== 'MVR'); // pay arrived in more than one currency
   const trendMonths = useMemo(() => lastMonths(monthStart(), 6), []);
   const trend = useTrend(trendMonths).data;
   const overall = limits?.get(null);
@@ -106,11 +111,16 @@ export default function Reports() {
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text numberOfLines={1}>{i.note || t('reports.income')}</Text>
                     <Text latin variant="small" color={colors.inkMuted}>{formatDate(i.received_at)}</Text>
+                    {mixedPay ? (
+                      <Text variant="small" color={colors.inkMuted}>
+                        {i.currency === 'MVR' ? t('reports.paidIn', { currency: 'MVR' }) : t('reports.paidInRate', { amount: money(i.amount_laari, i.currency), rate: ltr((i.mvr_laari / i.amount_laari).toFixed(2)) })}
+                      </Text>
+                    ) : null}
                   </View>
                   <Money laari={i.mvr_laari} />
                 </Pressable>
                 <IconButton icon="trash-outline" label={t('common.remove')}
-                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id) }])} />
+                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
               </Row>
             ))}
           </Card>

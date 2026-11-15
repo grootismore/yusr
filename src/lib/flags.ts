@@ -2,13 +2,14 @@ import { useSyncExternalStore } from 'react';
 import { getItem, setItem } from './kv';
 
 // Small remembered yes/no choices ("has seen the welcome", "has done first setup"), kept on the device.
-export type FlagName = 'onboarded' | 'setupDone';
+export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen';
+const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen'];
 const cache = new Map<FlagName, boolean>();
 const listeners = new Set<() => void>();
 const key = (k: FlagName) => `kharadhu.flag.${k}`;
 const notify = () => listeners.forEach((l) => l());
 
-export async function loadFlags(names: readonly FlagName[] = ['onboarded', 'setupDone']): Promise<void> {
+export async function loadFlags(names: readonly FlagName[] = ALL): Promise<void> {
   await Promise.all(names.map(async (n) => { cache.set(n, (await getItem(key(n))) === '1'); }));
   notify();
 }

@@ -1,21 +1,27 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, Text as RNText, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Stack, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
-import { VARIANTS, lastGoodVariant, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
+import { VARIANTS, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
 import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
 import { applyStoredAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
+import { ToastHost } from '@/lib/toast';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { CACHE_MAX_AGE, KEEP, persister } from '@/lib/queryCache';
+import { CrashScreen } from '@/features/crash/CrashScreen';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
+import { useOutboxSync } from '@/lib/useOutboxSync';
 import { loadFlags } from '@/lib/flags';
 import { useGate } from '@/lib/gate';
 
@@ -23,7 +29,15 @@ import { useGate } from '@/lib/gate';
 // router bounce between the anchor and the public fallback forever on phones: a blank screen at launch. The `accept`
 // screen sends anyone without an invite token to the right place instead. Covered by src/__tests__/launchReal.test.tsx.
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+// gcTime must be at least as long as what is kept on the phone, or remembered figures would be dropped on launch.
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, gcTime: CACHE_MAX_AGE } } });
+const persistOptions = { persister, maxAge: CACHE_MAX_AGE, buster: '1', dehydrateOptions: { shouldDehydrateQuery: (q: { state: { status: string }; queryKey: readonly unknown[] }) => q.state.status === 'success' && KEEP.has(String(q.queryKey[0])) } };
+
+/** On a phone the last-seen figures are kept on the device, so the app opens and shows them with no signal. */
+function Cache({ children }: { children: ReactNode }) {
+  if (Platform.OS === 'web') return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>{children}</PersistQueryClientProvider>;
+}
 
 function Routes() {
   markBoot('routes');
@@ -32,11 +46,12 @@ function Routes() {
   const { signedIn, waiting, needsConsent, needsSetup } = useGate();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
+  useOutboxSync(signedIn && !WEB_LIMITED);
   if (waiting) { markBoot('routes-waiting'); return null; }
   markBoot('routes-stack');
   return (
     <LockGate active={signedIn}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
         {/* The website: only the trusted person's pages and account deletion. */}
         <Stack.Protected guard={signedIn && !needsConsent && WEB_LIMITED}>
           <Stack.Screen name="web-home" />
@@ -57,6 +72,8 @@ function Routes() {
           <Stack.Screen name="scan" options={{ presentation: 'modal' }} />
           <Stack.Screen name="confirm" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="about" />
+          <Stack.Screen name="set-pin" />
           <Stack.Screen name="activity" />
           <Stack.Screen name="convert" options={{ presentation: 'modal' }} />
           <Stack.Screen name="edit-expense" options={{ presentation: 'modal' }} />
@@ -68,6 +85,7 @@ function Routes() {
           <Stack.Screen name="release" />
           <Stack.Screen name="giving" />
           <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="giving-commitment" options={{ presentation: 'modal' }} />
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
           <Stack.Screen name="debt" />
@@ -92,6 +110,8 @@ function Routes() {
           <Stack.Screen name="forgot-password" />
         </Stack.Protected>
       </Stack>
+      <OfflineBanner />
+      <ToastHost />
     </LockGate>
   );
 }
@@ -109,16 +129,7 @@ markBoot('layout');
 /** Expo Router shows this instead of closing the app when a screen throws while rendering. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
   useEffect(() => { reportError(error); }, [error]);
-  return (
-    <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
-      <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>Something went wrong</RNText>
-      <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>Please copy the text below and send it to support.</RNText>
-      <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19 }}>{describeError(error)}</RNText>
-      <Pressable accessibilityRole="button" onPress={() => void retry()} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
-        <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>Try again</RNText>
-      </Pressable>
-    </ScrollView>
-  );
+  return <CrashScreen details={describeError(error)} onContinue={() => void retry()} continueLabel={(i18n.isInitialized ? i18n.t('crash.tryAgain') : '') || 'Try again'} />;
 }
 
 // Everything that must happen once per app start lives here, outside the component. Sentry showed the root layout being
@@ -162,7 +173,7 @@ function RootLayout() {
   }, []);
   useEffect(() => { if (fontsLoaded || fontError) markBoot('fonts'); }, [fontsLoaded, fontError]);
   const stoppedAt = !dismissed && previousBoot && previousBoot !== 'ok' ? previousBoot : null;
-  const showingApp = ready && !crash && !stoppedAt;
+  const showingApp = ready && !crash;
   useEffect(() => {
     if (!showingApp) return;
     markBoot(`app:${variant}`);
@@ -172,28 +183,20 @@ function RootLayout() {
   // Tell Sentry what the phone knows about the launch that failed (also proves reports from this phone arrive).
   useEffect(() => { if (ready && stoppedAt && variant !== 2 && rootMounts <= 1) reportError(new Error(`Launch stopped after ${stoppedAt}; alive ${previousAlive ?? '?'}s; variant ${previousVariant} (${VARIANTS[previousVariant]})`)); }, [ready, stoppedAt]);
   if (!ready || !(fontsLoaded || fontError)) return null;
-  if (crash || stoppedAt) {
-    // Shown once after a crash, before any other screen, in plain system text so it cannot fail the same way.
-    return (
-      <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, gap: 16 }} style={{ flex: 1, backgroundColor: '#141517' }}>
-        <RNText style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700' }}>{i18n.t('crash.title')}</RNText>
-        <RNText style={{ color: '#C9CBCF', fontSize: 16, lineHeight: 24 }}>{i18n.t('crash.body')}</RNText>
-        <RNText selectable style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 19, fontFamily: undefined }}>{`last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nthat launch ran variant ${previousVariant}: ${VARIANTS[previousVariant]}\nnext start runs variant ${variant}: ${VARIANTS[variant]}\nlast variant that stayed open: ${lastGoodVariant === null ? 'none yet' : `${lastGoodVariant}: ${VARIANTS[Number(lastGoodVariant)] ?? '?'}`}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off (no DSN in this build)'}\nroot layout mounts so far: ${rootMounts}\n${crash ?? '(no error text)'}`}</RNText>
-        <Pressable accessibilityRole="button" onPress={() => { void clearCrashNote(); startupCrash = null; dismissedOnce = true; setCrash(null); setDismissed(true); }} style={{ minHeight: 52, borderRadius: 26, backgroundColor: '#8EC5F0', alignItems: 'center', justifyContent: 'center' }}>
-          <RNText style={{ color: '#1E2023', fontSize: 17, fontWeight: '700' }}>{i18n.t('crash.continue')}</RNText>
-        </Pressable>
-      </ScrollView>
-    );
+  if (crash) {
+    // After a real error: calm words, a way on, a way to report. The launch notes (what the phone knows about the last start) go in the folded details.
+    const details = `last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nvariant ${previousVariant}: ${VARIANTS[previousVariant]}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off'}\n${crash}`;
+    return <CrashScreen details={details} onContinue={() => { void clearCrashNote(); startupCrash = null; dismissedOnce = true; setCrash(null); setDismissed(true); }} />;
   }
   return (
     <SafeAreaProvider>
       <I18nextProvider i18n={i18n}>
-        <QueryClientProvider client={queryClient}>
+        <Cache>
           <AuthProvider>
             <StatusBar style="auto" />
             <Direction><Routes /></Direction>
           </AuthProvider>
-        </QueryClientProvider>
+        </Cache>
       </I18nextProvider>
     </SafeAreaProvider>
   );

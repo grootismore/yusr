@@ -11,6 +11,7 @@ import { DEBT_KINDS, type DebtInput, type DebtKind } from '@/features/debts/type
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+import { toast } from '@/lib/toast';
 
 const plain = (laari: number | null | undefined) => (laari ? formatNumber(laari).replace(/,/g, '') : '');
 // An annual rate such as "12.5" (%) is stored in basis points (1250). parseAmount turns "12.5" into 1250 hundredths, which is exactly that.
@@ -68,6 +69,7 @@ export default function DebtEdit() {
       input: { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null },
     });
     success();
+    toast(t('toast.saved'));
     router.back();
   }
 
