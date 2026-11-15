@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { HouseholdStart } from '@/features/household/Start';
 import { Keypad } from '@/components/Keypad';
 import { Text } from '@/components/Text';
 import { Button, Chip, Icon, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
-import { useWrite } from '@/data/hooks';
+import { useHousehold, useWrite } from '@/data/hooks';
 import { monthStart } from '@/lib/dates';
 import { setFlag } from '@/lib/flags';
 import { success } from '@/lib/haptics';
@@ -20,6 +21,8 @@ export default function Setup() {
   const colors = useColors();
   const { t } = useTranslation();
   const save = useWrite(api.setBudget);
+  const [step, setStep] = useState<'who' | 'together' | 'budget'>('who');
+  const hasHousehold = !!useHousehold().data;
   const [typed, setTyped] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +36,30 @@ export default function Setup() {
     }
     success();
     await setFlag('setupDone', true);
+  }
+
+  if (step !== 'budget') {
+    return (
+      <Screen grow>
+        <View style={{ gap: space.xs, paddingTop: space.md }}>
+          <Text variant="heading" color={colors.accent}>{t('app.name')}</Text>
+          <Text variant="title" accessibilityRole="header">{t('setup.whoTitle')}</Text>
+          <Text color={colors.inkMuted}>{t('setup.whoBody')}</Text>
+        </View>
+        {step === 'who' ? (
+          <View style={{ gap: space.md }}>
+            <Button label={t('setup.justMe')} icon="person-outline" onPress={() => setStep('budget')} />
+            <Button kind="secondary" label={t('setup.together')} icon="people-outline" onPress={() => setStep('together')} />
+            <Text variant="small" color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('setup.whoNote')}</Text>
+          </View>
+        ) : (
+          <View style={{ gap: space.lg }}>
+            <HouseholdStart onDone={() => setStep('budget')} />
+            <Button kind="ghost" label={hasHousehold ? t('setup.next') : t('setup.skip')} onPress={() => setStep('budget')} />
+          </View>
+        )}
+      </Screen>
+    );
   }
 
   return (

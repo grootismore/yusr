@@ -363,16 +363,22 @@ export async function logGiving(a: { amount_laari: number; kind: GivingKind; spe
 export async function getHousehold(): Promise<{ household: Household; members: HouseholdMember[] } | null> {
   if (PREVIEW) return fx.household;
   const supabase = getSupabase();
-  const h = must(await supabase.from('households').select('id,name').limit(1).maybeSingle()) as Household | null;
+  const h = must(await supabase.from('households').select('id,name,mode').limit(1).maybeSingle()) as Household | null;
   if (!h) return null;
   const members = must(await supabase.from('household_members').select('user_id,display_name,role').eq('household_id', h.id).order('joined_at')) as HouseholdMember[];
   return { household: h, members };
 }
 
 // Members are added only through these database functions; the tables cannot be written directly.
-export async function createHousehold({ name, displayName }: { name: string; displayName: string }): Promise<void> {
+export async function createHousehold({ name, displayName, mode = 'household' }: { name: string; displayName: string; mode?: 'couple' | 'household' }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().rpc('create_household', { p_name: name, p_display_name: displayName }));
+  if (mode === 'couple') must(await getSupabase().from('households').update({ mode }).eq('created_by', await uid()));
+}
+/** The owner switches between a couple (two people) and a household. */
+export async function setHouseholdMode(mode: 'couple' | 'household'): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('households').update({ mode }).eq('created_by', await uid()));
 }
 export async function createHouseholdInvite(): Promise<string> {
   if (PREVIEW) return 'DEMO12345678';

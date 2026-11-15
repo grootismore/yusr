@@ -4,13 +4,14 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Icon, IconButton, Row, Screen, StackHeader, Tile, type IconName } from '@/components/ui';
+import { Button, Card, Chip, Icon, IconButton, Row, Screen, StackHeader, Tile, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
 import { useCategories, useCategoryName, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
-import { nameOf, summarize } from '@/features/household/logic';
+import { coupleBalance, nameOf, summarize } from '@/features/household/logic';
+import { HouseholdStart } from '@/features/household/Start';
+import { Msg } from '@/components/Msg';
 import { useAuth } from '@/lib/auth';
 import { addMonths, formatDate, monthStart } from '@/lib/dates';
-import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
 import { radius, space, useColors } from '@/theme/tokens';
 
@@ -30,15 +31,10 @@ export default function HouseholdScreen() {
   const data = hq.data;
   const me = data?.members.find((m) => m.user_id === userId);
   const summary = useMemo(() => summarize(entries, data?.members ?? []), [entries, data]);
-  const [name, setName] = useState('');
-  const [mine, setMine] = useState('');
-  const [code, setCode] = useState('');
   const [invite, setInvite] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const create = useWrite(api.createHousehold);
-  const join = useWrite(api.joinHousehold);
   const leave = useWrite(api.leaveHousehold);
   const remove = useWrite(api.removeHouseholdMember);
+  const setMode = useWrite(api.setHouseholdMode);
   const makeInvite = useWrite(api.createHouseholdInvite);
 
   if (hq.isLoading) return <Screen><StackHeader title={t('household.title')} /></Screen>;
@@ -48,28 +44,7 @@ export default function HouseholdScreen() {
       <Screen>
         <StackHeader title={t('household.title')} />
         <Card tone="good"><Text>{t('household.intro')}</Text></Card>
-        <Card>
-          <Text variant="heading">{t('household.startTitle')}</Text>
-          <Field label={t('household.yourName')} value={mine} onChangeText={setMine} maxLength={40} autoCapitalize="words" />
-          <Field label={t('household.householdName')} hint={t('household.householdNameHint')} value={name} onChangeText={setName} maxLength={60} autoCapitalize="words" />
-          <Button label={t('household.create')} icon="people-outline" loading={create.isPending} onPress={async () => {
-            if (!mine.trim() || !name.trim()) { setError(t('household.needNames')); return; }
-            setError(null);
-            try { await create.mutateAsync({ name: name.trim(), displayName: mine.trim() }); success(); } catch { setError(t('household.failed')); }
-          }} />
-        </Card>
-        <Card>
-          <Text variant="heading">{t('household.joinTitle')}</Text>
-          <Text variant="small" color={colors.inkMuted}>{t('household.joinNote')}</Text>
-          <Field label={t('household.yourName')} value={mine} onChangeText={setMine} maxLength={40} autoCapitalize="words" />
-          <Field label={t('household.code')} value={code} onChangeText={(v) => setCode(v.toUpperCase())} autoCapitalize="characters" autoCorrect={false} maxLength={12} />
-          <Button kind="secondary" label={t('household.join')} loading={join.isPending} onPress={async () => {
-            if (!mine.trim() || code.trim().length < 8) { setError(t('household.needCode')); return; }
-            setError(null);
-            try { await join.mutateAsync({ code: code.trim(), displayName: mine.trim() }); success(); } catch { setError(t('household.badCode')); }
-          }} />
-        </Card>
-        {error ? <Text color={colors.coral} accessibilityLiveRegion="polite">{error}</Text> : null}
+        <HouseholdStart />
       </Screen>
     );
   }
@@ -86,6 +61,14 @@ export default function HouseholdScreen() {
         <Tile color={colors.tile} label={t('household.spent')} laari={summary.spent} />
         <Tile color={colors.sky} label={t('household.income')} laari={summary.income} />
       </Row>
+
+      {data.household.mode === 'couple' && userId && coupleBalance(summary, userId) ? (() => { const b = coupleBalance(summary, userId)!; return (
+        <Card tone="good">
+          {b.owed === 0 ? <Text>{t('household.square')}</Text>
+            : b.owed > 0 ? <Msg k="household.owesYou" values={{ name: b.partner }} amounts={{ amount: b.owed }} />
+            : <Msg k="household.youOwe" values={{ name: b.partner }} amounts={{ amount: -b.owed }} />}
+        </Card>
+      ); })() : null}
 
       <Button label={t('household.addShared')} icon="add" onPress={() => router.push({ pathname: '/add-expense', params: { shared: '1' } })} />
 
@@ -120,6 +103,14 @@ export default function HouseholdScreen() {
       </Card>
 
       <Text variant="heading">{t('household.members')}</Text>
+      {me?.role === 'owner' ? (
+        <Row>
+          {(['couple', 'household'] as const).map((m) => (
+            <Chip key={m} label={t(`household.mode.${m}`)} selected={data.household.mode === m}
+              onPress={() => data.household.mode !== m && setMode.mutate(m, { onError: () => toast(t(m === 'couple' ? 'household.tooManyForCouple' : 'common.saveFailed'), 'error') })} />
+          ))}
+        </Row>
+      ) : null}
       <Card>
         {data.members.map((m) => (
           <Row key={m.user_id} style={{ minHeight: 44 }}>
