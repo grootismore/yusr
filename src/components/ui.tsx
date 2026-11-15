@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
@@ -24,6 +24,10 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
 // in a slim bar once the real title has scrolled away.
 type CompactTitle = { title: string; brand: boolean } | null;
 const CompactTitleCtx = createContext<(t: CompactTitle) => void>(() => undefined);
+// A screen with text fields lets iOS lift its content above the keyboard; one without never does, so a keyboard from
+// another screen can never leave stray empty space under it.
+const FieldCtx = createContext<(delta: number) => void>(() => undefined);
+
 function useCompactTitle(title: string, brand: boolean) {
   const set = useContext(CompactTitleCtx);
   useEffect(() => { set({ title, brand }); return () => set(null); }, [set, title, brand]);
@@ -40,19 +44,24 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   const [own] = useState(() => new Animated.Value(0));
   const sy = scrollY ?? own;
   const [compact, setCompact] = useState<CompactTitle>(null);
+  const [fields, setFields] = useState(0);
+  const insets = useSafeAreaInsets();
+  const countField = useCallback((d: number) => setFields((n) => n + d), []);
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
       {scroll ? (
-        <CompactTitleCtx.Provider value={setCompact}>
-          <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
+        <CompactTitleCtx.Provider value={setCompact}><FieldCtx.Provider value={countField}>
+          <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets={fields > 0} alwaysBounceVertical={false} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled"
             scrollEventThrottle={16} onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: sy } } }], { useNativeDriver: true })}>{children}</Animated.ScrollView>
-        </CompactTitleCtx.Provider>
+        </FieldCtx.Provider></CompactTitleCtx.Provider>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
       {compact ? (
         <Animated.View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants"
-          style={{ position: 'absolute', top: 0, start: 0, end: 0, height: 44, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.ground, borderBottomWidth: 1, borderBottomColor: colors.line,
+          // Absolute children start at the very top of the screen, under the clock and the notch, so the bar takes the
+          // status-bar height as its own top padding and keeps the title in the clear space below it.
+          style={{ position: 'absolute', top: 0, start: 0, end: 0, height: 44 + insets.top, paddingTop: insets.top, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.ground, borderBottomWidth: 1, borderBottomColor: colors.line,
             opacity: sy.interpolate({ inputRange: [48, 96], outputRange: [0, 1], extrapolate: 'clamp' }) }}>
           {compact.brand ? <Logo size={22} /> : null}
           <Text variant="heading" numberOfLines={1} style={{ flex: 1 }}>{compact.title}</Text>
@@ -182,6 +191,8 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
   const { t, i18n } = useTranslation();
   const bad = !!error;
   const ltr = isLtrInput(rest);
+  const countField = useContext(FieldCtx);
+  useEffect(() => { countField(1); return () => countField(-1); }, [countField]);
   return (
     <View style={{ gap: space.xs }}>
       <Text variant="label">{label}</Text>
