@@ -115,6 +115,16 @@ describe('saving offline', () => {
     applyOptimistic(qc, 'skipRecurring', { recurring_id: 'rc', occurrence: '2026-12-05' });
     expect(qc.getQueryData<{ skipped: boolean }[]>(['recurring-runs'])?.[0].skipped).toBe(true);
   });
+  it('a shared recurring bill recorded offline goes in the shared pot and marks the date done', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['recurring-runs'], []);
+    qc.setQueryData(['household-entries', '2026-11-01'], []);
+    qc.setQueryData(['expenses', '2026-11-01'], []);
+    applyOptimistic(qc, 'logRecurring', { id: 'rr2', recurring_id: 'rc', occurrence: '2026-11-05', kind: 'expense', name: 'Electricity', amount_minor: 450_000, currency: 'MVR', fx_rate_to_mvr: '1', category_id: null, household: { id: 'hh', user_id: 'u2' } });
+    expect(qc.getQueryData<{ household_entry_id: string }[]>(['recurring-runs'])?.[0]).toMatchObject({ occurrence: '2026-11-05', household_entry_id: 'rr2' });
+    expect(qc.getQueryData<{ merchant: string; user_id: string }[]>(['household-entries', '2026-11-01'])?.[0]).toMatchObject({ merchant: 'Electricity', user_id: 'u2' });
+    expect(qc.getQueryData<unknown[]>(['expenses', '2026-11-01'])).toHaveLength(0);
+  });
   it('an existing expense made recurring offline counts as the first date', () => {
     const qc = new QueryClient();
     qc.setQueryData(['recurring-runs'], []);

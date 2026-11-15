@@ -1,4 +1,4 @@
-import { dueRuns, nextDate, nthDate, occurrences, type RecurringItem, type RecurringRun } from '@/features/recurring/logic';
+import { dueRuns, nextDate, nthDate, occurrences, shareTarget, type RecurringItem, type RecurringRun } from '@/features/recurring/logic';
 
 const item = (o: Partial<RecurringItem> & { id: string }): RecurringItem => ({ kind: 'expense', name: o.id, note: null, amount_minor: 100_000, currency: 'MVR', category_id: null, every: 'month', starts_on: '2026-09-05', ended_on: null, auto_add: true, ...o });
 
@@ -29,5 +29,16 @@ describe('recurring dates', () => {
   it('the next date is the first one after today', () => {
     expect(nextDate(item({ id: 'a' }), '2026-11-20')).toBe('2026-12-05');
     expect(nextDate(item({ id: 'a', ended_on: '2026-11-30' }), '2026-11-20')).toBeNull();
+  });
+});
+
+describe('shareTarget', () => {
+  it('sends a shared item to the household under the person it is for', () => {
+    expect(shareTarget({ household_id: 'h', for_user: 'u' })).toEqual({ id: 'h', user_id: 'u' });
+    expect(shareTarget({ household_id: 'h', for_user: null })).toEqual({ id: 'h', user_id: undefined });
+  });
+  it('is nothing for a private item', () => {
+    expect(shareTarget({ household_id: null, for_user: 'u' })).toBeUndefined();
+    expect(shareTarget({})).toBeUndefined();
   });
 });
