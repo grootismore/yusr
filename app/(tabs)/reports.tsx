@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { TrendChart } from '@/components/TrendChart';
@@ -21,6 +22,7 @@ export default function Reports() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const money = useMoneyText();
+  const router = useRouter();
   const catName = useCategoryName();
   const [month, setMonth] = useState(monthStart());
   const expensesQuery = useExpenses(month);
@@ -104,16 +106,19 @@ export default function Reports() {
           <Card>
             {incomeRows.map((i) => (
               <Row key={i.id} style={{ minHeight: 56 }}>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text numberOfLines={1}>{i.note || t('reports.income')}</Text>
-                  <Text latin variant="small" color={colors.inkMuted}>{formatDate(i.received_at)}</Text>
-                  {mixedPay ? (
-                    <Text variant="small" color={colors.inkMuted}>
-                      {i.currency === 'MVR' ? t('reports.paidIn', { currency: 'MVR' }) : t('reports.paidInRate', { amount: money(i.amount_laari, i.currency), rate: ltr((i.mvr_laari / i.amount_laari).toFixed(2)) })}
-                    </Text>
-                  ) : null}
-                </View>
-                <Money laari={i.mvr_laari} />
+                <Pressable accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/edit-income', params: { id: i.id } })}
+                  style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md, opacity: pressed ? 0.6 : 1 })}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text numberOfLines={1}>{i.note || t('reports.income')}</Text>
+                    <Text latin variant="small" color={colors.inkMuted}>{formatDate(i.received_at)}</Text>
+                    {mixedPay ? (
+                      <Text variant="small" color={colors.inkMuted}>
+                        {i.currency === 'MVR' ? t('reports.paidIn', { currency: 'MVR' }) : t('reports.paidInRate', { amount: money(i.amount_laari, i.currency), rate: ltr((i.mvr_laari / i.amount_laari).toFixed(2)) })}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Money laari={i.mvr_laari} />
+                </Pressable>
                 <IconButton icon="trash-outline" label={t('common.remove')}
                   onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
               </Row>

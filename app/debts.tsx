@@ -109,7 +109,11 @@ export default function Debts() {
 
       <Button label={t('debts.add')} icon="add" kind="secondary" onPress={() => router.push('/debt-edit')} />
       {view.paidOff.length > 0 ? (
-        <Card>{view.paidOff.map((d) => <Row key={d.id}><Icon name="checkmark-circle" color={colors.accent} /><Text style={{ flex: 1 }}>{d.lender}</Text><DueBadge state="paid" days={0} /></Row>)}</Card>
+        <Card>{view.paidOff.map((d) => (
+          <Pressable key={d.id} accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/debt', params: { id: d.id } })} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 52, opacity: pressed ? 0.6 : 1 })}>
+            <Icon name="checkmark-circle" color={colors.accent} /><Text style={{ flex: 1 }}>{d.lender}</Text><DueBadge state="paid" days={0} />
+          </Pressable>
+        ))}</Card>
       ) : null}
     </Screen>
   );

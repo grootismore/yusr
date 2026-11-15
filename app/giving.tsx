@@ -114,6 +114,7 @@ export default function Giving() {
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.spent_at)}</Text>
             </View>
             <Money laari={e.amount_laari} />
+            <IconButton icon="create-outline" label={t('common.edit')} onPress={() => router.push({ pathname: '/edit-expense', params: { id: e.expense_id } })} />
             <IconButton icon="trash-outline" label={t('common.remove')}
               onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(e.expense_id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>

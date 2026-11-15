@@ -6,6 +6,7 @@ import { ExpenseForm } from '@/components/ExpenseForm';
 import { SplitPay } from '@/features/foreign/SplitPay';
 import { Keypad } from '@/components/Keypad';
 import { Money } from '@/components/Money';
+import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Icon, IconButton, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
@@ -15,7 +16,7 @@ import type { NewExpense } from '@/data/types';
 import { formatDate } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { displayAmount } from '@/lib/keypad';
-import { parseAmount } from '@/lib/money';
+import { parseAmount, toMvrLaari } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
 
 const PRESETS = ['50', '100', '250', '500'];
@@ -48,7 +49,7 @@ export default function AddExpense() {
             <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}><Icon name="checkmark" size={36} color={colors.onAccent} /></View>
           </View>
           <Text variant="title" accessibilityLiveRegion="polite">{t('foreign.saved')}</Text>
-          <Text color={colors.inkMuted}>{t('foreign.savedBody', { n: splitDone })}</Text>
+          <Msg k="foreign.savedBody" amounts={{ amount: splitDone }} color={colors.inkMuted} style={{ textAlign: 'center' }} />
         </View>
         <Button label={t('common.done')} onPress={() => router.back()} />
         <Button kind="ghost" label={t('add.another')} onPress={() => { setSplitDone(null); }} />
@@ -72,7 +73,7 @@ export default function AddExpense() {
           await addSplit.mutateAsync({ rows, received_at: date, note });
           const foreign = rows.filter((r) => r.currency !== 'MVR');
           await Promise.all([...new Set(foreign.map((r) => r.currency))].map((c) => saveRate(c, foreign.find((r) => r.currency === c)!.fx_rate_to_mvr)));
-          success(); setSplitDone(rows.length);
+          success(); setSplitDone(rows.reduce((sum, r) => sum + (r.currency === 'MVR' ? r.amount_laari : toMvrLaari(r.amount_laari, r.fx_rate_to_mvr)), 0));
         }} />
       </Screen>
     );
