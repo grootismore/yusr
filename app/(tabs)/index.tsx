@@ -103,6 +103,8 @@ export default function Home() {
         </Row>
       </Animated.View>
     }>
+      {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}
+      <View pointerEvents="none" style={{ position: 'absolute', top: -900, start: 0, end: 0, height: 900, backgroundColor: colors.hero }} />
       {/* Header band: runs under the status bar, carries the month's figure; the shortcut tiles overlap its lower edge. */}
       <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 72, gap: space.md,
         borderBottomLeftRadius: 32, borderBottomRightRadius: 32, borderCurve: 'continuous', overflow: 'hidden' }}>

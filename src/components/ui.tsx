@@ -33,7 +33,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
       {scroll ? (
-        <Animated.ScrollView contentContainerStyle={inner} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
+        <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
           {...(scrollY ? { scrollEventThrottle: 16, onScroll: Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }) } : {})}>{children}</Animated.ScrollView>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
       {overlay}
