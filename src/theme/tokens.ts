@@ -4,23 +4,23 @@ import { useColorScheme } from 'react-native';
 // Look: "Ink and sky". A light page, a matte-black figure panel, one soft sky-blue accent for progress and the active tab.
 // Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  ground: '#D3D9DF', // page background: dusty blue-grey
-  groundDeep: '#C2C9D0', // tracks, unselected segments
-  surface: '#E3E8EC', // solid surfaces: a dusty tone, never white
-  card: '#E3E8EC', // card fill
-  cardEdge: '#C3CAD2', // card rim
-  field: '#E3E8EC', // input and chip fill
+  ground: '#CBD2D9', // page background: dusty blue-grey
+  groundDeep: '#B9C1C9', // tracks, unselected segments
+  surface: '#D9DFE5', // solid surfaces: a dusty tone, never white
+  card: '#D9DFE5', // card fill
+  cardEdge: '#B7BFC8', // card rim
+  field: '#D9DFE5', // input and chip fill
   ink: '#1E2023', // text and icons: matte black
   inkMuted: '#4A4E54', // secondary text (AA on ground and card)
-  line: '#C3CAD2', // hairlines
+  line: '#B7BFC8', // hairlines
   control: '#69717A', // borders of inputs and buttons (3:1 against ground)
   accent: '#1E2023', // primary actions, selected states
   onAccent: '#FFFFFF',
-  accentWash: '#CBD2D9', // tinted tiles behind icons
+  accentWash: '#C0C8D0', // tinted tiles behind icons
   hero: '#222428', // the month's figure panel: matte black
   onHero: '#FFFFFF',
   sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
-  tile: '#E3E8EC', // neutral figure tile
+  tile: '#D9DFE5', // neutral figure tile
   onTile: '#1E2023', // text on the tiles
   coral: '#A52D26', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
@@ -49,7 +49,7 @@ export const dark: Palette = {
   hero: '#27292D',
   onHero: '#FFFFFF',
   sky: '#8EC5F0',
-  tile: '#C9D0D6',
+  tile: '#C0C8CF',
   onTile: '#1E2023',
   coral: '#FF9A8C',
   amber: '#E0A526',
