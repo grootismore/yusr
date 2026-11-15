@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SettingRow } from '@/components/ui';
+import { PersonPick } from './PersonPick';
 import { useHousehold } from '@/data/hooks';
 import { useAuth } from '@/lib/auth';
 import { setFlag, useFlag } from '@/lib/flags';
@@ -10,7 +11,7 @@ import { setFlag, useFlag } from '@/lib/flags';
  * the choice is remembered. An existing item shows what it is now; only its owner can change it.
  * `householdId` is what to save: the household's id, or null for private.
  */
-export function useShare(existing?: { household_id?: string | null; user_id?: string } | null) {
+export function useShare(existing?: { household_id?: string | null; user_id?: string; for_user?: string | null } | null) {
   const { t } = useTranslation();
   const household = useHousehold().data;
   const { userId } = useAuth();
@@ -20,9 +21,13 @@ export function useShare(existing?: { household_id?: string | null; user_id?: st
   const isOwner = !existing || !existing.user_id || existing.user_id === userId;
   const shared = !!household && (pick ?? (editing ? !!existing?.household_id : byDefault));
   const householdId = shared ? household!.household.id : null;
+  const [person, setPerson] = useState<string | null | undefined>(undefined);
+  // Whose it is: the person picked, else who it already belongs to, else you.
+  const forUser = shared ? (person !== undefined ? person : editing ? existing?.for_user ?? null : userId ?? null) : null;
   const row = household && isOwner ? (
     <SettingRow icon="people-outline" title={t('household.shareThis')} subtitle={shared ? t('household.shareOn', { name: household.household.name }) : t('household.shareOff')} value={shared}
       onValueChange={(v) => { setPick(v); void setFlag('shareByDefault', v); }} />
   ) : null;
-  return { householdId, row, keep: editing && !isOwner };
+  const people = shared ? <PersonPick label={t('household.whose')} value={forUser} onChange={setPerson} everyone /> : null;
+  return { householdId, forUser, row, people };
 }

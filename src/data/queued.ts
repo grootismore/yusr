@@ -134,7 +134,7 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
     } else if (op === 'addHouseholdEntry') {
       const { id, householdId, input, userId } = args as { id: string; householdId: string; input: HouseholdEntryInput; userId?: string };
-      prepend(qc, ['household-entries', monthOf(input.entry_date)], { ...input, id, household_id: householdId, user_id: userId ?? '', fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } as HouseholdEntry);
+      prepend(qc, ['household-entries', monthOf(input.entry_date)], { ...input, id, household_id: householdId, user_id: input.user_id ?? userId ?? '', fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } as HouseholdEntry);
     } else if (op === 'updateHouseholdEntry') {
       const { id, input } = args as { id: string; input: HouseholdEntryInput };
       qc.setQueriesData<HouseholdEntry[]>({ queryKey: ['household-entries'] }, (old) => old?.map((x) => (x.id === id ? { ...x, ...input, fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } : x)));

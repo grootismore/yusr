@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,7 @@ import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { useCategories, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
 import type { HouseholdEntryInput } from '@/features/household/logic';
+import { PersonPick } from '@/features/household/PersonPick';
 import { nameOf } from '@/features/household/logic';
 import { useAuth } from '@/lib/auth';
 import { success } from '@/lib/haptics';
@@ -24,6 +26,7 @@ export default function HouseholdEntryScreen() {
   const categories = useCategories().data ?? [];
   const entry = useHouseholdEntries(`${month}-01`).data?.find((e) => e.id === id);
   const update = useWrite(api.updateHouseholdEntry);
+  const [whose, setWhose] = useState<string | null>(null);
   const remove = useWrite(api.deleteHouseholdEntry);
   const addExpense = useWrite(api.addExpense);
   const addIncome = useWrite(api.addIncome);
@@ -54,14 +57,16 @@ export default function HouseholdEntryScreen() {
         submitLabel={t('common.save')}
         busy={update.isPending}
         onSubmit={async (e) => {
-          const input: HouseholdEntryInput = { kind: entry.kind, amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: income ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at };
+          const input: HouseholdEntryInput = { kind: entry.kind, amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: income ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, user_id: whose ?? entry.user_id };
           await update.mutateAsync({ id: entry.id, input });
           if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr);
           success();
           toast(t('toast.updated'));
           router.back();
         }}
-      />
+      >
+        <PersonPick label={income ? t('household.whoReceived') : t('household.whoPaidIt')} value={whose ?? entry.user_id} onChange={setWhose} />
+      </ExpenseForm>
       {entry.user_id === userId ? (
         <Button kind="secondary" icon="lock-closed-outline" label={t('edit.makePrivate')}
           onPress={() => Alert.alert(t('edit.privateTitle'), t('edit.privateBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('edit.makePrivate'), onPress: () => void makePrivate() }])} />

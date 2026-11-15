@@ -5,9 +5,9 @@ export interface MoneyPool {
   amount_minor: number; currency: string; due_day: number;
   members: number | null; payout_month: string | null; payout_received: boolean;
   started_on: string; ended_on: string | null;
-  household_id?: string | null; user_id?: string;
+  household_id?: string | null; for_user?: string | null; user_id?: string;
 }
-export type PoolInput = Pick<MoneyPool, 'name' | 'note' | 'amount_minor' | 'currency' | 'due_day' | 'members' | 'payout_month' | 'payout_received'> & { household_id?: string | null };
+export type PoolInput = Pick<MoneyPool, 'name' | 'note' | 'amount_minor' | 'currency' | 'due_day' | 'members' | 'payout_month' | 'payout_received'> & { household_id?: string | null; for_user?: string | null };
 export interface PoolPayment { id: string; pool_id: string; expense_id: string; period: string }
 
 export const activePools = (all: readonly MoneyPool[]): MoneyPool[] => all.filter((p) => !p.ended_on);

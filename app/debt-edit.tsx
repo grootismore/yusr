@@ -73,7 +73,7 @@ export default function DebtEdit() {
     // "Owed now" is what the person typed; the stored opening balance is that plus what they have already paid.
     const opening = editing ? owed + paid : owed;
     if (opening <= 0) { setErrors({ amount: t('expense.invalidAmount') }); return; }
-    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null, auto_deducted: autoDeducted, household_id: share.householdId, ...(autoDeducted && !debt?.started_on ? { started_on: today() } : {}) };
+    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null, auto_deducted: autoDeducted, household_id: share.householdId, for_user: share.forUser, ...(autoDeducted && !debt?.started_on ? { started_on: today() } : {}) };
     if (editing) await updateDebt.mutateAsync({ id: id!, input }); else await addDebt.mutateAsync({ input });
     success();
     toast(t('toast.saved'));
@@ -151,6 +151,7 @@ export default function DebtEdit() {
 
       <Field label={`${t('debts.notes')} (${t('common.optional')})`} hint={t('debts.notesHint')} value={notes} onChangeText={setNotes} multiline maxLength={300} />
       {share.row}
+      {share.people}
       <Button label={t('common.save')} onPress={submit} loading={saving} />
     </Screen>
   );

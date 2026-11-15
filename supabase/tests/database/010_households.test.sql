@@ -34,7 +34,7 @@ select is((select count(*) from public.households), 0::bigint, 'an outsider sees
 -- The shared pot: members share it, outsiders cannot touch it.
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true);
 select lives_ok($$insert into public.household_entries (id, household_id, user_id, kind, amount_laari, entry_date, merchant) values ('11111111-1111-1111-1111-111111111111', current_setting('t.hid')::uuid, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'expense', 250000, '2026-11-10', 'Groceries')$$, 'A adds a shared expense');
-select throws_ok($$insert into public.household_entries (household_id, user_id, kind, amount_laari, entry_date) values (current_setting('t.hid')::uuid, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'expense', 100, '2026-11-10')$$, '42501', null, 'A cannot add an entry in B''s name');
+select throws_ok($$insert into public.household_entries (household_id, user_id, kind, amount_laari, entry_date) values (current_setting('t.hid')::uuid, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'expense', 100, '2026-11-10')$$, '42501', null, 'A cannot add an entry in the name of someone outside the household');
 select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
 select is((select count(*) from public.household_entries), 1::bigint, 'B sees A''s shared expense');
 select lives_ok($$update public.household_entries set amount_laari = 260000 where id = '11111111-1111-1111-1111-111111111111'$$, 'B can correct a shared entry');

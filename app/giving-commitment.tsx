@@ -40,7 +40,7 @@ export default function GivingCommitment() {
     if (!Number.isInteger(d) || d < 1 || d > 28) e.day = t('commit.invalidDay');
     setErrors(e);
     if (Object.keys(e).length) return;
-    await save.mutateAsync({ id: existing?.id, input: { recipient: recipient.trim(), note: note.trim() || null, amount_laari: laari, kind, due_day: d, household_id: share.householdId } });
+    await save.mutateAsync({ id: existing?.id, input: { recipient: recipient.trim(), note: note.trim() || null, amount_laari: laari, kind, due_day: d, household_id: share.householdId, for_user: share.forUser } });
     success();
     toast(t('toast.saved'));
     router.back();
@@ -62,6 +62,7 @@ export default function GivingCommitment() {
         <Row style={{ flexWrap: 'wrap' }}>{KINDS.map((k) => <Chip key={k} label={t(`giving.kind.${k}`)} selected={kind === k} onPress={() => setKind(k)} />)}</Row>
       </View>
       {share.row}
+      {share.people}
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {existing ? (
         <Button kind="danger" label={t('commit.stop')}
