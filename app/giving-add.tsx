@@ -6,6 +6,7 @@ import { Text } from '@/components/Text';
 import { Button, Chip, Field, Row, Screen } from '@/components/ui';
 import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
+import { useShare } from '@/features/household/useShare';
 import { useWrite } from '@/data/hooks';
 import { COUNTS_TOWARD_GOAL, GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
@@ -23,6 +24,7 @@ export default function GivingAdd() {
   const [more, setMore] = useState(false);
   const [date, setDate] = useState(formatDate(today()));
   const [note, setNote] = useState('');
+  const share = useShare();
   const [errors, setErrors] = useState<{ amount?: string; date?: string }>({});
 
   async function submit() {
@@ -33,7 +35,7 @@ export default function GivingAdd() {
     if (!iso) e.date = t('expense.invalidDate');
     setErrors(e);
     if (Object.keys(e).length) return;
-    await log.mutateAsync({ amount_laari: laari, kind, spent_at: iso!, recipient_note: note.trim() || null });
+    await log.mutateAsync({ amount_laari: laari, kind, spent_at: iso!, recipient_note: note.trim() || null, household: share.householdId ? { id: share.householdId, user_id: share.forUser ?? undefined } : undefined });
     success();
     toast(t('toast.saved'));
     router.back();
@@ -59,6 +61,8 @@ export default function GivingAdd() {
         </Row>
       </View>
       <Field label={`${t('giving.recipient')} (${t('common.optional')})`} hint={t('giving.recipientHint')} value={note} onChangeText={setNote} maxLength={200} />
+      {share.row}
+      {share.people}
       <Button label={t('common.save')} onPress={submit} loading={log.isPending} />
     </Screen>
   );

@@ -336,28 +336,41 @@ export async function listGiving(month: string): Promise<GivingEntry[]> {
     await getSupabase().from('sadaqah_entries').select('id,expense_id,kind,recipient_note,commitment_id,expenses!inner(mvr_laari,spent_at)')
       .gte('expenses.spent_at', month).lt('expenses.spent_at', addMonths(month, 1)),
   ) as unknown as { id: string; expense_id: string; kind: GivingKind; recipient_note: string | null; commitment_id: string | null; expenses: { mvr_laari: number; spent_at: string } }[];
-  return rows.map((r) => ({ id: r.id, expense_id: r.expense_id, kind: r.kind, recipient_note: r.recipient_note, commitment_id: r.commitment_id, amount_laari: r.expenses.mvr_laari, spent_at: r.expenses.spent_at }))
-    .sort((a, b) => (a.spent_at < b.spent_at ? 1 : -1));
+  // Gifts paid into the shared pot, by anyone in the household.
+  const shared = must(
+    await getSupabase().from('sadaqah_entries').select('id,household_entry_id,kind,recipient_note,commitment_id,household_entries!inner(mvr_laari,entry_date)')
+      .gte('household_entries.entry_date', month).lt('household_entries.entry_date', addMonths(month, 1)),
+  ) as unknown as { id: string; household_entry_id: string; kind: GivingKind; recipient_note: string | null; commitment_id: string | null; household_entries: { mvr_laari: number; entry_date: string } }[];
+  return [
+    ...rows.map((r) => ({ id: r.id, expense_id: r.expense_id, kind: r.kind, recipient_note: r.recipient_note, commitment_id: r.commitment_id, amount_laari: r.expenses.mvr_laari, spent_at: r.expenses.spent_at })),
+    ...shared.map((r) => ({ id: r.id, expense_id: null, household_entry_id: r.household_entry_id, kind: r.kind, recipient_note: r.recipient_note, commitment_id: r.commitment_id, amount_laari: r.household_entries.mvr_laari, spent_at: r.household_entries.entry_date })),
+  ].sort((a, b) => (a.spent_at < b.spent_at ? 1 : -1));
 }
 
 /**
  * Giving is an ordinary expense in the Giving category plus a sadaqah_entries row, so the amount lives in one place.
  * ponytail: two inserts, not one transaction; if the second fails the expense is removed again.
  */
-export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null; commitment_id?: string; period?: string; id?: string }): Promise<void> {
+export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null; commitment_id?: string; period?: string; id?: string; household?: { id: string; user_id?: string } }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();
   const user_id = await uid();
   const cat = must(await supabase.from('categories').select('id').eq('slug', 'giving').maybeSingle()) as { id: string } | null;
-  const ins = await supabase.from('expenses').insert({ id: a.id, user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' }).select('id').single();
-  // Sent before (a reply was lost): the expense is already there, so carry on to the entry rather than start again.
+  // A shared gift goes in the shared pot (under whoever it is for); a private one is the payer's own expense.
+  const table = a.household ? 'household_entries' : 'expenses';
+  const row: Record<string, unknown> = a.household
+    ? { id: a.id, household_id: a.household.id, user_id: a.household.user_id ?? user_id, kind: 'expense', amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, merchant: a.recipient_note, entry_date: a.spent_at }
+    : { id: a.id, user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' };
+  const ins = await supabase.from(table).insert(row).select('id').single();
+  // Sent before (a reply was lost): the entry is already there, so carry on to the gift row rather than start again.
   if (ins.error && !(a.id && isDup(ins.error))) throw new Error(ins.error.message);
-  const expenseId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
-  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expenseId, kind: a.kind, recipient_note: a.recipient_note, commitment_id: a.commitment_id ?? null, period: a.period ?? null });
+  const entryId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
+  const link = a.household ? 'household_entry_id' : 'expense_id';
+  const r = await supabase.from('sadaqah_entries').insert({ user_id, [link]: entryId, kind: a.kind, recipient_note: a.recipient_note, commitment_id: a.commitment_id ?? null, period: a.period ?? null });
   if (r.error) {
-    const mine = a.id ? (await supabase.from('sadaqah_entries').select('id').eq('expense_id', expenseId).maybeSingle()).data : null;
+    const mine = a.id ? (await supabase.from('sadaqah_entries').select('id').eq(link, entryId).maybeSingle()).data : null;
     if (mine) return; // this very entry was saved by an earlier try
-    await supabase.from('expenses').delete().eq('id', expenseId);
+    await supabase.from(table).delete().eq('id', entryId);
     throw new Error(r.error.message);
   }
 }
@@ -555,7 +568,7 @@ export async function listPools(): Promise<MoneyPool[]> {
 
 export async function listPoolPayments(): Promise<PoolPayment[]> {
   if (PREVIEW) return [];
-  return must(await getSupabase().from('pool_payments').select('id,pool_id,expense_id,period'));
+  return must(await getSupabase().from('pool_payments').select('id,pool_id,expense_id,household_entry_id,period'));
 }
 
 export async function addPool({ id, input }: { id?: string; input: PoolInput }): Promise<void> {
@@ -579,19 +592,24 @@ export async function endPool(id: string): Promise<void> {
  * One month's contribution: an ordinary expense in the Money pool category plus a row saying which pool and month it
  * is for. Safe to send twice (the ids are made on the phone, and a month can be paid once).
  */
-export async function logPoolPayment(a: { id?: string; pool_id: string; name: string; amount_minor: number; currency: string; fx_rate_to_mvr: string; spent_at: string; period: string }): Promise<void> {
+export async function logPoolPayment(a: { id?: string; pool_id: string; name: string; amount_minor: number; currency: string; fx_rate_to_mvr: string; spent_at: string; period: string; household?: { id: string; user_id?: string } }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();
   const user_id = await uid();
   const cat = must(await supabase.from('categories').select('id').eq('slug', 'money-pool').maybeSingle()) as { id: string } | null;
-  const ins = await supabase.from('expenses').insert({ id: a.id, user_id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, category_id: cat?.id ?? null, merchant: a.name, spent_at: a.spent_at, source: 'manual' }).select('id').single();
+  const table = a.household ? 'household_entries' : 'expenses';
+  const row: Record<string, unknown> = a.household
+    ? { id: a.id, household_id: a.household.id, user_id: a.household.user_id ?? user_id, kind: 'expense', amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, category_id: cat?.id ?? null, merchant: a.name, entry_date: a.spent_at }
+    : { id: a.id, user_id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, category_id: cat?.id ?? null, merchant: a.name, spent_at: a.spent_at, source: 'manual' };
+  const ins = await supabase.from(table).insert(row).select('id').single();
   if (ins.error && !(a.id && isDup(ins.error))) throw new Error(ins.error.message);
-  const expenseId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
-  const r = await supabase.from('pool_payments').insert({ user_id, pool_id: a.pool_id, expense_id: expenseId, period: a.period });
+  const entryId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
+  const link = a.household ? 'household_entry_id' : 'expense_id';
+  const r = await supabase.from('pool_payments').insert({ user_id, pool_id: a.pool_id, [link]: entryId, period: a.period });
   if (r.error) {
-    const mine = a.id ? (await supabase.from('pool_payments').select('id').eq('expense_id', expenseId).maybeSingle()).data : null;
+    const mine = a.id ? (await supabase.from('pool_payments').select('id').eq(link, entryId).maybeSingle()).data : null;
     if (mine) return;
-    await supabase.from('expenses').delete().eq('id', expenseId);
+    await supabase.from(table).delete().eq('id', entryId);
     throw new Error(r.error.message);
   }
 }

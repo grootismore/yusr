@@ -8,7 +8,7 @@ export interface MoneyPool {
   household_id?: string | null; for_user?: string | null; user_id?: string;
 }
 export type PoolInput = Pick<MoneyPool, 'name' | 'note' | 'amount_minor' | 'currency' | 'due_day' | 'members' | 'payout_month' | 'payout_received'> & { household_id?: string | null; for_user?: string | null };
-export interface PoolPayment { id: string; pool_id: string; expense_id: string; period: string }
+export interface PoolPayment { id: string; pool_id: string; expense_id: string | null; household_entry_id?: string | null; period: string }
 
 export const activePools = (all: readonly MoneyPool[]): MoneyPool[] => all.filter((p) => !p.ended_on);
 /** `month` is the first of a month, YYYY-MM-01. */
