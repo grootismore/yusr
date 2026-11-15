@@ -1,3 +1,4 @@
+import { shareTarget } from '@/features/recurring/logic';
 import { useShareTag } from '@/features/household/useTag';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
@@ -64,7 +65,7 @@ export default function Pools() {
                   {paid
                     ? <Row style={{ gap: 4 }}><Icon name="checkmark-circle" color={colors.accent} /><Text variant="small">{t('commit.paid')}</Text></Row>
                     : <Button kind="secondary" label={t('commit.markPaid')} loading={pay.isPending}
-                        onPress={async () => { await pay.mutateAsync({ pool_id: p.id, name: p.name, amount_minor: p.amount_minor, currency: p.currency, fx_rate_to_mvr: rateFor(p.currency), spent_at: today(), period: month }); success(); toast(t('commit.markedPaid')); }} />}
+                        onPress={async () => { await pay.mutateAsync({ pool_id: p.id, name: p.name, amount_minor: p.amount_minor, currency: p.currency, fx_rate_to_mvr: rateFor(p.currency), spent_at: today(), period: month, household: shareTarget(p) }); success(); toast(t('commit.markedPaid')); }} />}
                 </Row>
                 {p.payout_month ? (
                   <Text variant="small" color={colors.inkMuted}>

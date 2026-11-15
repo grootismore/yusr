@@ -130,8 +130,9 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       qc.setQueryData<MoneyPool[]>(['pools'], (old) => old?.map((p) => (p.id === id ? { ...p, ended_on: new Date().toISOString().slice(0, 10) } : p)));
     } else if (op === 'logPoolPayment') {
       const a = args as Parameters<typeof api.logPoolPayment>[0];
-      prepend(qc, ['pool-payments'], { id: a.id, pool_id: a.pool_id, expense_id: a.id, period: a.period });
-      prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
+      prepend(qc, ['pool-payments'], { id: a.id, pool_id: a.pool_id, expense_id: a.household ? null : a.id, household_entry_id: a.household ? a.id : null, period: a.period });
+      if (a.household) prepend(qc, ['household-entries', monthOf(a.spent_at)], { id: a.id, household_id: a.household.id, user_id: a.household.user_id ?? '', kind: 'expense', amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, note: null, entry_date: a.spent_at } as HouseholdEntry);
+      else prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
     } else if (op === 'addHouseholdEntry') {
       const { id, householdId, input, userId } = args as { id: string; householdId: string; input: HouseholdEntryInput; userId?: string };
       prepend(qc, ['household-entries', monthOf(input.entry_date)], { ...input, id, household_id: householdId, user_id: input.user_id ?? userId ?? '', fx_rate_to_mvr: Number(input.fx_rate_to_mvr), mvr_laari: toMvrLaari(input.amount_laari, input.fx_rate_to_mvr) } as HouseholdEntry);
@@ -167,7 +168,8 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       qc.setQueriesData<{ id: string }[]>({ queryKey: ['conversions'] }, (old) => old?.filter((x) => x.id !== (args as string)));
     } else if (op === 'logGiving') {
       const g = args as Parameters<typeof api.logGiving>[0];
-      prepend(qc, ['giving', monthOf(g.spent_at)], { id: g.id, expense_id: g.id, kind: g.kind, recipient_note: g.recipient_note, amount_laari: g.amount_laari, spent_at: g.spent_at, commitment_id: g.commitment_id ?? null });
+      if (g.household) prepend(qc, ['household-entries', monthOf(g.spent_at)], { id: g.id, household_id: g.household.id, user_id: g.household.user_id ?? '', kind: 'expense', amount_laari: g.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: g.amount_laari, category_id: null, merchant: g.recipient_note, note: null, entry_date: g.spent_at } as HouseholdEntry);
+      prepend(qc, ['giving', monthOf(g.spent_at)], { id: g.id, expense_id: g.household ? null : g.id, household_entry_id: g.household ? g.id : null, kind: g.kind, recipient_note: g.recipient_note, amount_laari: g.amount_laari, spent_at: g.spent_at, commitment_id: g.commitment_id ?? null });
     }
   } catch { /* the entry is still queued; the lists catch up when it is sent */ }
 }

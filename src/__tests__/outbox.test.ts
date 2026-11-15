@@ -125,6 +125,19 @@ describe('saving offline', () => {
     expect(qc.getQueryData<{ merchant: string; user_id: string }[]>(['household-entries', '2026-11-01'])?.[0]).toMatchObject({ merchant: 'Electricity', user_id: 'u2' });
     expect(qc.getQueryData<unknown[]>(['expenses', '2026-11-01'])).toHaveLength(0);
   });
+  it('a shared gift and a shared pool payment made offline go in the shared pot', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['giving', '2026-11-01'], []);
+    qc.setQueryData(['pool-payments'], []);
+    qc.setQueryData(['household-entries', '2026-11-01'], []);
+    qc.setQueryData(['expenses', '2026-11-01'], []);
+    applyOptimistic(qc, 'logGiving', { id: 'g1', amount_laari: 70_000, kind: 'sadaqah', spent_at: '2026-11-05', recipient_note: 'School', commitment_id: 'c1', period: '2026-11-01', household: { id: 'hh', user_id: 'u1' } });
+    applyOptimistic(qc, 'logPoolPayment', { id: 'p1', pool_id: 'pl', name: 'Friends', amount_minor: 100_000, currency: 'MVR', fx_rate_to_mvr: '1', spent_at: '2026-11-05', period: '2026-11-01', household: { id: 'hh' } });
+    expect(qc.getQueryData<{ household_entry_id: string; expense_id: null }[]>(['giving', '2026-11-01'])?.[0]).toMatchObject({ household_entry_id: 'g1', expense_id: null });
+    expect(qc.getQueryData<{ household_entry_id: string }[]>(['pool-payments'])?.[0]).toMatchObject({ household_entry_id: 'p1' });
+    expect(qc.getQueryData<unknown[]>(['household-entries', '2026-11-01'])).toHaveLength(2);
+    expect(qc.getQueryData<unknown[]>(['expenses', '2026-11-01'])).toHaveLength(0);
+  });
   it('an existing expense made recurring offline counts as the first date', () => {
     const qc = new QueryClient();
     qc.setQueryData(['recurring-runs'], []);

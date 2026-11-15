@@ -7,6 +7,7 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
+import { shareTarget } from '@/features/recurring/logic';
 import { useShareTag } from '@/features/household/useTag';
 import { useCommitments, useGiving, usePaidCommitments, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
@@ -29,6 +30,7 @@ export default function Giving() {
   const commitments = useCommitments().data ?? [];
   const active = activeCommitments(commitments);
   const tag = useShareTag();
+  const removeShared = useWrite(api.deleteHouseholdEntry);
   const markPaid = useWrite(api.logGiving);
   const paidByAnyone = new Set(usePaidCommitments(month).data ?? []);
   const money = useMoneyText();
@@ -81,7 +83,7 @@ export default function Giving() {
                   {paid
                     ? <Row style={{ gap: 4 }}><Icon name="checkmark-circle" color={colors.accent} /><Text variant="small">{t('commit.paid')}</Text></Row>
                     : <Button kind="secondary" label={t('commit.markPaid')} loading={markPaid.isPending}
-                        onPress={async () => { await markPaid.mutateAsync({ amount_laari: c.amount_laari, kind: c.kind, spent_at: today(), recipient_note: commitmentNote(c), commitment_id: c.id, period: month }); success(); toast(t('commit.markedPaid')); }} />}
+                        onPress={async () => { await markPaid.mutateAsync({ amount_laari: c.amount_laari, kind: c.kind, spent_at: today(), recipient_note: commitmentNote(c), commitment_id: c.id, period: month, household: shareTarget(c) }); success(); toast(t('commit.markedPaid')); }} />}
                 </Row>
               );
             })}
@@ -117,9 +119,9 @@ export default function Giving() {
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.spent_at)}</Text>
             </View>
             <Money laari={e.amount_laari} />
-            <IconButton icon="create-outline" label={t('common.edit')} onPress={() => router.push({ pathname: '/edit-expense', params: { id: e.expense_id } })} />
+            <IconButton icon="create-outline" label={t('common.edit')} onPress={() => router.push(e.household_entry_id ? { pathname: '/household-entry', params: { id: e.household_entry_id, month: e.spent_at.slice(0, 7) } } : { pathname: '/edit-expense', params: { id: e.expense_id! } })} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(e.expense_id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+              onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => (e.household_entry_id ? removeShared : remove).mutate((e.household_entry_id ?? e.expense_id)!, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
           </Row>
         ))}
       </Card>
