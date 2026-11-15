@@ -36,6 +36,14 @@ export function initMonitoring(): void {
   });
 }
 
+/** A person's own report from the problem screen: their words plus the technical detail, nothing else. */
+export function sendFeedback(message: string, details: string): void {
+  try {
+    Sentry.captureFeedback({ message: message || '(no message)', associatedEventId: Sentry.lastEventId() });
+    Sentry.captureMessage(`User report details: ${details}`.slice(0, 1500), 'info');
+  } catch { /* reporting must never break the problem screen */ }
+}
+
 /** Send an error that the app caught and showed on screen itself. */
 export const reportError = (error: unknown): void => { Sentry.captureException(error); };
 export const wrapRoot = Sentry.wrap;

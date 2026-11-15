@@ -690,9 +690,17 @@
     "hideHeld": "Hide"
   },
   "crash": {
-    "title": "Kharadhu ran into a problem",
-    "body": "Please copy the text below and send it to support. It tells us what went wrong.",
-    "continue": "Continue"
+    "title": "Something went wrong",
+    "body": "Kharadhu closed unexpectedly. Your records are safe. We are sorry about that.",
+    "continue": "Open Kharadhu",
+    "tryAgain": "Try again",
+    "thanks": "Thank you. We have your report.",
+    "reportTitle": "Help us fix it",
+    "notePlaceholder": "What were you doing? (optional)",
+    "report": "Report a problem",
+    "privacy": "This sends what you wrote and technical details about the problem. It does not include your records.",
+    "showDetails": "Details for support",
+    "hideDetails": "Hide details"
   },
   "pin": {
     "setTitle": "PIN code",
