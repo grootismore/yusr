@@ -29,7 +29,7 @@ const OPS = {
   addHouseholdEntry: api.addHouseholdEntry, updateHouseholdEntry: api.updateHouseholdEntry, deleteHouseholdEntry: api.deleteHouseholdEntry,
   addSplitGroup: api.addSplitGroup, addSplitPerson: api.addSplitPerson, addSplitExpense: api.addSplitExpense, addSplitSettlement: api.addSplitSettlement,
   deleteSplitExpense: api.deleteSplitExpense, deleteSplitSettlement: api.deleteSplitSettlement, deleteSplitGroup: api.deleteSplitGroup,
-  addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
+  linkRecurringRun: api.linkRecurringRun, addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
 const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
 export type OpName = keyof typeof OPS;
@@ -151,6 +151,9 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
     } else if (op === 'endRecurring') {
       const id = args as string;
       qc.setQueryData<RecurringItem[]>(['recurring'], (old) => old?.map((r) => (r.id === id ? { ...r, ended_on: new Date().toISOString().slice(0, 10) } : r)));
+    } else if (op === 'linkRecurringRun') {
+      const a = args as { recurring_id: string; occurrence: string; expense_id?: string; income_id?: string };
+      prepend(qc, ['recurring-runs'], { id: `link-${a.recurring_id}-${a.occurrence}`, recurring_id: a.recurring_id, occurrence: a.occurrence, expense_id: a.expense_id ?? null, income_id: a.income_id ?? null, skipped: false });
     } else if (op === 'skipRecurring') {
       const a = args as { recurring_id: string; occurrence: string };
       prepend(qc, ['recurring-runs'], { id: `skip-${a.recurring_id}-${a.occurrence}`, recurring_id: a.recurring_id, occurrence: a.occurrence, expense_id: null, income_id: null, skipped: true });

@@ -9,6 +9,7 @@ import { saveRate } from '@/data/api';
 import { useCategories, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
 import type { HouseholdEntryInput } from '@/features/household/logic';
 import { nameOf } from '@/features/household/logic';
+import { useAuth } from '@/lib/auth';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
 import { useColors } from '@/theme/tokens';
@@ -24,9 +25,22 @@ export default function HouseholdEntryScreen() {
   const entry = useHouseholdEntries(`${month}-01`).data?.find((e) => e.id === id);
   const update = useWrite(api.updateHouseholdEntry);
   const remove = useWrite(api.deleteHouseholdEntry);
+  const addExpense = useWrite(api.addExpense);
+  const addIncome = useWrite(api.addIncome);
+  const { userId } = useAuth();
 
   if (!entry) return <Screen><StackHeader title={t('household.editTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;
   const income = entry.kind === 'income';
+
+  /** Your own entry goes back to your private records. */
+  async function makePrivate() {
+    const e = { amount_laari: entry!.amount_laari, currency: entry!.currency, fx_rate_to_mvr: String(entry!.fx_rate_to_mvr), category_id: income ? null : entry!.category_id, merchant: income ? null : entry!.merchant, spent_at: entry!.entry_date, note: entry!.note };
+    if (income) await addIncome.mutateAsync(e); else await addExpense.mutateAsync(e);
+    await remove.mutateAsync(entry!.id);
+    success();
+    toast(t('edit.madePrivate'));
+    router.back();
+  }
 
   return (
     <Screen>
@@ -48,6 +62,10 @@ export default function HouseholdEntryScreen() {
           router.back();
         }}
       />
+      {entry.user_id === userId ? (
+        <Button kind="secondary" icon="lock-closed-outline" label={t('edit.makePrivate')}
+          onPress={() => Alert.alert(t('edit.privateTitle'), t('edit.privateBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('edit.makePrivate'), onPress: () => void makePrivate() }])} />
+      ) : null}
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
         onPress={() => Alert.alert(t('household.deleteTitle'), t('household.deleteBody'), [
           { text: t('common.cancel'), style: 'cancel' },

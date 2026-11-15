@@ -765,7 +765,16 @@
     "tapToEdit": "Tap to edit",
     "delete": "Delete",
     "cancelEdit": "Cancel editing",
-    "deleteGivingNote": "The giving record is removed too."
+    "deleteGivingNote": "The giving record is removed too.",
+    "repeat": "Repeat this",
+    "moveShared": "Move to {{name}}",
+    "shareTitle": "Move to the shared pot?",
+    "shareBody": "Everyone in the household will see it, and it leaves your own records.",
+    "movedShared": "Moved to the shared pot",
+    "makePrivate": "Make private",
+    "privateTitle": "Make this private?",
+    "privateBody": "Only you will see it, and it leaves the shared pot.",
+    "madePrivate": "Moved to your own records"
   },
   "pin": {
     "setTitle": "PIN code",

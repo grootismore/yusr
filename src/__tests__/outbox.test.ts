@@ -10,7 +10,7 @@ jest.mock('expo-file-system', () => {
 });
 let mockN = 0;
 jest.mock('expo-crypto', () => ({ randomUUID: () => `id-${++mockN}` }));
-jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn(), addHouseholdEntry: jest.fn(), updateHouseholdEntry: jest.fn(), deleteHouseholdEntry: jest.fn(), addSplitGroup: jest.fn(), addSplitPerson: jest.fn(), addSplitExpense: jest.fn(), addSplitSettlement: jest.fn(), deleteSplitExpense: jest.fn(), deleteSplitSettlement: jest.fn(), deleteSplitGroup: jest.fn() }));
+jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), linkRecurringRun: jest.fn(), skipRecurring: jest.fn(), addHouseholdEntry: jest.fn(), updateHouseholdEntry: jest.fn(), deleteHouseholdEntry: jest.fn(), addSplitGroup: jest.fn(), addSplitPerson: jest.fn(), addSplitExpense: jest.fn(), addSplitSettlement: jest.fn(), deleteSplitExpense: jest.fn(), deleteSplitSettlement: jest.fn(), deleteSplitGroup: jest.fn() }));
 
 beforeEach(async () => { await clearOutbox(); });
 
@@ -114,6 +114,12 @@ describe('saving offline', () => {
     expect(qc.getQueryData<{ note: string }[]>(['income', '2026-11-01'])?.[0].note).toBe('Flat rent');
     applyOptimistic(qc, 'skipRecurring', { recurring_id: 'rc', occurrence: '2026-12-05' });
     expect(qc.getQueryData<{ skipped: boolean }[]>(['recurring-runs'])?.[0].skipped).toBe(true);
+  });
+  it('an existing expense made recurring offline counts as the first date', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['recurring-runs'], []);
+    applyOptimistic(qc, 'linkRecurringRun', { recurring_id: 'rc', occurrence: '2026-11-05', expense_id: 'e1' });
+    expect(qc.getQueryData<{ expense_id: string }[]>(['recurring-runs'])?.[0]).toMatchObject({ occurrence: '2026-11-05', expense_id: 'e1' });
   });
   it('a shared entry added, changed or deleted offline shows in the shared pot at once', () => {
     const qc = new QueryClient();
