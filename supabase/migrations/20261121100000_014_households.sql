@@ -194,7 +194,8 @@ begin
   -- If the owner left and others remain, the longest-standing member becomes the owner.
   if was_owner then
     update public.household_members set role = 'owner'
-     where (household_id, user_id) = (select m.household_id, m.user_id from public.household_members m where m.household_id = hid order by m.joined_at limit 1);
+     where household_id = hid
+       and user_id = (select m.user_id from public.household_members m where m.household_id = hid order by m.joined_at limit 1);
   end if;
 end;
 $$;
