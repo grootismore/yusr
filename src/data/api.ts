@@ -1,5 +1,5 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
-import { addMonths } from '@/lib/dates';
+import { addMonths, monthStart } from '@/lib/dates';
 import { toMvrLaari } from '@/lib/money';
 import { type BudgetRow } from '@/lib/budget';
 import { type Draft, compressReceipt } from '@/lib/receipt';
@@ -37,6 +37,36 @@ export async function listExpenses(month: string): Promise<Expense[]> {
     await getSupabase().from('expenses').select('*').gte('spent_at', month).lt('spent_at', addMonths(month, 1))
       .order('spent_at', { ascending: false }).order('created_at', { ascending: false }),
   );
+}
+
+export async function getExpense(id: string): Promise<Expense> {
+  if (PREVIEW) return fx.expenses(monthStart()).find((e) => e.id === id) ?? fx.expenses(monthStart())[0];
+  return must(await getSupabase().from('expenses').select('*').eq('id', id).single());
+}
+
+/** Change an expense the person entered wrongly. The MVR value is worked out by the database from amount and rate. */
+export async function updateExpense(id: string, input: NewExpense): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('expenses').update({
+    amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, category_id: input.category_id,
+    merchant: input.merchant, spent_at: input.spent_at, note: input.note,
+  }).eq('id', id));
+}
+
+export async function deleteExpense(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('expenses').delete().eq('id', id));
+}
+
+/** The giving entry attached to an expense, if it is one (giving is an expense plus a sadaqah_entries row). */
+export async function getSadaqah(expenseId: string): Promise<{ id: string; kind: GivingKind; recipient_note: string | null } | null> {
+  if (PREVIEW) return null;
+  return must(await getSupabase().from('sadaqah_entries').select('id,kind,recipient_note').eq('expense_id', expenseId).maybeSingle());
+}
+
+export async function updateSadaqah(id: string, patch: { kind: GivingKind; recipient_note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('sadaqah_entries').update(patch).eq('id', id));
 }
 
 export async function addExpense(input: NewExpense): Promise<void> {
@@ -88,6 +118,21 @@ export async function addIncomeSplit(input: { rows: SplitIncome[]; received_at: 
   if (PREVIEW) return;
   const user_id = await uid();
   must(await getSupabase().from('income').insert(input.rows.map((r) => ({ user_id, amount_laari: r.amount_laari, currency: r.currency, fx_rate_to_mvr: r.fx_rate_to_mvr, keep_in_currency: r.keep_in_currency, received_at: input.received_at, note: input.note }))));
+}
+
+export interface IncomeFull extends IncomeRow { fx_rate_to_mvr: number; keep_in_currency: boolean }
+
+export async function getIncome(id: string): Promise<IncomeFull> {
+  if (PREVIEW) return { ...fx.income[0], fx_rate_to_mvr: 1, keep_in_currency: false };
+  return must(await getSupabase().from('income').select('id,amount_laari,currency,mvr_laari,received_at,note,fx_rate_to_mvr,keep_in_currency').eq('id', id).single());
+}
+
+export async function updateIncome(id: string, input: NewExpense & { keep_in_currency: boolean }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('income').update({
+    amount_laari: input.amount_laari, currency: input.currency, fx_rate_to_mvr: input.fx_rate_to_mvr, received_at: input.spent_at, note: input.note,
+    keep_in_currency: input.currency !== 'MVR' && input.keep_in_currency,
+  }).eq('id', id));
 }
 
 export async function deleteIncome(id: string): Promise<void> {
@@ -245,6 +290,11 @@ export async function deleteDebt(id: string): Promise<void> {
 export async function addDebtPayment(p: { debt_id: string; amount_laari: number; paid_on: string; note: string | null }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('debt_payments').insert({ ...p, user_id: await uid() }));
+}
+
+export async function updateDebtPayment(id: string, p: { amount_laari: number; paid_on: string; note: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('debt_payments').update(p).eq('id', id));
 }
 
 export async function deleteDebtPayment(id: string): Promise<void> {

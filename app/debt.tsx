@@ -12,7 +12,7 @@ import { DueBadge, InterestTag } from '@/features/debts/ui';
 import { dueStatus } from '@/features/debts/due';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
-import { parseAmount } from '@/lib/money';
+import { formatNumber, parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
 
 export default function DebtDetail() {
@@ -31,6 +31,8 @@ export default function DebtDetail() {
   const [errors, setErrors] = useState<{ amount?: string; date?: string }>({});
   const add = useWrite(api.addDebtPayment);
   const removePayment = useWrite(api.deleteDebtPayment);
+  const updatePayment = useWrite((a: { id: string; amount_laari: number; paid_on: string; note: string | null }) => api.updateDebtPayment(a.id, { amount_laari: a.amount_laari, paid_on: a.paid_on, note: a.note }));
+  const [editingId, setEditingId] = useState<string | null>(null);
   const removeDebt = useWrite(api.deleteDebt);
 
   if (!debt) return <Screen><Button kind="ghost" label={t('common.back')} onPress={() => router.back()} /></Screen>;
@@ -48,9 +50,10 @@ export default function DebtDetail() {
     if (!iso) next.date = t('expense.invalidDate');
     setErrors(next);
     if (Object.keys(next).length) return;
-    await add.mutateAsync({ debt_id: debt!.id, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
+    if (editingId) await updatePayment.mutateAsync({ id: editingId, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
+    else await add.mutateAsync({ debt_id: debt!.id, amount_laari: laari, paid_on: iso!, note: note.trim() || null });
     success();
-    setAmount(''); setNote('');
+    setAmount(''); setNote(''); setEditingId(null);
   }
 
   return (
@@ -69,9 +72,9 @@ export default function DebtDetail() {
         </Row>
       </Card>
 
-      {debt.balance_laari > 0 ? (
+      {debt.balance_laari > 0 || editingId ? (
         <Card>
-          <Text variant="heading">{t('debts.recordPayment')}</Text>
+          <Text variant="heading">{editingId ? t('edit.paymentTitle') : t('debts.recordPayment')}</Text>
           <Field label={t('debts.paymentAmount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder={debt.min_payment_laari ? undefined : '0.00'} error={errors.amount} />
           <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />
           <Row>
@@ -79,7 +82,8 @@ export default function DebtDetail() {
             <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
           </Row>
           <Field label={`${t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} />
-          <Button label={t('debts.recordPayment')} onPress={record} loading={add.isPending} />
+          <Button label={editingId ? t('common.save') : t('debts.recordPayment')} onPress={record} loading={add.isPending || updatePayment.isPending} />
+          {editingId ? <Button kind="ghost" label={t('edit.cancelEdit')} onPress={() => { setEditingId(null); setAmount(''); setNote(''); setDate(formatDate(today())); }} /> : null}
         </Card>
       ) : null}
 
@@ -91,6 +95,7 @@ export default function DebtDetail() {
               <Money laari={p.amount_laari} />
               <Text latin variant="small" color={colors.inkMuted}>{formatDate(p.paid_on)}{p.note ? ` · ${p.note}` : ''}</Text>
             </View>
+            <IconButton icon="create-outline" label={t('common.edit')} onPress={() => { setEditingId(p.id); setAmount(formatNumber(p.amount_laari).replace(/,/g, '')); setDate(formatDate(p.paid_on)); setNote(p.note ?? ''); setErrors({}); }} />
             <IconButton icon="trash-outline" label={t('common.remove')}
               onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id) }])} />
           </Row>
