@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
+import { ConvertActions } from '@/components/ConvertActions';
 import { Button, Screen, SettingRow, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
@@ -48,6 +49,8 @@ export default function EditIncome() {
           <SettingRow icon="wallet-outline" title={t('foreign.keep', { currency: row.currency })} subtitle={t('foreign.keepNote')} value={keepNow} onValueChange={setKeep} last />
         ) : null}
       </ExpenseForm>
+      <ConvertActions source={{ kind: 'income', id: row.id, name: row.note, amountMinor: row.amount_laari, currency: row.currency, fxRate: row.fx_rate_to_mvr, categoryId: null, note: row.note, date: row.received_at }}
+        canShare canRepeat removeOriginal={() => remove.mutateAsync(row.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
         onPress={() => Alert.alert(t('income.deleteTitle'), t('edit.deleteIncomeBody'), [
           { text: t('common.cancel'), style: 'cancel' },

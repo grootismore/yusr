@@ -7,7 +7,8 @@ import { Text } from '@/components/Text';
 import { Button, Chip, Field, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
-import { useCategories, useExpense, useSadaqah, useWrite } from '@/data/hooks';
+import { useCategories, useExpense, usePoolPayments, useSadaqah, useWrite } from '@/data/hooks';
+import { ConvertActions } from '@/components/ConvertActions';
 import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
@@ -30,6 +31,7 @@ export default function EditExpense() {
   const update = useWrite(api.updateExpense);
   const updateGiving = useWrite(api.updateSadaqah);
   const remove = useWrite(api.deleteExpense);
+  const poolPaid = usePoolPayments().data?.some((p) => p.expense_id === id) ?? false;
 
   if (!expense) return <Screen><StackHeader title={t('edit.expenseTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;
 
@@ -59,6 +61,9 @@ export default function EditExpense() {
           </View>
         ) : null}
       </ExpenseForm>
+      {/* A giving entry or a money-pool contribution is tied to its own record, so it stays where it is. */}
+      <ConvertActions source={{ kind: 'expense', id: expense.id, name: expense.merchant, amountMinor: expense.amount_laari, currency: expense.currency, fxRate: expense.fx_rate_to_mvr, categoryId: expense.category_id, note: expense.note, date: expense.spent_at }}
+        canShare={!sadaqah && !poolPaid} canRepeat={!sadaqah && !poolPaid} removeOriginal={() => remove.mutateAsync(expense.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
         onPress={() => Alert.alert(t('edit.deleteExpenseTitle'), sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), [
           { text: t('common.cancel'), style: 'cancel' },

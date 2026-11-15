@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, Switch, View } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
@@ -20,19 +21,22 @@ export default function RecurringEdit() {
   const { t } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, fromKind, fromId, name: pName, amount: pAmount, currency: pCurrency, category: pCategory, date: pDate } = useLocalSearchParams<{ id?: string; fromKind?: 'expense' | 'income'; fromId?: string; name?: string; amount?: string; currency?: string; category?: string; date?: string }>();
   const existing = useRecurring().data?.find((r) => r.id === id);
   const categories = useCategories().data ?? [];
   const add = useWrite(api.addRecurring);
   const update = useWrite(api.updateRecurring);
   const stop = useWrite(api.endRecurring);
-  const [kind, setKind] = useState<'expense' | 'income'>(existing?.kind ?? 'expense');
-  const [name, setName] = useState(existing?.name ?? '');
-  const [amount, setAmount] = useState(existing ? formatNumber(existing.amount_minor).replace(/,/g, '') : '');
-  const [currency, setCurrency] = useState(existing?.currency ?? 'MVR');
-  const [categoryId, setCategoryId] = useState<string | null>(existing?.category_id ?? null);
+  const link = useWrite(api.linkRecurringRun);
+  // Opened from an expense or income already recorded: start from it, and count it as the first date.
+  const from = !existing && fromId && fromKind ? { kind: fromKind, id: fromId } : null;
+  const [kind, setKind] = useState<'expense' | 'income'>(existing?.kind ?? from?.kind ?? 'expense');
+  const [name, setName] = useState(existing?.name ?? pName ?? '');
+  const [amount, setAmount] = useState(existing ? formatNumber(existing.amount_minor).replace(/,/g, '') : pAmount ? formatNumber(Number(pAmount)).replace(/,/g, '') : '');
+  const [currency, setCurrency] = useState(existing?.currency ?? pCurrency ?? 'MVR');
+  const [categoryId, setCategoryId] = useState<string | null>(existing?.category_id ?? pCategory ?? null);
   const [every, setEvery] = useState<Every>(existing?.every ?? 'month');
-  const [start, setStart] = useState(formatDate(existing?.starts_on ?? today()));
+  const [start, setStart] = useState(formatDate(existing?.starts_on ?? pDate ?? today()));
   const [auto, setAuto] = useState(existing?.auto_add ?? kind === 'expense');
   const [note, setNote] = useState(existing?.note ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,7 +51,11 @@ export default function RecurringEdit() {
     setErrors(e);
     if (Object.keys(e).length) return;
     const input: RecurringInput = { kind, name: name.trim(), note: note.trim() || null, amount_minor: minor, currency, category_id: kind === 'expense' ? categoryId : null, every, starts_on: iso!, auto_add: auto };
-    if (existing) await update.mutateAsync({ id: existing.id, input }); else await add.mutateAsync({ input });
+    if (existing) await update.mutateAsync({ id: existing.id, input }); else {
+      const newId = Crypto.randomUUID();
+      await add.mutateAsync({ id: newId, input });
+      if (from && iso === pDate) await link.mutateAsync({ recurring_id: newId, occurrence: iso, ...(from.kind === 'expense' ? { expense_id: from.id } : { income_id: from.id }) });
+    }
     success();
     toast(t('toast.saved'));
     router.back();
@@ -59,7 +67,7 @@ export default function RecurringEdit() {
         <Text variant="title">{existing ? t('recurring.editTitle') : t('recurring.addTitle')}</Text>
         <Button kind="ghost" label={t('common.cancel')} onPress={() => router.back()} />
       </Row>
-      {!existing ? (
+      {!existing && !from ? (
         <Row>
           {(['expense', 'income'] as const).map((k) => <Chip key={k} label={t(`recurring.kindOne.${k}`)} selected={kind === k} onPress={() => { setKind(k); setAuto(k === 'expense'); }} />)}
         </Row>

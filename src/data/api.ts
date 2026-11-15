@@ -450,6 +450,13 @@ export async function skipRecurring({ recurring_id, occurrence }: { recurring_id
   if (res.error && !isDup(res.error)) must(res);
 }
 
+/** Say an existing expense or income already covers one date of a recurring item, so that date is not added again. */
+export async function linkRecurringRun({ recurring_id, occurrence, expense_id, income_id }: { recurring_id: string; occurrence: string; expense_id?: string; income_id?: string }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('recurring_runs').insert({ user_id: await uid(), recurring_id, occurrence, expense_id: expense_id ?? null, income_id: income_id ?? null });
+  if (res.error && !isDup(res.error)) must(res);
+}
+
 /**
  * Record one date of a recurring item: an ordinary expense or income row, plus the run row that says this date is done.
  * Safe to send twice (the id is made on the phone), and if another phone got there first the extra row is removed.
