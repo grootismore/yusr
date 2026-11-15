@@ -89,6 +89,10 @@ function Routes() {
           <Stack.Screen name="giving-add" options={{ presentation: 'modal' }} />
           <Stack.Screen name="household" />
           <Stack.Screen name="household-entry" />
+          <Stack.Screen name="split" />
+          <Stack.Screen name="split-group" />
+          <Stack.Screen name="split-new-group" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="split-expense" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recurring" />
           <Stack.Screen name="recurring-edit" options={{ presentation: 'modal' }} />
           <Stack.Screen name="pools" />

@@ -11,6 +11,7 @@ import type { GivingEntry } from '@/features/giving/logic';
 import type { MoneyPool } from '@/features/pools/logic';
 import type { HouseholdEntry } from '@/features/household/logic';
 import type { RecurringItem } from '@/features/recurring/logic';
+import type { SplitData } from '@/features/split/logic';
 
 // ---- register (preview)
 import type { AuditEntry, ContactCase, ContactRegister, RegisterItem, TrustedContact } from '@/features/register/types';
@@ -64,6 +65,24 @@ export const householdEntries: HouseholdEntry[] = [
   { id: 'he3', household_id: 'hh1', user_id: 'u1', kind: 'expense', amount_laari: 1_200_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 1_200_000, category_id: 'rent', merchant: 'Flat rent', note: null, entry_date: today().slice(0, 7) + '-01' },
   { id: 'he4', household_id: 'hh1', user_id: 'u2', kind: 'income', amount_laari: 500_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 500_000, category_id: null, merchant: null, note: 'Towards the household', entry_date: today().slice(0, 7) + '-01' },
 ];
+export const split: SplitData = {
+  groups: [{ id: 'sg1', name: 'Beach trip', currency: 'MVR', archived: false }, { id: 'sg2', name: 'Flat mates', currency: 'MVR', archived: false }],
+  people: [
+    { id: 'sp1', group_id: 'sg1', name: 'Me', is_me: true }, { id: 'sp2', group_id: 'sg1', name: 'Ahmed', is_me: false }, { id: 'sp3', group_id: 'sg1', name: 'Aisha', is_me: false },
+    { id: 'sp4', group_id: 'sg2', name: 'Me', is_me: true }, { id: 'sp5', group_id: 'sg2', name: 'Naseer', is_me: false },
+  ],
+  expenses: [
+    { id: 'se1', group_id: 'sg1', description: 'Dinner at the cafe', amount_minor: 90_000, paid_by: 'sp1', split_type: 'equal', spent_on: today().slice(0, 7) + '-10', note: null },
+    { id: 'se2', group_id: 'sg1', description: 'Boat ride', amount_minor: 30_000, paid_by: 'sp2', split_type: 'equal', spent_on: today().slice(0, 7) + '-11', note: null },
+    { id: 'se3', group_id: 'sg2', description: 'Groceries', amount_minor: 40_000, paid_by: 'sp5', split_type: 'equal', spent_on: today().slice(0, 7) + '-05', note: null },
+  ],
+  shares: [
+    { expense_id: 'se1', person_id: 'sp1', share_minor: 30_000 }, { expense_id: 'se1', person_id: 'sp2', share_minor: 30_000 }, { expense_id: 'se1', person_id: 'sp3', share_minor: 30_000 },
+    { expense_id: 'se2', person_id: 'sp1', share_minor: 10_000 }, { expense_id: 'se2', person_id: 'sp2', share_minor: 10_000 }, { expense_id: 'se2', person_id: 'sp3', share_minor: 10_000 },
+    { expense_id: 'se3', person_id: 'sp4', share_minor: 20_000 }, { expense_id: 'se3', person_id: 'sp5', share_minor: 20_000 },
+  ],
+  settlements: [],
+};
 export const recurring: RecurringItem[] = [
   { id: 'rc1', kind: 'income', name: 'Flat rent from tenant', note: null, amount_minor: 800_000, currency: 'MVR', category_id: null, every: 'month', starts_on: '2026-09-05', ended_on: null, auto_add: false },
   { id: 'rc2', kind: 'expense', name: 'Internet', note: null, amount_minor: 69_900, currency: 'MVR', category_id: 'bills', every: 'month', starts_on: '2026-09-20', ended_on: null, auto_add: true },

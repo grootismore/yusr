@@ -10,7 +10,7 @@ jest.mock('expo-file-system', () => {
 });
 let mockN = 0;
 jest.mock('expo-crypto', () => ({ randomUUID: () => `id-${++mockN}` }));
-jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn(), addHouseholdEntry: jest.fn(), updateHouseholdEntry: jest.fn(), deleteHouseholdEntry: jest.fn() }));
+jest.mock('@/data/api', () => ({ addExpense: jest.fn(), addIncome: jest.fn(), addIncomeSplit: jest.fn(), logGiving: jest.fn(), addDebtPayment: jest.fn(), updateExpense: jest.fn(), deleteExpense: jest.fn(), updateSadaqah: jest.fn(), deleteGiving: jest.fn(), updateIncome: jest.fn(), deleteIncome: jest.fn(), updateDebtPayment: jest.fn(), deleteDebtPayment: jest.fn(), deleteConversion: jest.fn(), setBudget: jest.fn(), clearBudget: jest.fn(), addDebt: jest.fn(), updateDebt: jest.fn(), deleteDebt: jest.fn(), addPool: jest.fn(), updatePool: jest.fn(), endPool: jest.fn(), logPoolPayment: jest.fn(), addRecurring: jest.fn(), updateRecurring: jest.fn(), endRecurring: jest.fn(), logRecurring: jest.fn(), skipRecurring: jest.fn(), addHouseholdEntry: jest.fn(), updateHouseholdEntry: jest.fn(), deleteHouseholdEntry: jest.fn(), addSplitGroup: jest.fn(), addSplitPerson: jest.fn(), addSplitExpense: jest.fn(), addSplitSettlement: jest.fn(), deleteSplitExpense: jest.fn(), deleteSplitSettlement: jest.fn(), deleteSplitGroup: jest.fn() }));
 
 beforeEach(async () => { await clearOutbox(); });
 
@@ -125,5 +125,17 @@ describe('saving offline', () => {
     expect(qc.getQueryData<{ mvr_laari: number }[]>(['household-entries', '2026-11-01'])?.[0].mvr_laari).toBe(300_000);
     applyOptimistic(qc, 'deleteHouseholdEntry', 'h1');
     expect(qc.getQueryData<unknown[]>(['household-entries', '2026-11-01'])).toEqual([]);
+  });
+  it('a split group, cost and payment made offline show at once, and deleting a group takes its rows', () => {
+    const qc = new QueryClient();
+    qc.setQueryData(['split'], { groups: [], people: [], expenses: [], shares: [], settlements: [] });
+    applyOptimistic(qc, 'addSplitGroup', { id: 'g', name: 'Trip', currency: 'MVR', people: [{ id: 'me', name: 'Me', is_me: true }, { id: 'a', name: 'Ahmed', is_me: false }] });
+    applyOptimistic(qc, 'addSplitExpense', { id: 'e', group_id: 'g', description: 'Dinner', amount_minor: 100, paid_by: 'me', split_type: 'equal', spent_on: '2026-11-10', note: null, shares: { me: 50, a: 50 } });
+    applyOptimistic(qc, 'addSplitSettlement', { id: 's', group_id: 'g', from_person: 'a', to_person: 'me', amount_minor: 50, settled_on: '2026-11-11', note: null });
+    const d = qc.getQueryData<{ groups: unknown[]; people: unknown[]; expenses: unknown[]; shares: unknown[]; settlements: unknown[] }>(['split'])!;
+    expect([d.groups.length, d.people.length, d.expenses.length, d.shares.length, d.settlements.length]).toEqual([1, 2, 1, 2, 1]);
+    applyOptimistic(qc, 'deleteSplitGroup', 'g');
+    const e = qc.getQueryData<{ groups: unknown[]; people: unknown[]; expenses: unknown[]; settlements: unknown[] }>(['split'])!;
+    expect([e.groups.length, e.people.length, e.expenses.length, e.settlements.length]).toEqual([0, 0, 0, 0]);
   });
 });
