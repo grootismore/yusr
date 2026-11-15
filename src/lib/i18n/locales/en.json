@@ -1173,6 +1173,14 @@
       "split": "You have {{groups}} Split groups. More are part of Plus.",
       "recurring": "You have {{recurring}} recurring items. More are part of Plus."
     },
-    "more": "Scans, people and history for more"
+    "more": "Scans, people and history for more",
+    "haveCode": "Have a code?",
+    "codeLabel": "Promotion code",
+    "codeHint": "For example 3F9A1-C72B8.",
+    "useCode": "Use code",
+    "storeCode": "I have an App Store or Google Play offer code",
+    "codeInvalid": "That code isn't valid, or it has ended or been used.",
+    "codeTooMany": "Too many tries. Wait an hour and try again.",
+    "codeAlready": "You already have Plus through your subscription. The code was not used."
   }
 }

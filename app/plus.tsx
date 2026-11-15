@@ -1,14 +1,16 @@
 import { View } from 'react-native';
+import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
-import { Button, Card, Icon, Row, Screen, StackHeader, type IconName } from '@/components/ui';
-import { usePlan } from '@/data/hooks';
+import { Button, Card, Field, Icon, Row, Screen, StackHeader, type IconName } from '@/components/ui';
+import * as api from '@/data/api';
+import { usePlan, useWrite } from '@/data/hooks';
 import { FREE, PLUS_SCANS, type PlusFeature } from '@/features/plus/limits';
 import { formatDate } from '@/lib/dates';
 import { success } from '@/lib/haptics';
-import { buyPlus, restorePurchases, type PurchaseResult } from '@/lib/purchases';
+import { buyPlus, redeemStoreCode, restorePurchases, type PurchaseResult } from '@/lib/purchases';
 import { toast } from '@/lib/toast';
 import { space, useColors } from '@/theme/tokens';
 
@@ -30,6 +32,25 @@ export default function Plus() {
   const plan = usePlan().data;
   const { reason } = useLocalSearchParams<{ reason?: PlusFeature }>();
   const nums = { free: FREE.scans, plus: PLUS_SCANS, recurring: FREE.recurring, groups: FREE.splitGroups, people: FREE.householdPeople, months: FREE.historyMonths };
+
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const redeem = useWrite((c: string) => api.redeemPromo(c));
+
+  async function applyCode() {
+    if (code.replace(/[^A-Za-z0-9]/g, '').length < 6) { setCodeError(t('plus.codeInvalid')); return; }
+    setCodeError(null);
+    try {
+      const r = await redeem.mutateAsync(code);
+      await qc.invalidateQueries({ queryKey: ['plan'] });
+      setCode('');
+      success();
+      toast(r.status === 'already_plus' ? t('plus.codeAlready') : t('plus.welcome'));
+    } catch (e) {
+      const m = String((e as { message?: string })?.message ?? '');
+      setCodeError(/too many/i.test(m) ? t('plus.codeTooMany') : t('plus.codeInvalid'));
+    }
+  }
 
   async function run(action: () => Promise<PurchaseResult>) {
     const r = await action();
@@ -71,6 +92,13 @@ export default function Plus() {
           <Text variant="small" color={colors.inkMuted}>{t('plus.priceNote')}</Text>
         </>
       )}
+
+      <Card>
+        <Text variant="heading">{t('plus.haveCode')}</Text>
+        <Field label={t('plus.codeLabel')} hint={t('plus.codeHint')} value={code} onChangeText={(v) => { setCode(v.toUpperCase()); setCodeError(null); }} autoCapitalize="characters" autoCorrect={false} maxLength={14} error={codeError} />
+        <Button kind="secondary" label={t('plus.useCode')} loading={redeem.isPending} onPress={() => void applyCode()} />
+        {plan?.plus ? null : <Button kind="ghost" label={t('plus.storeCode')} onPress={() => void run(redeemStoreCode)} />}
+      </Card>
 
       <Card>
         <Text variant="heading">{t('plus.freeTitle')}</Text>

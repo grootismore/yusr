@@ -268,6 +268,13 @@ export async function getPlan(): Promise<Plan> {
   return { plus: live, expiresAt: row?.expires_at ?? null };
 }
 
+export type PromoResult = { status: 'plus'; expires_at: string | null } | { status: 'already_plus' };
+/** Use a promotion code. Throws when the code is not good, or after too many wrong tries. */
+export async function redeemPromo(code: string): Promise<PromoResult> {
+  if (PREVIEW) return { status: 'plus', expires_at: null };
+  return must(await getSupabase().rpc('redeem_promo', { p_code: code })) as PromoResult;
+}
+
 export async function deleteReceiptImage(path: string): Promise<void> {
   if (PREVIEW) return;
   await getSupabase().storage.from('receipts').remove([path]).catch(() => undefined);

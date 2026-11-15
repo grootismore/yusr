@@ -8,4 +8,6 @@ export type PurchaseResult = 'unavailable' | 'cancelled' | 'purchased' | 'failed
 
 export const purchasesReady = (): boolean => false;
 export async function buyPlus(): Promise<PurchaseResult> { return 'unavailable'; }
+/** Opens the store's own box for typing an offer code (a discount on the subscription). */
+export async function redeemStoreCode(): Promise<PurchaseResult> { return 'unavailable'; }
 export async function restorePurchases(): Promise<PurchaseResult> { return 'unavailable'; }
