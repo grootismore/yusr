@@ -12,7 +12,7 @@ import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hij
 import { activeCommitments, commitmentNote, commitmentTotal, goalPercent, isPaid, monthGiving } from '@/features/giving/logic';
 import { formatDate, monthStart, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
-import { money } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { useColors } from '@/theme/tokens';
 import { toast } from '@/lib/toast';
 
@@ -28,6 +28,7 @@ export default function Giving() {
   const commitments = useCommitments().data ?? [];
   const active = activeCommitments(commitments);
   const markPaid = useWrite(api.logGiving);
+  const money = useMoneyText();
   const totals = useMemo(() => monthGiving(entries), [entries]);
   const months = t('hijriMonths', { returnObjects: true }) as string[];
 

@@ -12,6 +12,7 @@ import { LANGUAGES, LANGUAGE_NAMES, setLanguage, type Language } from '@/lib/i18
 import { useAuth } from '@/lib/auth';
 import { biometricAvailable, biometricEnabled, setBiometricEnabled } from '@/lib/lock';
 import { clearPin, pinSet } from '@/lib/pin';
+import { setHideAmounts, useHideAmounts } from '@/lib/privacy';
 import { ltr, parseRate } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
 
@@ -43,6 +44,7 @@ export default function Settings() {
   const [bio, setBio] = useState(false);
   const [bioOk, setBioOk] = useState(true);
   const [pinOn, setPinOn] = useState(false);
+  const hideAmounts = useHideAmounts();
   useFocusEffect(useCallback(() => { void pinSet().then(setPinOn); }, []));
   useEffect(() => { void loadAppearance().then(setAppearance); void biometricEnabled().then(setBio); void biometricAvailable().then(setBioOk); }, []);
 
@@ -61,6 +63,7 @@ export default function Settings() {
             onValueChange={async (v) => { setBio(v); await setBiometricEnabled(v); }} />
           <SettingRow icon="keypad-outline" title={t('settings.pin')} subtitle={t('settings.pinNote')} value={pinOn}
             onValueChange={async (v) => { if (v) router.push('/set-pin'); else { setPinOn(false); await clearPin(); } }} />
+          <SettingRow icon="eye-off-outline" title={t('settings.hideAmounts')} subtitle={t('settings.hideAmountsNote')} value={hideAmounts} onValueChange={(v) => void setHideAmounts(v)} />
           <SettingRow icon="image-outline" title={t('settings.keepPhotos')} subtitle={t('settings.keepPhotosNote')} value={!!profile?.keep_receipt_images}
             onValueChange={(v) => updateProfile.mutate({ keep_receipt_images: v })} last />
         </Card>

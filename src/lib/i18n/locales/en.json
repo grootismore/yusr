@@ -215,7 +215,9 @@
       "dark": "Dark"
     },
     "pin": "PIN code",
-    "pinNote": "Unlock with a PIN when Face ID or fingerprint is not available."
+    "pinNote": "Unlock with a PIN when Face ID or fingerprint is not available.",
+    "hideAmounts": "Hide amounts",
+    "hideAmountsNote": "Shows •••• instead of money. The eye on Home switches it on and off."
   },
   "lock": {
     "title": "Kharadhu is locked",
@@ -682,7 +684,9 @@
     "noHistory": "No exchanges yet.",
     "deleteTitle": "Delete this exchange?",
     "keptBadge": "Kept in {{currency}}",
-    "explain": "Converting does not change your income or spending reports."
+    "explain": "Converting does not change your income or spending reports.",
+    "showHeld": "Show",
+    "hideHeld": "Hide"
   },
   "crash": {
     "title": "Kharadhu ran into a problem",
@@ -753,5 +757,9 @@
     "contact": "Contact us",
     "linksSoon": "Terms and contact details will appear here.",
     "madeIn": "Made in the Maldives."
+  },
+  "privacy": {
+    "hide": "Hide amounts",
+    "show": "Show amounts"
   }
 }

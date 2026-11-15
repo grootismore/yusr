@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { barPercent } from '@/features/trends/trend';
-import { money } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { radius, space, useColors } from '@/theme/tokens';
 import { Text } from './Text';
 
@@ -15,6 +15,7 @@ const HEIGHT = 120;
 export function TrendChart({ months, spend, income, selected, onSelect }: { months: string[]; spend: number[]; income: number[]; selected: string; onSelect: (month: string) => void }) {
   const colors = useColors();
   const { t } = useTranslation();
+  const money = useMoneyText();
   const names = t('months', { returnObjects: true }) as string[];
   const max = Math.max(1, ...spend, ...income);
   const label = (m: string) => `${names[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}`;

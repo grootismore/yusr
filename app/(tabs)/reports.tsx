@@ -12,13 +12,15 @@ import { useBudgets, useCategories, useCategoryName, useExpenses, useIncome, use
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
-import { ltr, money } from '@/lib/money';
+import { ltr } from '@/lib/money';
+import { useMoneyText } from '@/lib/privacy';
 import { radius, space, useColors } from '@/theme/tokens';
 import { toast } from '@/lib/toast';
 
 export default function Reports() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
+  const money = useMoneyText();
   const catName = useCategoryName();
   const [month, setMonth] = useState(monthStart());
   const expensesQuery = useExpenses(month);
