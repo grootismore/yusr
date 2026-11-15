@@ -10,7 +10,7 @@ import * as api from '@/data/api';
 import { useDebtPayments, useDebts, useWrite } from '@/data/hooks';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
 import { dueStatus } from '@/features/debts/due';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
@@ -75,7 +75,7 @@ export default function DebtDetail() {
         <Card>
           <Text variant="heading">{t('debts.recordPayment')}</Text>
           <Field label={t('debts.paymentAmount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder={debt.min_payment_laari ? undefined : '0.00'} error={errors.amount} />
-          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />
+          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.date} />
           <Row>
             <Button kind="ghost" label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
             <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />

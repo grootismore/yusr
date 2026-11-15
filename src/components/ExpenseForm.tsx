@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { type Category, type NewExpense } from '@/data/types';
 import { useCategoryName, useRates } from '@/data/hooks';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { formatNumber, ltr, parseAmount, parseRate, toMvrLaari } from '@/lib/money';
 import { isLow, type Confidence } from '@/lib/receipt';
 import { space, useColors } from '@/theme/tokens';
@@ -89,7 +89,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
 
       {income ? null : <Field label={t('expense.merchant')} value={merchant} onChangeText={setMerchant} flag={flag('merchant')} autoCapitalize="words" />}
       <View style={{ gap: space.sm }}>
-        <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" placeholder="DD/MM/YYYY" error={errors.date} flag={flag('date')} />
+        <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} placeholder="DD/MM/YYYY" error={errors.date} flag={flag('date')} />
         <Row>
           <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
           <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />

@@ -7,7 +7,7 @@ import { Button, Chip, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useWrite } from '@/data/hooks';
 import { COUNTS_TOWARD_GOAL, GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
 import { space } from '@/theme/tokens';
@@ -51,7 +51,7 @@ export default function GivingAdd() {
           {more ? null : <Chip label={t('giving.moreTypes')} icon="add" onPress={() => setMore(true)} />}</Row>
       </View>
       <View style={{ gap: space.sm }}>
-        <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />
+        <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.date} />
         <Row>
           <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
           <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />

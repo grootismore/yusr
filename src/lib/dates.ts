@@ -48,3 +48,9 @@ export function parseDate(input: string): string | null {
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
   return `${y}-${pad(m)}-${pad(d)}`;
 }
+
+/** Types a date from the number pad: digits in, "15/11/2026" out. The slashes are added as you go. */
+export function maskDate(text: string): string {
+  const d = text.replace(/\D/g, '').slice(0, 8);
+  return d.length <= 2 ? d : d.length <= 4 ? `${d.slice(0, 2)}/${d.slice(2)}` : `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}

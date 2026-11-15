@@ -17,7 +17,8 @@ describe('format', () => {
     expect(formatMVR(123450)).toBe('MVR 1,234.50');
     expect(formatMVR(5)).toBe('MVR 0.05');
     expect(formatMVR(-123450)).toBe('-MVR 1,234.50');
-    expect(formatMoney(1000, 'USD')).toBe('USD 10.00');
+    expect(formatMoney(1000, 'USD')).toBe('USD 10');
+    expect(formatMoney(1050, 'USD')).toBe('USD 10.50');
   });
   it('round-trips', () => {
     for (const n of [0, 1, 99, 100, 123456789, -250]) expect(parseAmount(formatMVR(n).replace('MVR ', ''))).toBe(n);

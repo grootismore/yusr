@@ -9,7 +9,7 @@ import { Button, Card, Chip, Field, IconButton, Row, Screen, StackHeader } from 
 import * as api from '@/data/api';
 import { useHoldings, useWrite } from '@/data/hooks';
 import { checkConversion, conversionGain, paydayValue } from '@/features/foreign/logic';
-import { addDays, formatDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, ltr, money, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
@@ -68,7 +68,7 @@ export default function Convert() {
               : <Msg k={gain > 0 ? 'foreign.gain' : 'foreign.loss'} amounts={{ amount: Math.abs(gain) }} color={gain > 0 ? colors.accent : colors.coral} />
           ) : null}
           <View style={{ gap: space.sm }}>
-            <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(v); setErrors({}); }} keyboardType="numbers-and-punctuation" error={errors.date} />
+            <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => { setDate(maskDate(v)); setErrors({}); }} keyboardType="number-pad" maxLength={10} error={errors.date} />
             <Row>
               <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
               <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
