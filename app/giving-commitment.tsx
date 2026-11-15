@@ -6,6 +6,7 @@ import { Text } from '@/components/Text';
 import { Button, Chip, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useCommitments, useWrite } from '@/data/hooks';
+import { useShare } from '@/features/household/useShare';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { toast } from '@/lib/toast';
@@ -27,6 +28,7 @@ export default function GivingCommitment() {
   const [note, setNote] = useState(existing?.note ?? '');
   const [day, setDay] = useState(String(existing?.due_day ?? 1));
   const [kind, setKind] = useState<(typeof KINDS)[number]>(existing?.kind ?? 'sadaqah');
+  const share = useShare(existing);
   const [errors, setErrors] = useState<{ recipient?: string; amount?: string; day?: string }>({});
 
   async function submit() {
@@ -38,7 +40,7 @@ export default function GivingCommitment() {
     if (!Number.isInteger(d) || d < 1 || d > 28) e.day = t('commit.invalidDay');
     setErrors(e);
     if (Object.keys(e).length) return;
-    await save.mutateAsync({ id: existing?.id, input: { recipient: recipient.trim(), note: note.trim() || null, amount_laari: laari, kind, due_day: d } });
+    await save.mutateAsync({ id: existing?.id, input: { recipient: recipient.trim(), note: note.trim() || null, amount_laari: laari, kind, due_day: d, household_id: share.householdId } });
     success();
     toast(t('toast.saved'));
     router.back();
@@ -59,6 +61,7 @@ export default function GivingCommitment() {
         <Text variant="label">{t('giving.type')}</Text>
         <Row style={{ flexWrap: 'wrap' }}>{KINDS.map((k) => <Chip key={k} label={t(`giving.kind.${k}`)} selected={kind === k} onPress={() => setKind(k)} />)}</Row>
       </View>
+      {share.row}
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {existing ? (
         <Button kind="danger" label={t('commit.stop')}

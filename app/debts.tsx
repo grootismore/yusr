@@ -97,7 +97,7 @@ export default function Debts() {
                     <Text variant="label" latin color={colors.accent}>{i + 1}</Text>
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={1}>{v.debt.lender}</Text>
+                    <Text numberOfLines={1}>{v.debt.lender}{v.debt.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('household.sharedTag')}`}</Text> : null}</Text>
                     <Text variant="small" color={colors.inkMuted}>{t(`debts.kind.${v.debt.kind}`)}</Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>

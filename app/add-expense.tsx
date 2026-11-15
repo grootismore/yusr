@@ -44,7 +44,7 @@ export default function AddExpense() {
   const household = useHousehold().data;
   const { userId } = useAuth();
   const { shared: sharedParam } = useLocalSearchParams<{ shared?: string }>();
-  const shareByDefault = useFlag('shareByDefault') === true;
+  const shareByDefault = useFlag('shareByDefault') !== false; // in a household, shared is the default; private is the exception
   const [sharedPick, setSharedPick] = useState<boolean | null>(null);
   const shared = !!household && (sharedPick ?? (sharedParam === '1' || shareByDefault));
   const isIncome = mode === 'income';

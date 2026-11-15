@@ -23,6 +23,9 @@ export interface Debt {
   notes: string | null;
   /** The lender takes the instalment from salary before it arrives: the app records each month's payment itself. */
   auto_deducted: boolean;
+  /** Set when shared with the household; `user_id` is who made it. */
+  household_id?: string | null;
+  user_id?: string;
 }
 
 /** `amount_laari` is in the debt's currency; `paid_mvr_laari` is what was really paid in MVR when that differs. */
@@ -31,5 +34,5 @@ export interface DebtPayment { id: string; debt_id: string; amount_laari: number
 export interface DebtInput {
   lender: string; kind: DebtKind; opening_balance_laari: number; min_payment_laari: number; min_pct_bps: number | null; currency: string; due_day: number | null;
   interest_bearing: boolean; interest_rate_bps: number | null; in_register: boolean; notes: string | null;
-  auto_deducted: boolean; started_on?: string | null;
+  auto_deducted: boolean; started_on?: string | null; household_id?: string | null;
 }

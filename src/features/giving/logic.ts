@@ -7,7 +7,7 @@ export const COUNTS_TOWARD_GOAL: readonly GivingKind[] = ['sadaqah', 'jariyah'];
 export interface GivingEntry { id: string; expense_id: string; kind: GivingKind; recipient_note: string | null; amount_laari: number; spent_at: string; commitment_id?: string | null }
 
 /** A standing monthly gift. It stays until the person ends it (ended_on set). Nothing is paid automatically. */
-export interface GivingCommitment { id: string; recipient: string; note: string | null; amount_laari: number; kind: 'sadaqah' | 'jariyah'; due_day: number; started_on: string; ended_on: string | null }
+export interface GivingCommitment { id: string; recipient: string; note: string | null; amount_laari: number; kind: 'sadaqah' | 'jariyah'; due_day: number; started_on: string; ended_on: string | null; household_id?: string | null; user_id?: string }
 
 export const activeCommitments = (all: readonly GivingCommitment[]): GivingCommitment[] => all.filter((c) => !c.ended_on);
 export const commitmentTotal = (all: readonly GivingCommitment[]): number => activeCommitments(all).reduce((s, c) => s + c.amount_laari, 0);

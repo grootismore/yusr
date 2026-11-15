@@ -69,7 +69,7 @@ select is((select count(*) from public.zakat_settings), 1::bigint, 'A sees only 
 select throws_ok($$insert into public.debts (user_id, lender, kind, opening_balance_laari) values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'x', 'bank', 100)$$,
   '42501', null, 'A cannot add a debt for B');
 select throws_ok($$insert into public.debt_payments (user_id, debt_id, amount_laari, paid_on) values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'de000000-0000-0000-0000-00000000000b', 100, '2026-11-02')$$,
-  '23503', null, 'A cannot record a payment against B''s debt');
+  '42501', null, 'A cannot record a payment against B''s debt');
 select throws_ok($$insert into public.debt_payments (user_id, debt_id, amount_laari, paid_on) values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'de000000-0000-0000-0000-00000000000b', 100, '2026-11-02')$$,
   '42501', null, 'A cannot record a payment for B');
 select throws_ok($$insert into public.sadaqah_entries (user_id, expense_id) values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd0d0d0d0-0000-0000-0000-00000000000b')$$,

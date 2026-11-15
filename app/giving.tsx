@@ -7,7 +7,7 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useCommitments, useGiving, useWrite, useZakat } from '@/data/hooks';
+import { useCommitments, useGiving, usePaidCommitments, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
 import { activeCommitments, commitmentNote, commitmentTotal, goalPercent, isPaid, monthGiving } from '@/features/giving/logic';
 import { formatDate, monthStart, today } from '@/lib/dates';
@@ -28,6 +28,7 @@ export default function Giving() {
   const commitments = useCommitments().data ?? [];
   const active = activeCommitments(commitments);
   const markPaid = useWrite(api.logGiving);
+  const paidByAnyone = new Set(usePaidCommitments(month).data ?? []);
   const money = useMoneyText();
   const totals = useMemo(() => monthGiving(entries), [entries]);
   const months = t('hijriMonths', { returnObjects: true }) as string[];
@@ -67,11 +68,11 @@ export default function Giving() {
         {active.length === 0 ? <Text color={colors.inkMuted}>{t('commit.empty')}</Text> : (
           <>
             {active.map((c) => {
-              const paid = isPaid(c, entries);
+              const paid = isPaid(c, entries) || paidByAnyone.has(c.id);
               return (
                 <Row key={c.id} style={{ minHeight: 64, alignItems: 'center' }}>
                   <Pressable accessibilityRole="button" accessibilityLabel={c.recipient} onPress={() => router.push({ pathname: '/giving-commitment', params: { id: c.id } })} style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={2}>{c.recipient}</Text>
+                    <Text numberOfLines={2}>{c.recipient}{c.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('household.sharedTag')}`}</Text> : null}</Text>
                     {c.note ? <Text variant="small" color={colors.inkMuted} numberOfLines={2}>{c.note}</Text> : null}
                     <Text variant="small" color={colors.inkMuted}>{t('commit.each', { amount: money(c.amount_laari), day: c.due_day })}</Text>
                   </Pressable>

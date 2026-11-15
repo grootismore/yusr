@@ -55,7 +55,7 @@ export default function Pools() {
               <View key={p.id} style={{ gap: space.sm, paddingVertical: space.xs }}>
                 <Row style={{ alignItems: 'center' }}>
                   <Pressable accessibilityRole="button" accessibilityLabel={p.name} onPress={() => router.push({ pathname: '/pool-edit', params: { id: p.id } })} style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={2}>{p.name}</Text>
+                    <Text numberOfLines={2}>{p.name}{p.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('household.sharedTag')}`}</Text> : null}</Text>
                     <Text variant="small" color={colors.inkMuted}>{t('pools.each', { amount: text(p.amount_minor, p.currency), day: p.due_day })}</Text>
                     {p.currency !== 'MVR' ? <Msg k="pools.about" amounts={{ amount: toMvr(p.amount_minor, p.currency, { [p.currency]: rateNum(p.currency) }) }} variant="small" color={colors.inkMuted} /> : null}
                   </Pressable>
