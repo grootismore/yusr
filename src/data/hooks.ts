@@ -52,6 +52,7 @@ export const useDebts = () => useQuery({ queryKey: ['debts'], queryFn: api.listD
 export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], queryFn: api.listDebtPayments });
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
 
+export const usePaidCommitments = (month: string) => useQuery({ queryKey: ['giving-paid', month], queryFn: () => api.listPaidCommitments(month) });
 export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
 export const useHousehold = () => useQuery({ queryKey: ['household'], queryFn: api.getHousehold });
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });

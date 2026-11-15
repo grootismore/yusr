@@ -545,7 +545,7 @@ export async function deleteSplitGroup(id: string): Promise<void> {
 // ---- money pools
 export async function listPools(): Promise<MoneyPool[]> {
   if (PREVIEW) return fx.pools;
-  return must(await getSupabase().from('money_pools').select('id,name,note,amount_minor,currency,due_day,members,payout_month,payout_received,started_on,ended_on').order('created_at', { ascending: true }));
+  return must(await getSupabase().from('money_pools').select('id,user_id,household_id,name,note,amount_minor,currency,due_day,members,payout_month,payout_received,started_on,ended_on').order('created_at', { ascending: true }));
 }
 
 export async function listPoolPayments(): Promise<PoolPayment[]> {
@@ -593,10 +593,17 @@ export async function logPoolPayment(a: { id?: string; pool_id: string; name: st
 
 export async function listCommitments(): Promise<GivingCommitment[]> {
   if (PREVIEW) return [];
-  return must(await getSupabase().from('giving_commitments').select('id,recipient,note,amount_laari,kind,due_day,started_on,ended_on').order('created_at', { ascending: true }));
+  return must(await getSupabase().from('giving_commitments').select('id,user_id,household_id,recipient,note,amount_laari,kind,due_day,started_on,ended_on').order('created_at', { ascending: true }));
 }
 
-export type CommitmentInput = Pick<GivingCommitment, 'recipient' | 'note' | 'amount_laari' | 'kind' | 'due_day'>;
+/** Which commitments have been paid for a month by anyone in the household (a shared one may be paid by the partner). */
+export async function listPaidCommitments(month: string): Promise<string[]> {
+  if (PREVIEW) return [];
+  const rows = must(await getSupabase().from('sadaqah_entries').select('commitment_id').eq('period', month).not('commitment_id', 'is', null)) as { commitment_id: string }[];
+  return rows.map((r) => r.commitment_id);
+}
+
+export type CommitmentInput = Pick<GivingCommitment, 'recipient' | 'note' | 'amount_laari' | 'kind' | 'due_day' | 'household_id'>;
 export async function saveCommitment(a: { input: CommitmentInput; id?: string }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();

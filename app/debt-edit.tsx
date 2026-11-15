@@ -7,6 +7,7 @@ import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useDebts, useWrite } from '@/data/hooks';
 import { DEBT_PRESETS, type DebtPreset } from '@/features/debts/presets';
+import { useShare } from '@/features/household/useShare';
 import { DEBT_KINDS, type DebtInput, type DebtKind } from '@/features/debts/types';
 import { today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -27,6 +28,7 @@ export default function DebtEdit() {
   const editing = !!id && !!debt;
   const addDebt = useWrite(api.addDebt);
   const updateDebt = useWrite(api.updateDebt);
+  const share = useShare(debt);
   const saving = addDebt.isPending || updateDebt.isPending;
 
   const [lender, setLender] = useState(debt?.lender ?? '');
@@ -71,7 +73,7 @@ export default function DebtEdit() {
     // "Owed now" is what the person typed; the stored opening balance is that plus what they have already paid.
     const opening = editing ? owed + paid : owed;
     if (opening <= 0) { setErrors({ amount: t('expense.invalidAmount') }); return; }
-    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null, auto_deducted: autoDeducted, ...(autoDeducted && !debt?.started_on ? { started_on: today() } : {}) };
+    const input: DebtInput = { lender: lender.trim(), kind, opening_balance_laari: opening, min_payment_laari: min, min_pct_bps: minMode === 'pct' ? minBps : null, currency, due_day: day, interest_bearing: interestOn, interest_rate_bps: interestOn ? bps : null, in_register: inRegister, notes: notes.trim() || null, auto_deducted: autoDeducted, household_id: share.householdId, ...(autoDeducted && !debt?.started_on ? { started_on: today() } : {}) };
     if (editing) await updateDebt.mutateAsync({ id: id!, input }); else await addDebt.mutateAsync({ input });
     success();
     toast(t('toast.saved'));
@@ -148,6 +150,7 @@ export default function DebtEdit() {
       </Card>
 
       <Field label={`${t('debts.notes')} (${t('common.optional')})`} hint={t('debts.notesHint')} value={notes} onChangeText={setNotes} multiline maxLength={300} />
+      {share.row}
       <Button label={t('common.save')} onPress={submit} loading={saving} />
     </Screen>
   );

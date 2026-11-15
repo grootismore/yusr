@@ -1023,7 +1023,8 @@
     "youOwe": "You owe {{name}} {{amount}}.",
     "paidShort": "{{name}} paid",
     "coupleFull": "A couple has two people, and this one is full.",
-    "tooManyForCouple": "A couple has two people. Remove someone first."
+    "tooManyForCouple": "A couple has two people. Remove someone first.",
+    "sharedTag": "Shared"
   },
   "split": {
     "title": "Split",
