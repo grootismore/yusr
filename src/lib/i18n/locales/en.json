@@ -1030,7 +1030,8 @@
     "tiedTo": "For {{name}}",
     "whoPaidIt": "Who paid it?",
     "whoReceived": "Who received it?",
-    "includesShared": "Includes {{amount}} spent together."
+    "includesShared": "Includes {{amount}} spent together.",
+    "sharedBy": "By {{name}}"
   },
   "split": {
     "title": "Split",

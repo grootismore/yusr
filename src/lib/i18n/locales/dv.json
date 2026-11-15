@@ -1030,7 +1030,8 @@
     "tiedTo": "{{name}} އަށް",
     "whoPaidIt": "ކާކު ދެއްކީ؟",
     "whoReceived": "ކާކަށް ލިބުނީ؟",
-    "includesShared": "{{amount}} އެކުގައި ޚަރަދުކުރި ޚަރަދު ހިމެނޭ."
+    "includesShared": "{{amount}} އެކުގައި ޚަރަދުކުރި ޚަރަދު ހިމެނޭ.",
+    "sharedBy": "{{name}} ގެ"
   },
   "split": {
     "title": "ބެހުން",
