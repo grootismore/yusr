@@ -6,7 +6,8 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
-import { useCategories, useExpenses, useIncome } from '@/data/hooks';
+import { SharedRow } from '@/components/SharedRow';
+import { useCategories, useExpenses, useHouseholdEntries, useIncome } from '@/data/hooks';
 import { useMoneyText } from '@/lib/privacy';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
@@ -23,17 +24,21 @@ export default function Activity() {
   const [month, setMonth] = useState(monthStart());
   const expenses = useExpenses(month).data;
   const income = useIncome(month).data;
+  const shared = useHouseholdEntries(month).data;
   const cats = useCategories().data;
   const byId = useMemo(() => new Map((cats ?? []).map((c) => [c.id, c])), [cats]);
   const rtl = i18n.language === 'dv';
 
   const days = useMemo(() => {
-    const groups = new Map<string, { kind: 'expense' | 'income'; id: string }[]>();
-    const add = (date: string, row: { kind: 'expense' | 'income'; id: string }) => groups.set(date, [...(groups.get(date) ?? []), row]);
+    type Row = { kind: 'expense' | 'income' | 'shared'; id: string };
+    const groups = new Map<string, Row[]>();
+    const add = (date: string, row: Row) => groups.set(date, [...(groups.get(date) ?? []), row]);
     if (filter !== 'income') for (const e of expenses ?? []) add(e.spent_at, { kind: 'expense', id: e.id });
     if (filter !== 'expenses') for (const i of income ?? []) add(i.received_at, { kind: 'income', id: i.id });
+    for (const e of shared ?? []) if (filter === 'all' || (filter === 'income') === (e.kind === 'income')) add(e.entry_date, { kind: 'shared', id: e.id });
     return [...groups].sort((a, b) => (a[0] < b[0] ? 1 : -1));
-  }, [filter, expenses, income]);
+  }, [filter, expenses, income, shared]);
+  const sharedById = useMemo(() => new Map((shared ?? []).map((e) => [e.id, e])), [shared]);
   const expenseById = useMemo(() => new Map((expenses ?? []).map((e) => [e.id, e])), [expenses]);
   const incomeById = useMemo(() => new Map((income ?? []).map((i) => [i.id, i])), [income]);
   const dayLabel = (d: string) => (d === today() ? t('common.today') : d === addDays(today(), -1) ? t('common.yesterday') : null);
@@ -56,6 +61,10 @@ export default function Activity() {
             <Text variant="label" color={colors.inkMuted}>{dayLabel(day) ?? <Text latin variant="label" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
             <Card>
               {rows.map((r) => {
+                if (r.kind === 'shared') {
+                  const e = sharedById.get(r.id);
+                  return e ? <SharedRow key={r.id} hideDate entry={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;
+                }
                 if (r.kind === 'expense') {
                   const e = expenseById.get(r.id);
                   return e ? <ExpenseRow key={r.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;

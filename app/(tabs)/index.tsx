@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SharedCard } from '@/features/household/SharedCard';
+import { SharedRow } from '@/components/SharedRow';
+import { recentRows, type RecentRow } from '@/features/household/recent';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
@@ -15,7 +17,7 @@ import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
 import { setFlag, useFlag } from '@/lib/flags';
 import { dueRuns } from '@/features/recurring/logic';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useHouseholdEntries, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -77,11 +79,13 @@ export default function Home() {
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const limit = budgets?.get(null);
   const state = budgetState(spent, limit);
+  const sharedEntries = useHouseholdEntries(month).data;
+  // Recent: your own and the shared pot's expenses together.
   const recentGroups = useMemo(() => {
-    const groups = new Map<string, typeof expenses>();
-    for (const e of expenses.slice(0, 6)) groups.set(e.spent_at, [...(groups.get(e.spent_at) ?? []), e]);
+    const groups = new Map<string, RecentRow[]>();
+    for (const r of recentRows(expenses, sharedEntries, 6)) groups.set(r.date, [...(groups.get(r.date) ?? []), r]);
     return [...groups];
-  }, [expenses]);
+  }, [expenses, sharedEntries]);
   const showTiles = (!!limit && state !== 'over') || incomeTotal > 0;
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
@@ -268,7 +272,9 @@ export default function Home() {
           {recentGroups.map(([day, rows]) => (
             <View key={day} style={{ gap: space.xs }}>
               <Text variant="small" color={colors.inkMuted}>{day === today() ? t('common.today') : day === addDays(today(), -1) ? t('common.yesterday') : <Text latin variant="small" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
-              {rows.map((e) => <ExpenseRow key={e.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} />)}
+              {rows.map((r) => r.kind === 'own'
+                ? <ExpenseRow key={r.expense.id} hideDate expense={r.expense} category={r.expense.category_id ? byId.get(r.expense.category_id) : undefined} />
+                : <SharedRow key={r.entry.id} hideDate entry={r.entry} category={r.entry.category_id ? byId.get(r.entry.category_id) : undefined} />)}
             </View>
           ))}
         </Card>
