@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { useConsents } from '@/data/hooks';
 import { missingConsents } from '@/features/legal/consent';
 import { useAuth } from './auth';
 import { useFlag } from './flags';
 import { WEB_LIMITED } from './platform';
 import { PREVIEW } from './supabase';
+
+export const WAIT_MS = 5000;
 
 /**
  * What stands between a person and the app: still checking, must agree to the terms, or the first-run setup question.
@@ -13,7 +16,16 @@ export function useGate() {
   const { signedIn, loading } = useAuth();
   const consents = useConsents(signedIn && !PREVIEW);
   const setupDone = useFlag('setupDone');
-  const waiting = loading || (signedIn && !PREVIEW && consents.isLoading);
+  const checking = loading || (signedIn && !PREVIEW && consents.isLoading);
+  // With no signal the checks can hang for a minute or more. Never leave a blank screen that long: after a few
+  // seconds go on without the answer (the app then loads what it can and shows its own loading states).
+  const [gaveUp, setGaveUp] = useState(false);
+  useEffect(() => {
+    if (!checking) return;
+    const id = setTimeout(() => setGaveUp(true), WAIT_MS);
+    return () => clearTimeout(id);
+  }, [checking]);
+  const waiting = checking && !gaveUp;
   // Everyone must have agreed to the current Terms, Privacy Policy and 18+ before using the app. If the check
   // itself fails (for example offline) we do not lock out someone who already agreed.
   const needsConsent = signedIn && !PREVIEW && consents.isSuccess && missingConsents(consents.data).length > 0;
