@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { markBoot } from '@/lib/boot';
-import { fontFor } from '@/theme/fonts';
+import { faceFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
@@ -96,11 +96,12 @@ export function ScreenTitle({ title, subtitle, trailing }: { title: string; subt
   const colors = useColors();
   useCompactTitle(title, true);
   return (
-    <View style={{ gap: space.xs, paddingTop: space.sm }}>
+    // A large title with room to breathe: more above it than below it, and a clear step down to the content.
+    <View style={{ gap: space.sm, paddingTop: space.lg, paddingBottom: space.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Row style={{ flexShrink: 1, gap: space.sm }}>
-          <Logo size={30} />
-          <Text variant="title" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
+        <Row style={{ flexShrink: 1, gap: space.md }}>
+          <Logo size={34} />
+          <Text variant="largeTitle" style={{ flexShrink: 1 }} accessibilityRole="header">{title}</Text>
         </Row>
         {trailing}
       </Row>
@@ -193,7 +194,7 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
         {...rest}
         style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.field, paddingHorizontal: space.lg, paddingVertical: space.sm,
-          fontFamily: fontFor(i18n.language, false, rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
+          ...faceFor(i18n.language, 'regular', rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
         {...(ltr ? { dir: 'ltr' } : {})}
       />
       {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, right: 4, justifyContent: 'center' }}>{trailing}</View> : null}
@@ -256,7 +257,7 @@ export function StackHeader({ title, numberOfLines }: { title: string; numberOfL
   const router = useRouter();
   useCompactTitle(title, false);
   return (
-    <Row style={{ gap: space.xs }}>
+    <Row style={{ gap: space.sm, paddingTop: space.sm, paddingBottom: space.sm }}>
       <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} />
       <Text variant="title" style={{ flex: 1 }} numberOfLines={numberOfLines}>{title}</Text>
     </Row>

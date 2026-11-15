@@ -76,13 +76,22 @@ export const radius = { sm: 8, md: 14, lg: 22, pill: 999 } as const;
 export const TOUCH = 44;
 
 /** Type scale. Thaana needs more line height than Latin for its stacked vowel signs. */
-export const type = {
-  display: { size: 32, weight: 'bold' },
-  title: { size: 24, weight: 'bold' },
-  heading: { size: 19, weight: 'bold' },
-  body: { size: 17, weight: 'regular' },
-  small: { size: 15, weight: 'regular' },
-  label: { size: 15, weight: 'bold' },
-} as const;
+export interface TypeRole { size: number; dvSize?: number; weight: 'regular' | 'semibold' | 'bold'; lh: number; track: number }
+/**
+ * One role per job. Large titles open a tab screen, titles open a pushed screen, display is a figure, heading is a
+ * section, body and small are reading text, label is a control or a field name. Headlines sit tighter than reading text
+ * and get a touch of negative tracking (Latin only: tracking breaks Thaana's joined letters). dvSize is the Dhivehi
+ * size where Thaana, being tall, wants less.
+ */
+export const type: Record<'largeTitle' | 'display' | 'title' | 'heading' | 'body' | 'small' | 'label', TypeRole> = {
+  largeTitle: { size: 34, dvSize: 30, weight: 'bold', lh: 1.18, track: -0.4 },
+  display: { size: 36, dvSize: 32, weight: 'bold', lh: 1.15, track: -0.5 },
+  title: { size: 28, dvSize: 25, weight: 'bold', lh: 1.2, track: -0.3 },
+  heading: { size: 20, dvSize: 19, weight: 'semibold', lh: 1.3, track: -0.2 },
+  body: { size: 17, weight: 'regular', lh: 1.45, track: 0 },
+  small: { size: 15, weight: 'regular', lh: 1.4, track: 0 },
+  label: { size: 15, weight: 'semibold', lh: 1.35, track: 0 },
+};
 export type TypeVariant = keyof typeof type;
-export const LINE_HEIGHT = { dv: 1.75, en: 1.4 } as const;
+/** Thaana's stacked vowel signs need more room than Latin, in every role. */
+export const DV_LINE_HEIGHT = 1.75;

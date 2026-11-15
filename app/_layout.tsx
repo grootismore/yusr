@@ -156,12 +156,10 @@ function RootLayout() {
   const [crash, setCrash] = useState<string | null>(startupCrash);
   const [dismissed, setDismissed] = useState(dismissedOnce);
   useEffect(() => { showErrorsHere((message) => { setCrash(message); setDismissed(true); }); return () => showErrorsHere(null); }, []);
-  // Thaana Noor for Dhivehi, Nunito Sans for English and numbers. If a font fails to load the app carries on in the system font.
+  // Thaana Noor for Dhivehi (English and numbers use the phone's own font). If a font fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
     ThaanaNoor_Regular: require('../assets/fonts/ThaanaNoor-Regular.ttf'),
     ThaanaNoor_Bold: require('../assets/fonts/ThaanaNoor-Bold.ttf'),
-    NunitoSans_400Regular: require('../assets/fonts/NunitoSans_400Regular.ttf'),
-    NunitoSans_700Bold: require('../assets/fonts/NunitoSans_700Bold.ttf'),
     SpaceGrotesk_700Bold: require('../assets/fonts/SpaceGrotesk_700Bold.ttf'), // only for the outlined MVR on the panels
   });
   useEffect(() => {
