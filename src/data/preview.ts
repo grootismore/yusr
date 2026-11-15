@@ -9,6 +9,7 @@ import type { Debt, DebtPayment } from '@/features/debts/types';
 // ---- giving (preview)
 import type { GivingEntry } from '@/features/giving/logic';
 import type { MoneyPool } from '@/features/pools/logic';
+import type { RecurringItem } from '@/features/recurring/logic';
 
 // ---- register (preview)
 import type { AuditEntry, ContactCase, ContactRegister, RegisterItem, TrustedContact } from '@/features/register/types';
@@ -51,6 +52,11 @@ export const debtPayments: DebtPayment[] = [
   { id: 'p1', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-10-10', note: null },
   { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-09-10', note: 'Salary day' },
   { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_mvr_laari: null, paid_on: '2026-10-28', note: null },
+];
+export const recurring: RecurringItem[] = [
+  { id: 'rc1', kind: 'income', name: 'Flat rent from tenant', note: null, amount_minor: 800_000, currency: 'MVR', category_id: null, every: 'month', starts_on: '2026-09-05', ended_on: null, auto_add: false },
+  { id: 'rc2', kind: 'expense', name: 'Internet', note: null, amount_minor: 69_900, currency: 'MVR', category_id: 'bills', every: 'month', starts_on: '2026-09-20', ended_on: null, auto_add: true },
+  { id: 'rc3', kind: 'expense', name: 'Netflix', note: null, amount_minor: 1_500, currency: 'USD', category_id: null, every: 'month', starts_on: '2026-09-25', ended_on: null, auto_add: true },
 ];
 export const pools: MoneyPool[] = [
   { id: 'pl1', name: 'Office pool', note: null, amount_minor: 100_000, currency: 'MVR', due_day: 5, members: 10, payout_month: '2027-03-01', payout_received: false, started_on: '2026-09-01', ended_on: null },

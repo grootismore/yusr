@@ -63,7 +63,7 @@ export default function PoolEdit() {
       <Field label={t('pools.name')} hint={t('pools.nameHint')} value={name} onChangeText={setName} maxLength={100} error={errors.name} autoCapitalize="words" />
       <Field label={`${t('pools.amount')} (${currency})`} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" error={errors.amount} style={{ fontSize: 24 }} />
       <View style={{ gap: space.sm }}>
-        <Text variant="label">{t('debts.currency')}</Text>
+        <Text variant="label">{t('recurring.currency')}</Text>
         <Row>{CURRENCIES.map((c) => <Chip key={c} label={c} selected={currency === c} onPress={() => setCurrency(c)} />)}</Row>
       </View>
       <Field label={t('commit.day')} hint={t('commit.dayHint')} value={day} onChangeText={setDay} keyboardType="number-pad" maxLength={2} error={errors.day} />

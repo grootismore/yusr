@@ -4,7 +4,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import * as api from '@/data/api';
 import { runOp } from '@/data/queued';
+import * as Crypto from 'expo-crypto';
+import { DEFAULT_USD_RATE } from '@/features/debts/compute';
 import { dueInstalments } from '@/features/debts/auto';
+import { dueRuns } from '@/features/recurring/logic';
 import { today } from './dates';
 import { useOnline } from './online';
 import { flushOutbox, loadOutbox, usePending } from './outbox';
@@ -25,14 +28,21 @@ export function useOutboxSync(signedIn: boolean): void {
     if (r.failed) toast(t('offline.someFailed', { count: r.failed }), 'error');
   }, [signedIn, qc, t]);
 
-  // Instalments the lender took from salary are written down by the app, once a month per debt.
+  // Things that repeat are written down by the app: instalments the lender took from salary, and recurring items on their day.
   const writeInstalments = useCallback(async () => {
     if (!signedIn) return;
     try {
       const [debts, payments] = await Promise.all([api.listDebts(), api.listDebtPayments()]);
       const due = dueInstalments(debts, payments, today());
       for (const d of due) await api.addDebtPayment({ debt_id: d.debt_id, amount_laari: d.amount_laari, paid_on: d.paid_on, note: null, source: 'auto', period: d.period });
-      if (due.length) await qc.invalidateQueries();
+      // Recurring items set to add themselves are recorded on their day (the others wait for the person to tap Record).
+      const [items, runs, rates] = await Promise.all([api.listRecurring(), api.listRecurringRuns(), api.getRates()]);
+      const own = dueRuns(items.filter((i) => i.auto_add), runs, today());
+      for (const { item, occurrence } of own) {
+        const rate = item.currency === 'MVR' ? '1' : rates[item.currency] ?? (item.currency === 'USD' ? String(DEFAULT_USD_RATE) : '1');
+        await api.logRecurring({ id: Crypto.randomUUID(), recurring_id: item.id, occurrence, kind: item.kind, name: item.name, amount_minor: item.amount_minor, currency: item.currency, fx_rate_to_mvr: rate, category_id: item.category_id });
+      }
+      if (due.length || own.length) await qc.invalidateQueries();
     } catch { /* offline or not ready: it is tried again next time the app opens */ }
   }, [signedIn, qc]);
 

@@ -13,7 +13,8 @@ import { Button, Card, Icon, IconButton, Logo, PanelArt, ProgressBar, Row, Scree
 import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
 import { setFlag, useFlag } from '@/lib/flags';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useZakat } from '@/data/hooks';
+import { dueRuns } from '@/features/recurring/logic';
+import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useRecurring, useRecurringRuns, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -64,6 +65,9 @@ export default function Home() {
   const goal = useZakat().data?.sadaqah_goal_laari ?? null;
   const { held } = useHoldings();
   const money = useMoneyText();
+  const recurringItems = useRecurring().data;
+  const recurringRuns = useRecurringRuns().data;
+  const recurringDue = useMemo(() => dueRuns((recurringItems ?? []).filter((i) => !i.ended_on && !i.auto_add), recurringRuns ?? [], today()).length, [recurringItems, recurringRuns]);
   const hidden = useHideAmounts();
   const heldOpen = useFlag('heldOpen') === true;
 
@@ -183,6 +187,18 @@ export default function Home() {
             </Row>
           )) : null}
         </Card>
+      ) : null}
+
+      {recurringDue > 0 ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={t('recurring.dueCard', { count: recurringDue })} onPress={() => router.push('/recurring')}>
+          <Card>
+            <Row>
+              <Icon name="repeat" color={colors.accent} />
+              <Text variant="heading" style={{ flex: 1 }}>{t('recurring.dueCard', { count: recurringDue })}</Text>
+              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+            </Row>
+          </Card>
+        </Pressable>
       ) : null}
 
       {debtPlan.open.length > 0 ? (

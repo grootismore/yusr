@@ -6,6 +6,7 @@ import type { Expense, NewExpense } from './types';
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
 import type { MoneyPool, PoolInput } from '@/features/pools/logic';
+import type { RecurringInput, RecurringItem } from '@/features/recurring/logic';
 
 /**
  * The saves that still work with no signal: they are kept on the phone and sent when the connection is back.
@@ -22,8 +23,10 @@ const OPS = {
   setBudget: api.setBudget, clearBudget: api.clearBudget, addDebt: api.addDebt, updateDebt: api.updateDebt, deleteDebt: api.deleteDebt,
   // money pools
   addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
+  // recurring
+  addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -112,6 +115,23 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       const a = args as Parameters<typeof api.logPoolPayment>[0];
       prepend(qc, ['pool-payments'], { id: a.id, pool_id: a.pool_id, expense_id: a.id, period: a.period });
       prepend(qc, ['expenses', monthOf(a.spent_at)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: null, merchant: a.name, spent_at: a.spent_at, note: null, source: 'manual', receipt_id: null } as Expense);
+    } else if (op === 'addRecurring') {
+      const { id, input } = args as { id: string; input: RecurringInput };
+      prepend(qc, ['recurring'], { ...input, id, ended_on: null } as RecurringItem);
+    } else if (op === 'updateRecurring') {
+      const { id, input } = args as { id: string; input: RecurringInput };
+      qc.setQueryData<RecurringItem[]>(['recurring'], (old) => old?.map((r) => (r.id === id ? { ...r, ...input } : r)));
+    } else if (op === 'endRecurring') {
+      const id = args as string;
+      qc.setQueryData<RecurringItem[]>(['recurring'], (old) => old?.map((r) => (r.id === id ? { ...r, ended_on: new Date().toISOString().slice(0, 10) } : r)));
+    } else if (op === 'skipRecurring') {
+      const a = args as { recurring_id: string; occurrence: string };
+      prepend(qc, ['recurring-runs'], { id: `skip-${a.recurring_id}-${a.occurrence}`, recurring_id: a.recurring_id, occurrence: a.occurrence, expense_id: null, income_id: null, skipped: true });
+    } else if (op === 'logRecurring') {
+      const a = args as Parameters<typeof api.logRecurring>[0];
+      prepend(qc, ['recurring-runs'], { id: a.id, recurring_id: a.recurring_id, occurrence: a.occurrence, expense_id: a.kind === 'expense' ? a.id : null, income_id: a.kind === 'income' ? a.id : null, skipped: false });
+      if (a.kind === 'expense') prepend(qc, ['expenses', monthOf(a.occurrence)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: Number(a.fx_rate_to_mvr), mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), category_id: a.category_id, merchant: a.name, spent_at: a.occurrence, note: null, source: 'manual', receipt_id: null } as Expense);
+      else prepend(qc, ['income', monthOf(a.occurrence)], { id: a.id, amount_laari: a.amount_minor, currency: a.currency, mvr_laari: toMvrLaari(a.amount_minor, a.fx_rate_to_mvr), received_at: a.occurrence, note: a.name });
     } else if (op === 'deleteConversion') {
       qc.setQueriesData<{ id: string }[]>({ queryKey: ['conversions'] }, (old) => old?.filter((x) => x.id !== (args as string)));
     } else if (op === 'logGiving') {
