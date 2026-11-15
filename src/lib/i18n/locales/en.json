@@ -342,7 +342,8 @@
     "deleteBody": "The matching expense is removed too.",
     "countsNote": "Sadaqah and sadaqah jariyah count toward your goal. Zakat and other obligations are kept separate.",
     "homeCardGoal": "{{given}} of {{goal}}",
-    "homeCardGiven": "{{given}} given this month"
+    "homeCardGiven": "{{given}} given this month",
+    "moreTypes": "More types"
   },
   "zakat": {
     "title": "Zakat date and goal",
@@ -709,5 +710,31 @@
     "expenseSaved": "Expense saved",
     "paymentSaved": "Payment recorded",
     "deleted": "Deleted"
+  },
+  "commit": {
+    "title": "Monthly commitments",
+    "empty": "A gift you make every month, such as sponsoring a student, stays here until you stop it.",
+    "add": "Add a monthly commitment",
+    "each": "{{amount}} each month · due on day {{day}}",
+    "paid": "Paid this month",
+    "markPaid": "Mark paid",
+    "markedPaid": "Marked as paid for this month",
+    "total": "Committed each month: {{amount}}",
+    "addTitle": "Monthly commitment",
+    "editTitle": "Change commitment",
+    "intro": "It stays on your Giving screen every month until you stop it. Each month you mark it paid.",
+    "recipient": "Who it goes to",
+    "recipientHint": "For example, a school, a mosque or a person. Private.",
+    "amount": "Amount each month",
+    "note": "Note",
+    "noteHint": "For example, sponsorship of a student.",
+    "day": "Due on day",
+    "dayHint": "A day from 1 to 28 of each month.",
+    "needRecipient": "Enter who it goes to.",
+    "invalidDay": "Enter a day from 1 to 28.",
+    "stop": "Stop this commitment",
+    "stopTitle": "Stop this monthly gift?",
+    "stopBody": "It will no longer show each month. What you have already paid stays in your history.",
+    "stopped": "Commitment stopped"
   }
 }

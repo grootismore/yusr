@@ -6,7 +6,7 @@ import { Text } from '@/components/Text';
 import { Button, Chip, Field, Row, Screen } from '@/components/ui';
 import * as api from '@/data/api';
 import { useWrite } from '@/data/hooks';
-import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
+import { COUNTS_TOWARD_GOAL, GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { parseAmount } from '@/lib/money';
@@ -19,6 +19,7 @@ export default function GivingAdd() {
   const log = useWrite(api.logGiving);
   const [amount, setAmount] = useState('');
   const [kind, setKind] = useState<GivingKind>('sadaqah');
+  const [more, setMore] = useState(false);
   const [date, setDate] = useState(formatDate(today()));
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<{ amount?: string; date?: string }>({});
@@ -46,7 +47,8 @@ export default function GivingAdd() {
       <Field label={t('expense.amount')} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" error={errors.amount} style={{ fontSize: 24 }} />
       <View style={{ gap: space.sm }}>
         <Text variant="label">{t('giving.type')}</Text>
-        <Row style={{ flexWrap: 'wrap' }}>{GIVING_KINDS.map((k) => <Chip key={k} label={t(`giving.kind.${k}`)} selected={kind === k} onPress={() => setKind(k)} />)}</Row>
+        <Row style={{ flexWrap: 'wrap' }}>{(more ? GIVING_KINDS : GIVING_KINDS.filter((k) => COUNTS_TOWARD_GOAL.includes(k))).map((k) => <Chip key={k} label={t(`giving.kind.${k}`)} selected={kind === k} onPress={() => setKind(k)} />)}
+          {more ? null : <Chip label={t('giving.moreTypes')} icon="add" onPress={() => setMore(true)} />}</Row>
       </View>
       <View style={{ gap: space.sm }}>
         <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" error={errors.date} />

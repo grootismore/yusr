@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
@@ -7,10 +7,12 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useGiving, useWrite, useZakat } from '@/data/hooks';
+import { useCommitments, useGiving, useWrite, useZakat } from '@/data/hooks';
 import { daysBetween, nextHijriOccurrence, toHijri } from '@/features/giving/hijri';
-import { goalPercent, monthGiving } from '@/features/giving/logic';
+import { activeCommitments, commitmentNote, commitmentTotal, goalPercent, isPaid, monthGiving } from '@/features/giving/logic';
 import { formatDate, monthStart, today } from '@/lib/dates';
+import { success } from '@/lib/haptics';
+import { money } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
 import { toast } from '@/lib/toast';
 
@@ -23,6 +25,9 @@ export default function Giving() {
   const entries = useMemo(() => giving.data ?? [], [giving.data]);
   const zakat = useZakat().data;
   const remove = useWrite(api.deleteGiving);
+  const commitments = useCommitments().data ?? [];
+  const active = activeCommitments(commitments);
+  const markPaid = useWrite(api.logGiving);
   const totals = useMemo(() => monthGiving(entries), [entries]);
   const months = t('hijriMonths', { returnObjects: true }) as string[];
 
@@ -51,6 +56,35 @@ export default function Giving() {
         ) : <Button kind="secondary" label={t('giving.goalSet')} onPress={() => router.push('/zakat')} />}
         <Text variant="small" color={colors.inkMuted}>{t('giving.countsNote')}</Text>
         {totals.obligations > 0 ? <Msg k="giving.obligations" amounts={{ amount: totals.obligations }} variant="small" color={colors.inkMuted} /> : null}
+      </Card>
+
+      <Card>
+        <Row>
+          <Icon name="repeat" color={colors.accent} />
+          <Text variant="heading" style={{ flex: 1 }}>{t('commit.title')}</Text>
+        </Row>
+        {active.length === 0 ? <Text color={colors.inkMuted}>{t('commit.empty')}</Text> : (
+          <>
+            {active.map((c) => {
+              const paid = isPaid(c, entries);
+              return (
+                <Row key={c.id} style={{ minHeight: 64, alignItems: 'center' }}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={c.recipient} onPress={() => router.push({ pathname: '/giving-commitment', params: { id: c.id } })} style={{ flex: 1, gap: 2 }}>
+                    <Text numberOfLines={2}>{c.recipient}</Text>
+                    {c.note ? <Text variant="small" color={colors.inkMuted} numberOfLines={2}>{c.note}</Text> : null}
+                    <Text variant="small" color={colors.inkMuted}>{t('commit.each', { amount: money(c.amount_laari), day: c.due_day })}</Text>
+                  </Pressable>
+                  {paid
+                    ? <Row style={{ gap: 4 }}><Icon name="checkmark-circle" color={colors.accent} /><Text variant="small">{t('commit.paid')}</Text></Row>
+                    : <Button kind="secondary" label={t('commit.markPaid')} loading={markPaid.isPending}
+                        onPress={async () => { await markPaid.mutateAsync({ amount_laari: c.amount_laari, kind: c.kind, spent_at: today(), recipient_note: commitmentNote(c), commitment_id: c.id, period: month }); success(); toast(t('commit.markedPaid')); }} />}
+                </Row>
+              );
+            })}
+            <Text variant="small" color={colors.inkMuted}>{t('commit.total', { amount: money(commitmentTotal(commitments)) })}</Text>
+          </>
+        )}
+        <Button kind="secondary" label={t('commit.add')} icon="add" onPress={() => router.push('/giving-commitment')} />
       </Card>
 
       <Button label={t('giving.log')} icon="add" onPress={() => router.push('/giving-add')} />

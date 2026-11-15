@@ -1,5 +1,5 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
-import { addMonths } from '@/lib/dates';
+import { addMonths, today } from '@/lib/dates';
 import { toMvrLaari } from '@/lib/money';
 import { type BudgetRow } from '@/lib/budget';
 import { type Draft, compressReceipt } from '@/lib/receipt';
@@ -10,7 +10,7 @@ import type { Category, Expense, NewExpense, Profile, ScanItemInput } from './ty
 import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { Conversion, KeptIncome, SplitIncome } from '@/features/foreign/logic';
 import { sumByMonth } from '@/features/trends/trend';
-import type { GivingEntry, GivingKind } from '@/features/giving/logic';
+import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
 import type { AuditEntry, Checkin, ContactCase, ContactRegister, RegisterItem, RegisterKind, TrustedContact } from '@/features/register/types';
@@ -265,10 +265,10 @@ export async function savePlanSettings(p: PlanSettings): Promise<void> { await s
 export async function listGiving(month: string): Promise<GivingEntry[]> {
   if (PREVIEW) return fx.giving;
   const rows = must(
-    await getSupabase().from('sadaqah_entries').select('id,expense_id,kind,recipient_note,expenses!inner(mvr_laari,spent_at)')
+    await getSupabase().from('sadaqah_entries').select('id,expense_id,kind,recipient_note,commitment_id,expenses!inner(mvr_laari,spent_at)')
       .gte('expenses.spent_at', month).lt('expenses.spent_at', addMonths(month, 1)),
-  ) as unknown as { id: string; expense_id: string; kind: GivingKind; recipient_note: string | null; expenses: { mvr_laari: number; spent_at: string } }[];
-  return rows.map((r) => ({ id: r.id, expense_id: r.expense_id, kind: r.kind, recipient_note: r.recipient_note, amount_laari: r.expenses.mvr_laari, spent_at: r.expenses.spent_at }))
+  ) as unknown as { id: string; expense_id: string; kind: GivingKind; recipient_note: string | null; commitment_id: string | null; expenses: { mvr_laari: number; spent_at: string } }[];
+  return rows.map((r) => ({ id: r.id, expense_id: r.expense_id, kind: r.kind, recipient_note: r.recipient_note, commitment_id: r.commitment_id, amount_laari: r.expenses.mvr_laari, spent_at: r.expenses.spent_at }))
     .sort((a, b) => (a.spent_at < b.spent_at ? 1 : -1));
 }
 
@@ -276,7 +276,7 @@ export async function listGiving(month: string): Promise<GivingEntry[]> {
  * Giving is an ordinary expense in the Giving category plus a sadaqah_entries row, so the amount lives in one place.
  * ponytail: two inserts, not one transaction; if the second fails the expense is removed again.
  */
-export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null }): Promise<void> {
+export async function logGiving(a: { amount_laari: number; kind: GivingKind; spent_at: string; recipient_note: string | null; commitment_id?: string; period?: string }): Promise<void> {
   if (PREVIEW) return;
   const supabase = getSupabase();
   const user_id = await uid();
@@ -284,11 +284,30 @@ export async function logGiving(a: { amount_laari: number; kind: GivingKind; spe
   const expense = must(
     await supabase.from('expenses').insert({ user_id, amount_laari: a.amount_laari, currency: 'MVR', fx_rate_to_mvr: 1, category_id: cat?.id ?? null, spent_at: a.spent_at, source: 'manual' }).select('id').single(),
   ) as { id: string };
-  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expense.id, kind: a.kind, recipient_note: a.recipient_note });
+  const r = await supabase.from('sadaqah_entries').insert({ user_id, expense_id: expense.id, kind: a.kind, recipient_note: a.recipient_note, commitment_id: a.commitment_id ?? null, period: a.period ?? null });
   if (r.error) {
     await supabase.from('expenses').delete().eq('id', expense.id);
     throw new Error(r.error.message);
   }
+}
+
+export async function listCommitments(): Promise<GivingCommitment[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().from('giving_commitments').select('id,recipient,note,amount_laari,kind,due_day,started_on,ended_on').order('created_at', { ascending: true }));
+}
+
+export type CommitmentInput = Pick<GivingCommitment, 'recipient' | 'note' | 'amount_laari' | 'kind' | 'due_day'>;
+export async function saveCommitment(a: { input: CommitmentInput; id?: string }): Promise<void> {
+  if (PREVIEW) return;
+  const supabase = getSupabase();
+  if (a.id) must(await supabase.from('giving_commitments').update(a.input).eq('id', a.id));
+  else must(await supabase.from('giving_commitments').insert({ ...a.input, user_id: await uid() }));
+}
+
+/** Stopping keeps what was already paid; it only ends the commitment. */
+export async function endCommitment(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('giving_commitments').update({ ended_on: today() }).eq('id', id));
 }
 
 /** Deleting the expense removes the giving entry with it (cascade). */
