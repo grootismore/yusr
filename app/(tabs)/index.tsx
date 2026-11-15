@@ -4,6 +4,7 @@ import { Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { SharedCard } from '@/features/household/SharedCard';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
@@ -167,6 +168,7 @@ export default function Home() {
       </Row>
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
+      <SharedCard />
       {held.length > 0 ? (
         <Card>
           {/* Folded by default so the figures are not on show; one tap opens it, and Convert is inside. */}

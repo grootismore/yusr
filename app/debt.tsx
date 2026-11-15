@@ -6,12 +6,13 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Field, IconButton, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
+import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
 import { useDebtPayments, useDebts, usePlanSettings, useRates, useWrite } from '@/data/hooks';
 import { computePlan, fromMvr, minimumNow } from '@/features/debts/compute';
 import { DueBadge, InterestTag } from '@/features/debts/ui';
 import { dueStatus } from '@/features/debts/due';
-import { addDays, formatDate, maskDate, parseDate, today } from '@/lib/dates';
+import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, ltr, money, parseAmount } from '@/lib/money';
 import { useColors } from '@/theme/tokens';
@@ -136,7 +137,7 @@ export default function DebtDetail() {
               {plan.usingDefaultRate && rateTyped === null ? <Text variant="small" color={colors.inkMuted}>{t('debts.defaultRate', { rate: ltr(String(plan.usdRate)) })}</Text> : null}
             </>
           ) : null}
-          <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.date} />
+          <DateField label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} error={errors.date} />
           <Row>
             <Button kind="ghost" label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
             <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />

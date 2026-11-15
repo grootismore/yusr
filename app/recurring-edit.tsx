@@ -6,10 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Field, Row, Screen } from '@/components/ui';
+import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
 import { useCategories, useCategoryName, useRecurring, useWrite } from '@/data/hooks';
 import { EVERY, type Every, type RecurringInput } from '@/features/recurring/logic';
-import { formatDate, maskDate, parseDate, today } from '@/lib/dates';
+import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { toast } from '@/lib/toast';
@@ -82,7 +83,7 @@ export default function RecurringEdit() {
         <Text variant="label">{t('recurring.repeats')}</Text>
         <Row>{EVERY.map((v) => <Chip key={v} label={t(`recurring.every.${v}`)} selected={every === v} onPress={() => setEvery(v)} />)}</Row>
       </View>
-      <Field label={t('recurring.starts')} hint={t('recurring.startsHint')} value={start} onChangeText={(v) => setStart(maskDate(v))} keyboardType="number-pad" maxLength={10} error={errors.start} />
+      <DateField label={t('recurring.starts')} hint={t('recurring.startsHint')} value={start} onChangeText={setStart} error={errors.start} />
       {kind === 'expense' ? (
         <View style={{ gap: space.sm }}>
           <Text variant="label">{t('expense.category')}</Text>

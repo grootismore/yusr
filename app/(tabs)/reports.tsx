@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { TrendChart } from '@/components/TrendChart';
+import { SharedCard } from '@/features/household/SharedCard';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { LoadError } from '@/components/LoadError';
@@ -89,6 +90,8 @@ export default function Reports() {
           </>
         ) : null}
       </Card>
+
+      <SharedCard month={month} withActions={false} />
 
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>

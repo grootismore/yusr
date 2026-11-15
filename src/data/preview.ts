@@ -55,8 +55,8 @@ export const debtPayments: DebtPayment[] = [
   { id: 'p2', debt_id: 'd1', amount_laari: 250_000, paid_mvr_laari: null, paid_on: '2026-09-10', note: 'Salary day' },
   { id: 'p3', debt_id: 'd2', amount_laari: 50_000, paid_mvr_laari: null, paid_on: '2026-10-28', note: null },
 ];
-export const household: { household: { id: string; name: string }; members: { user_id: string; display_name: string; role: 'owner' | 'member' }[] } = {
-  household: { id: 'hh1', name: 'Home' },
+export const household: { household: { id: string; name: string; mode: 'couple' | 'household' }; members: { user_id: string; display_name: string; role: 'owner' | 'member' }[] } = {
+  household: { id: 'hh1', name: 'Home', mode: 'couple' },
   members: [{ user_id: 'u1', display_name: 'Aisha', role: 'owner' }, { user_id: 'u2', display_name: 'Ahmed', role: 'member' }],
 };
 export const householdEntries: HouseholdEntry[] = [

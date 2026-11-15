@@ -29,7 +29,7 @@ jest.mock('@sentry/react-native', () => ({ init() {}, wrap: (c: unknown) => c, c
 
 it('signed in, setup not done, dropped on the fallback screen: the setup question is shown in place', async () => {
   const r = await renderRouter('./app', { initialUrl: '/accept' });
-  await waitFor(() => expect(r.getByText('ފެށުމަށް ތައްޔާރުވޭ')).toBeTruthy(), { timeout: 6000 }); // the setup title
+  await waitFor(() => expect(r.getByText('މިއީ ކާކުގެ ބޭނުމަށް؟')).toBeTruthy(), { timeout: 6000 }); // the first setup question
   expect(r.getPathname()).toBe('/accept'); // no redirect was needed to get there
 }, 20000);
 

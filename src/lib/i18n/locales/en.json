@@ -683,7 +683,13 @@
     "budgetHint": "What do you plan to spend each month? We'll show how you're doing.",
     "save": "Save and start",
     "skip": "Skip for now",
-    "tip": "Tip: tap the round button at the bottom to scan a receipt."
+    "tip": "Tip: tap the round button at the bottom to scan a receipt.",
+    "whoTitle": "Who is this for?",
+    "whoBody": "You can change this later in More.",
+    "justMe": "Just me",
+    "together": "Me and my partner or family",
+    "whoNote": "Shared entries go in one pot you all see. Everything else stays private.",
+    "next": "Continue"
   },
   "forgot": {
     "title": "Reset your password",
@@ -996,7 +1002,27 @@
     "editTitle": "Shared entry",
     "paidBy": "Added by {{name}}. Anyone in the household can change it.",
     "deleteTitle": "Delete this shared entry?",
-    "deleteBody": "It's removed for everyone in the household."
+    "deleteBody": "It's removed for everyone in the household.",
+    "mode": {
+      "couple": "Couple",
+      "household": "Household",
+      "coupleNote": "For two people. Shared spending is split in half, and you see who owes whom.",
+      "householdNote": "For a family or flatmates, any number of people. You see what each person paid.",
+      "coupleName": "Name for you two",
+      "householdName": "Household name",
+      "coupleNameHint": "For example, Aisha and Ahmed.",
+      "householdNameHint": "For example, Our home.",
+      "coupleCreate": "Start as a couple",
+      "householdCreate": "Start a household"
+    },
+    "haveCode": "I have a join code",
+    "startOwn": "Start my own instead",
+    "square": "You are all square.",
+    "owesYou": "{{name}} owes you {{amount}}.",
+    "youOwe": "You owe {{name}} {{amount}}.",
+    "paidShort": "{{name}} paid",
+    "coupleFull": "A couple has two people, and this one is full.",
+    "tooManyForCouple": "A couple has two people. Remove someone first."
   },
   "split": {
     "title": "Split",
@@ -1063,5 +1089,25 @@
       "shares": "Type shares, like 1 and 2. 2 pays twice 1."
     },
     "you": "you"
+  },
+  "calendar": {
+    "pick": "Choose a date",
+    "weekdays": [
+      "Mo",
+      "Tu",
+      "We",
+      "Th",
+      "Fr",
+      "Sa",
+      "Su"
+    ],
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "prevYear": "Previous year",
+    "nextYear": "Next year",
+    "prevYears": "Earlier years",
+    "nextYears": "Later years",
+    "chooseMonth": "Choose month and year",
+    "chooseYear": "Choose year"
   }
 }

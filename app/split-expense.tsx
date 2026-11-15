@@ -4,10 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Chip, Field, Row, Screen } from '@/components/ui';
+import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
 import { useSplit, useWrite } from '@/data/hooks';
 import { SPLIT_TYPES, computeShares, meOf, type SplitType } from '@/features/split/logic';
-import { formatDate, maskDate, parseDate, today } from '@/lib/dates';
+import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, money, parseAmount } from '@/lib/money';
 import { toast } from '@/lib/toast';
@@ -96,7 +97,7 @@ export default function SplitExpense() {
         {type === 'percent' ? <Text variant="small" color={left === 0 ? colors.inkMuted : colors.coral}>{left === 0 ? t('split.allAssigned') : t('split.percentLeft', { percent: formatNumber(left) })}</Text> : null}
         {type !== 'exact' && result?.ok && type !== 'equal' ? <Text variant="small" color={colors.inkMuted}>{parts.map((p) => `${p.name} ${money(result.shares[p.id] ?? 0, g.currency)}`).join(' · ')}</Text> : null}
       </View>
-      <Field label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={(v) => setDate(maskDate(v))} keyboardType="number-pad" maxLength={10} />
+      <DateField label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} />
       <Field label={`${t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} maxLength={300} />
       {error ? <Text color={colors.coral} accessibilityLiveRegion="polite">{error}</Text> : null}
       <Button label={t('common.save')} onPress={submit} loading={add.isPending} />

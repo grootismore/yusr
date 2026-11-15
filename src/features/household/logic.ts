@@ -1,5 +1,6 @@
 /** A shared account for a couple or a family. Each person's own records stay private; this is the one pot they share. */
-export interface Household { id: string; name: string }
+export type HouseholdMode = 'couple' | 'household';
+export interface Household { id: string; name: string; mode: HouseholdMode }
 export interface HouseholdMember { user_id: string; display_name: string; role: 'owner' | 'member' }
 export interface HouseholdEntry {
   id: string; household_id: string;
@@ -26,6 +27,17 @@ export function summarize(entries: readonly HouseholdEntry[], members: readonly 
     by.set(e.user_id, m);
   }
   return { spent, income, left: income - spent, members: [...by.values()] };
+}
+
+/**
+ * In a couple, who is ahead: what you paid minus half of everything spent. Positive means your partner owes you that much,
+ * negative means you owe them. Null when there is no partner yet.
+ */
+export function coupleBalance(summary: HouseholdSummary, myId: string): { partner: string; owed: number } | null {
+  const me = summary.members.find((m) => m.user_id === myId);
+  const other = summary.members.find((m) => m.user_id !== myId);
+  if (!me || !other) return null;
+  return { partner: other.name, owed: Math.round(me.paid - summary.spent / 2) };
 }
 
 export const nameOf = (members: readonly HouseholdMember[], userId: string): string => members.find((m) => m.user_id === userId)?.display_name ?? '';
