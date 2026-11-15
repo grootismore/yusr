@@ -273,7 +273,7 @@ export async function listDebts(): Promise<Debt[]> {
 
 export async function listDebtPayments(): Promise<DebtPayment[]> {
   if (PREVIEW) return fx.debtPayments;
-  return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_on,note').order('paid_on', { ascending: false }));
+  return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_mvr_laari,paid_on,note').order('paid_on', { ascending: false }));
 }
 
 export async function saveDebt(input: DebtInput, id?: string): Promise<void> {
@@ -287,12 +287,12 @@ export async function deleteDebt(id: string): Promise<void> {
   must(await getSupabase().from('debts').delete().eq('id', id));
 }
 
-export async function addDebtPayment(p: { debt_id: string; amount_laari: number; paid_on: string; note: string | null }): Promise<void> {
+export async function addDebtPayment(p: { debt_id: string; amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('debt_payments').insert({ ...p, user_id: await uid() }));
 }
 
-export async function updateDebtPayment(id: string, p: { amount_laari: number; paid_on: string; note: string | null }): Promise<void> {
+export async function updateDebtPayment(id: string, p: { amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null }): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('debt_payments').update(p).eq('id', id));
 }

@@ -32,7 +32,7 @@ export default function ContactRegisterScreen() {
           <Text variant="heading">{t('contactSide.debts')}</Text>
           <Card>
             {data.debts.length === 0 ? <Text color={colors.inkMuted}>{t('contactSide.none2')}</Text> : data.debts.map((d, i) => (
-              <Row key={i} style={{ minHeight: 48 }}><Text style={{ flex: 1 }}>{d.lender}</Text><Money laari={d.balance_laari} /></Row>
+              <Row key={i} style={{ minHeight: 48 }}><Text style={{ flex: 1 }}>{d.lender}</Text><Money laari={d.balance_laari} currency={d.currency ?? "MVR"} /></Row>
             ))}
           </Card>
           <Text variant="heading">{t('contactSide.items')}</Text>

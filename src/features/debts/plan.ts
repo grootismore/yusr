@@ -12,6 +12,10 @@ export interface PlanDebt {
   /** Current balance in laari. */
   balance: number;
   minPayment: number;
+  /** Minimum as a share of the balance in basis points; `minPayment` is then the floor. */
+  minPct?: number | null;
+  /** Pays its minimum only until every other debt is clear (a loan from a person, or an interest-free qard hasan). */
+  goodwill?: boolean;
   /** Annual interest rate in basis points; 0 when unknown or interest-free. */
   rateBps: number;
   interestBearing: boolean;
@@ -60,7 +64,14 @@ interface Work extends PlanDebt {
 function byStrategy(strategy: Strategy) {
   const smaller = (a: Work, b: Work) => a.left - b.left || (a.id < b.id ? -1 : 1);
   const higherRate = (a: Work, b: Work) => b.rateBps - a.rateBps || smaller(a, b);
-  return strategy === 'snowball' ? smaller : higherRate;
+  const pick = strategy === 'snowball' ? smaller : higherRate;
+  return (a: Work, b: Work) => Number(!!a.goodwill) - Number(!!b.goodwill) || pick(a, b);
+}
+
+/** What is due this month on a debt with `balance` left: the fixed minimum, or the larger of the floor and a share of the balance. */
+export function minimumDue(d: { minPayment: number; minPct?: number | null }, balance: number): number {
+  const pct = d.minPct ? Number((BigInt(balance) * BigInt(d.minPct) + BigInt(5_000)) / BigInt(10_000)) : 0;
+  return Math.min(Math.max(d.minPayment, pct), balance);
 }
 
 /**
@@ -75,7 +86,7 @@ export function planDebts(
   startMonth: string,
 ): PlanResult {
   const work: Work[] = debts.filter((d) => d.balance > 0).map((d) => ({ ...d, left: d.balance }));
-  const minimums = sum(work.map((d) => d.minPayment));
+  const minimums = sum(work.map((d) => minimumDue(d, d.balance)));
   const monthlyBudget = Math.max(requestedBudget, minimums);
   const result: PlanResult = {
     months: 0,
@@ -115,7 +126,7 @@ export function planDebts(
       remaining -= amount;
       result.totalPaid = add(result.totalPaid, amount);
     };
-    for (const d of active) pay(d, d.minPayment);
+    for (const d of active) pay(d, minimumDue(d, d.left));
     for (const d of [...active].sort(order)) pay(d, d.left);
 
     const label = shiftMonth(startMonth, month);

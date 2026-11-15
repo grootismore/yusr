@@ -8,6 +8,6 @@ export interface AuditEntry { id: string; actor: 'user' | 'contact' | 'system'; 
 export interface ContactCase { owner_id: string; inviter_name: string | null; state: LadderState; my_answer: 'fine' | 'passed' | null }
 export interface ContactRegister {
   items: { kind: RegisterKind; title: string; counterparty: string | null; amount_laari: number | null; details: string | null }[];
-  debts: { lender: string; kind: string; balance_laari: number }[];
+  debts: { lender: string; kind: string; balance_laari: number; currency?: string }[];
 }
 export const AWAY_CHOICES = [7, 14, 30, 60, 90] as const;
