@@ -831,5 +831,14 @@
     "signOutWaiting_one": "{{count}} saved item has not uploaded yet. Signing out now will lose it.",
     "signOutWaiting_other": "{{count}} saved items have not uploaded yet. Signing out now will lose them.",
     "signOutAnyway": "Sign out anyway"
+  },
+  "notFound": {
+    "title": "This page isn't available",
+    "body": "The link may be old, or the page may have moved. Nothing is wrong with your records.",
+    "home": "Go to Home"
+  },
+  "loadError": {
+    "title": "We couldn't load this",
+    "body": "Check your connection and try again."
   }
 }

@@ -3,6 +3,7 @@ import { Platform, View } from 'react-native';
 import { Stack, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { I18nextProvider, useTranslation } from 'react-i18next';
@@ -47,6 +48,7 @@ function Routes() {
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
   useOutboxSync(signedIn && !WEB_LIMITED);
+  useEffect(() => { if (!waiting) hideSplash(); }, [waiting]);
   if (waiting) { markBoot('routes-waiting'); return null; }
   markBoot('routes-stack');
   return (
@@ -124,11 +126,18 @@ function Direction({ children }: { children: ReactNode }) {
   return <View style={{ flex: 1, direction: instance.language === 'dv' ? 'rtl' : 'ltr' }}>{children}</View>;
 }
 
+// Keep the splash screen up until the first real screen can be drawn, instead of showing a blank page while the app starts.
+// It always comes down by itself after eight seconds, so a problem can never leave it stuck.
+SplashScreen.setOptions({ fade: true, duration: 250 });
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+const hideSplash = (): void => { SplashScreen.hideAsync().catch(() => undefined); };
+setTimeout(hideSplash, 8000);
+
 markBoot('layout');
 
 /** Expo Router shows this instead of closing the app when a screen throws while rendering. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
-  useEffect(() => { reportError(error); }, [error]);
+  useEffect(() => { reportError(error); hideSplash(); }, [error]);
   return <CrashScreen details={describeError(error)} onContinue={() => void retry()} continueLabel={(i18n.isInitialized ? i18n.t('crash.tryAgain') : '') || 'Try again'} />;
 }
 
@@ -182,6 +191,7 @@ function RootLayout() {
   useEffect(() => { if (ready && stoppedAt && variant !== 2 && rootMounts <= 1) reportError(new Error(`Launch stopped after ${stoppedAt}; alive ${previousAlive ?? '?'}s; variant ${previousVariant} (${VARIANTS[previousVariant]})`)); }, [ready, stoppedAt]);
   if (!ready || !(fontsLoaded || fontError)) return null;
   if (crash) {
+    hideSplash();
     // After a real error: calm words, a way on, a way to report. The launch notes (what the phone knows about the last start) go in the folded details.
     const details = `last launch stopped after: ${stoppedAt ?? 'ok'}\nJavaScript was still running for about ${previousAlive ?? '?'} seconds\nvariant ${previousVariant}: ${VARIANTS[previousVariant]}\nreporting: ${process.env.EXPO_PUBLIC_SENTRY_DSN ? 'on' : 'off'}\n${crash}`;
     return <CrashScreen details={details} onContinue={() => { void clearCrashNote(); startupCrash = null; dismissedOnce = true; setCrash(null); setDismissed(true); }} />;

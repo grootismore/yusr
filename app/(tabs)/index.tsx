@@ -8,6 +8,7 @@ import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
+import { LoadError } from '@/components/LoadError';
 import { Button, Card, Icon, IconButton, Logo, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
 import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
@@ -81,6 +82,9 @@ export default function Home() {
     return [...m].sort((a, b) => b[1] - a[1]).slice(0, 3);
   }, [expenses]);
 
+  if (expensesQuery.isError && !expensesQuery.data) {
+    return <Screen tabbed><ScreenTitle title={t('app.name')} /><LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /></Screen>;
+  }
   if (expenses.length === 0 && !expensesQuery.isLoading) {
     return (
       <Screen tabbed>

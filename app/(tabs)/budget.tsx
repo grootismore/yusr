@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
+import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
 import { Button, Card, Field, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
@@ -76,7 +77,8 @@ export default function Budget() {
   const month = monthStart();
   const limits = useBudgets(month).data;
   const categories = useCategories().data ?? [];
-  const expenses = useExpenses(month).data;
+  const expensesQuery = useExpenses(month);
+  const expenses = expensesQuery.data;
   const [editingAll, setEditingAll] = useState(false);
   const spentBy = useMemo(() => {
     const m = new Map<string | null, number>();
@@ -90,6 +92,7 @@ export default function Budget() {
   return (
     <Screen tabbed>
       <ScreenTitle title={t('budget.title')} />
+      {expensesQuery.isError && !expenses ? <LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /> : null}
       <Card tone="hero" style={{ gap: space.md, padding: space.xl }}>
         <Text color={colors.onHero}>{t('budget.overall')}</Text>
         {overall ? <Money laari={overall} variant="display" color={colors.onHero} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} /> : <Text variant="title" color={colors.onHero}>{t('budget.noLimit')}</Text>}
