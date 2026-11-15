@@ -1,3 +1,5 @@
+import { dueInstalments } from '@/features/debts/auto';
+import { debtMonth } from '@/features/debts/report';
 import { dueDateThisMonth, dueStatus } from '@/features/debts/due';
 import { minimumDue, monthlyInterest, planDebts, type PlanDebt } from '@/features/debts/plan';
 
@@ -78,7 +80,7 @@ describe('due status', () => {
   });
 });
 
-const debt = (o: Partial<Debt> & { id: string }): Debt => ({ lender: o.id, kind: 'loan', opening_balance_laari: 100_000, balance_laari: 100_000, paid_laari: 0, min_payment_laari: 10_000, min_pct_bps: null, currency: 'MVR', due_day: null, interest_bearing: false, interest_rate_bps: null, started_on: null, in_register: true, notes: null, ...o });
+const debt = (o: Partial<Debt> & { id: string }): Debt => ({ lender: o.id, kind: 'loan', opening_balance_laari: 100_000, balance_laari: 100_000, paid_laari: 0, min_payment_laari: 10_000, min_pct_bps: null, currency: 'MVR', due_day: null, interest_bearing: false, interest_rate_bps: null, started_on: null, in_register: true, notes: null, auto_deducted: false, ...o });
 
 describe('computePlan', () => {
   const debts = [debt({ id: 'a', balance_laari: 300_000, due_day: 10 }), debt({ id: 'b', balance_laari: 50_000, due_day: 20 }), debt({ id: 'done', balance_laari: 0 })];
@@ -138,5 +140,54 @@ describe('minimums, USD debts and the order', () => {
     const snow = computePlan(debts, [], { strategy: 'snowball', budgetLaari: 100_000 }, '2026-11-13');
     expect(snow.open.map((x) => x.debt.id)).toEqual(['bank', 'card', 'friend']);
     expect(isGoodwill({ kind: 'qard_hasan' })).toBe(true);
+  });
+});
+
+
+describe('instalments taken from salary', () => {
+  const loan = debt({ id: 'mib', auto_deducted: true, due_day: 1, started_on: '2026-09-15', balance_laari: 250_000, min_payment_laari: 100_000 });
+  it('writes down one instalment per month from the first due day after it started, up to today, ending with what is left', () => {
+    const r = dueInstalments([loan], [], '2026-12-05');
+    expect(r.map((x) => [x.period, x.paid_on, x.amount_laari])).toEqual([['2026-10-01', '2026-10-01', 100_000], ['2026-11-01', '2026-11-01', 100_000], ['2026-12-01', '2026-12-01', 50_000]]);
+  });
+  it('does nothing twice: months already written down are skipped', () => {
+    const done = [{ id: 'p', debt_id: 'mib', amount_laari: 100_000, paid_mvr_laari: null, paid_on: '2026-10-01', note: null, source: 'auto' as const, period: '2026-10-01' }];
+    expect(dueInstalments([loan], done, '2026-11-05').map((x) => x.period)).toEqual(['2026-11-01']);
+  });
+  it('a month the person already paid by hand is not counted again', () => {
+    const hand = [{ id: 'h', debt_id: 'mib', amount_laari: 100_000, paid_mvr_laari: null, paid_on: '2026-10-03', note: null, source: 'manual' as const }];
+    expect(dueInstalments([loan], hand, '2026-11-05').map((x) => x.period)).toEqual(['2026-11-01']);
+  });
+  it('ignores debts that are not taken from salary, or have no due day or start date', () => {
+    expect(dueInstalments([debt({ id: 'a', due_day: 1, started_on: '2026-01-01' }), debt({ id: 'b', auto_deducted: true, started_on: '2026-01-01' }), debt({ id: 'c', auto_deducted: true, due_day: 1 })], [], '2026-12-05')).toEqual([]);
+  });
+  it('a due day that does not exist in a short month falls on its last day', () => {
+    const l = debt({ id: 'x', auto_deducted: true, due_day: 31, started_on: '2026-02-01', balance_laari: 1_000_000, min_payment_laari: 100_000 });
+    expect(dueInstalments([l], [], '2026-03-05').map((x) => x.paid_on)).toEqual(['2026-02-28']);
+  });
+});
+
+describe('loans taken from salary in the plan and the report', () => {
+  const mib = debt({ id: 'mib', auto_deducted: true, due_day: 1, started_on: '2026-09-01', balance_laari: 600_000, min_payment_laari: 100_000 });
+  const card = debt({ id: 'card', balance_laari: 500_000, min_payment_laari: 20_000, interest_bearing: true, interest_rate_bps: 2400 });
+  it('a loan taken from salary gets nothing extra and is not part of what you set aside', () => {
+    const v = computePlan([mib, card], [], { strategy: 'avalanche', budgetLaari: 60_000 }, '2026-11-13');
+    expect(v.minimums).toBe(20_000); // only what you pay yourself
+    expect(v.open.find((x) => x.debt.id === 'mib')?.suggestedMvr).toBe(100_000); // its instalment, never more
+    expect(v.open.find((x) => x.debt.id === 'card')?.suggestedMvr).toBe(60_000); // all of your own money goes to the card
+    expect(v.open[0].debt.id).toBe('card');
+  });
+  it('the report separates what you paid from what the lender took, and counts what is still owed', () => {
+    const pays = [
+      { id: '1', debt_id: 'mib', amount_laari: 100_000, paid_mvr_laari: null, paid_on: '2026-11-01', note: null, source: 'auto' as const, period: '2026-11-01' },
+      { id: '2', debt_id: 'card', amount_laari: 30_000, paid_mvr_laari: null, paid_on: '2026-11-10', note: null, source: 'manual' as const },
+      { id: '3', debt_id: 'card', amount_laari: 99_999, paid_mvr_laari: null, paid_on: '2026-10-10', note: null, source: 'manual' as const },
+    ];
+    expect(debtMonth([mib, card], pays, '2026-11')).toEqual({ byYou: 30_000, fromSalary: 100_000, owed: 1_100_000, open: 2 });
+  });
+  it('a USD card payment counts at what was really paid in MVR', () => {
+    const usd = debt({ id: 'usd', currency: 'USD', balance_laari: 10_000 });
+    const pays = [{ id: '1', debt_id: 'usd', amount_laari: 6_485, paid_mvr_laari: 100_000, paid_on: '2026-11-10', note: null }];
+    expect(debtMonth([usd], pays, '2026-11', { USD: '15.42' }).byYou).toBe(100_000);
   });
 });

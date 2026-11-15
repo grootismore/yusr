@@ -11,6 +11,7 @@ import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { Conversion, KeptIncome, SplitIncome } from '@/features/foreign/logic';
 import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
+import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
 import type { AuditEntry, Checkin, ContactCase, ContactRegister, RegisterItem, RegisterKind, TrustedContact } from '@/features/register/types';
@@ -277,7 +278,7 @@ export async function listDebts(): Promise<Debt[]> {
 
 export async function listDebtPayments(): Promise<DebtPayment[]> {
   if (PREVIEW) return fx.debtPayments;
-  return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_mvr_laari,paid_on,note').order('paid_on', { ascending: false }));
+  return must(await getSupabase().from('debt_payments').select('id,debt_id,amount_laari,paid_mvr_laari,paid_on,note,source,period').order('paid_on', { ascending: false }));
 }
 
 /** A new debt. The id is made on the phone, so sending it twice (after a lost reply) is still one debt. */
@@ -297,7 +298,7 @@ export async function deleteDebt(id: string): Promise<void> {
   must(await getSupabase().from('debts').delete().eq('id', id));
 }
 
-export async function addDebtPayment(p: { id?: string; debt_id: string; amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null }): Promise<void> {
+export async function addDebtPayment(p: { id?: string; debt_id: string; amount_laari: number; paid_mvr_laari?: number | null; paid_on: string; note: string | null; source?: 'manual' | 'auto'; period?: string }): Promise<void> {
   if (PREVIEW) return;
   const res = await getSupabase().from('debt_payments').insert({ ...p, user_id: await uid() });
   if (res.error && !isDup(res.error)) must(res);
@@ -350,6 +351,55 @@ export async function logGiving(a: { amount_laari: number; kind: GivingKind; spe
   if (r.error) {
     const mine = a.id ? (await supabase.from('sadaqah_entries').select('id').eq('expense_id', expenseId).maybeSingle()).data : null;
     if (mine) return; // this very entry was saved by an earlier try
+    await supabase.from('expenses').delete().eq('id', expenseId);
+    throw new Error(r.error.message);
+  }
+}
+
+// ---- money pools
+export async function listPools(): Promise<MoneyPool[]> {
+  if (PREVIEW) return fx.pools;
+  return must(await getSupabase().from('money_pools').select('id,name,note,amount_minor,currency,due_day,members,payout_month,payout_received,started_on,ended_on').order('created_at', { ascending: true }));
+}
+
+export async function listPoolPayments(): Promise<PoolPayment[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().from('pool_payments').select('id,pool_id,expense_id,period'));
+}
+
+export async function addPool({ id, input }: { id?: string; input: PoolInput }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('money_pools').insert({ ...input, id, user_id: await uid() });
+  if (res.error && !isDup(res.error)) must(res);
+}
+
+export async function updatePool({ id, input }: { id: string; input: PoolInput }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('money_pools').update(input).eq('id', id));
+}
+
+/** Stopping keeps what was already paid; it only ends the pool. */
+export async function endPool(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('money_pools').update({ ended_on: today() }).eq('id', id));
+}
+
+/**
+ * One month's contribution: an ordinary expense in the Money pool category plus a row saying which pool and month it
+ * is for. Safe to send twice (the ids are made on the phone, and a month can be paid once).
+ */
+export async function logPoolPayment(a: { id?: string; pool_id: string; name: string; amount_minor: number; currency: string; fx_rate_to_mvr: string; spent_at: string; period: string }): Promise<void> {
+  if (PREVIEW) return;
+  const supabase = getSupabase();
+  const user_id = await uid();
+  const cat = must(await supabase.from('categories').select('id').eq('slug', 'money-pool').maybeSingle()) as { id: string } | null;
+  const ins = await supabase.from('expenses').insert({ id: a.id, user_id, amount_laari: a.amount_minor, currency: a.currency, fx_rate_to_mvr: a.fx_rate_to_mvr, category_id: cat?.id ?? null, merchant: a.name, spent_at: a.spent_at, source: 'manual' }).select('id').single();
+  if (ins.error && !(a.id && isDup(ins.error))) throw new Error(ins.error.message);
+  const expenseId = (ins.data as { id: string } | null)?.id ?? (a.id as string);
+  const r = await supabase.from('pool_payments').insert({ user_id, pool_id: a.pool_id, expense_id: expenseId, period: a.period });
+  if (r.error) {
+    const mine = a.id ? (await supabase.from('pool_payments').select('id').eq('expense_id', expenseId).maybeSingle()).data : null;
+    if (mine) return;
     await supabase.from('expenses').delete().eq('id', expenseId);
     throw new Error(r.error.message);
   }

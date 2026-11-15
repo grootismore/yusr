@@ -40,7 +40,7 @@ insert into storage.objects (bucket_id, name) values
   ('receipts', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/r1.jpg');
 
 select is((select count(*) from public.profiles), 2::bigint, 'a profile is created automatically for each new user');
-select is((select count(*) from public.categories where user_id is null), 10::bigint, 'ten default categories are seeded');
+select is((select count(*) from public.categories where user_id is null), 11::bigint, 'eleven default categories are seeded');
 select is((select public from storage.buckets where id = 'receipts'), false, 'the receipts bucket is private');
 
 -- ------------------------------------------------------------------ as user A
@@ -53,7 +53,7 @@ select is((select count(*) from public.income), 1::bigint, 'A sees only their ow
 select is((select count(*) from public.budgets), 1::bigint, 'A sees only their own budgets');
 select is((select count(*) from public.receipts), 1::bigint, 'A sees only their own receipts');
 select is((select count(*) from public.receipt_items), 1::bigint, 'A sees only their own receipt items');
-select is((select count(*) from public.categories), 11::bigint, 'A sees the 10 defaults plus their own category, not B''s');
+select is((select count(*) from public.categories), 12::bigint, 'A sees the 11 defaults plus their own category, not B''s');
 select is((select count(*) from public.scan_usage), 1::bigint, 'A sees only their own scan_usage');
 
 select throws_ok($$insert into public.expenses (user_id, amount_laari, spent_at) values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 100, '2026-11-02')$$,
@@ -126,7 +126,7 @@ select is((select count(*) from storage.objects where bucket_id = 'receipts'), 1
 reset role;
 select is((select amount_laari from public.expenses where id = 'd0d0d0d0-0000-0000-0000-00000000000b'), 99900::bigint, 'A could not change or delete B''s expense');
 select is((select count(*) from public.categories where user_id is null and name_en = 'hacked'), 0::bigint, 'A could not edit a default category');
-select is((select count(*) from public.categories where user_id is null), 10::bigint, 'A could not delete a default category');
+select is((select count(*) from public.categories where user_id is null), 11::bigint, 'A could not delete a default category');
 select is((select language from public.profiles where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), 'dv', 'A could not change B''s profile');
 select is((select count(*) from storage.objects where name = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/r1.jpg'), 1::bigint, 'A could not delete B''s file');
 
@@ -137,7 +137,7 @@ select set_config('request.jwt.claim.sub', '', true);
 select throws_ok($$select * from public.expenses$$, '42501', null, 'signed-out users cannot read expenses');
 select throws_ok($$select * from public.scan_usage$$, '42501', null, 'signed-out users cannot read scan_usage');
 select throws_ok($$select * from public.receipts$$, '42501', null, 'signed-out users cannot read receipts');
-select is((select count(*) from public.categories), 10::bigint, 'signed-out users can read the default categories only');
+select is((select count(*) from public.categories), 11::bigint, 'signed-out users can read the default categories only');
 
 -- ------------------------------------------------------------ as service role
 reset role;

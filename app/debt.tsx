@@ -121,6 +121,7 @@ export default function DebtDetail() {
       {debt.balance_laari > 0 || editingId ? (
         <Card>
           <Text variant="heading">{editingId ? t('edit.paymentTitle') : t('debts.recordPayment')}</Text>
+          {debt.auto_deducted ? <Text variant="small" color={colors.inkMuted}>{t('debts.autoPayNote')}</Text> : null}
           {!editingId && dv && dv.focus && dv.suggestedMvr > dv.minMvr ? <Text variant="small" color={colors.inkMuted}>{t('debts.extraHere')}</Text> : null}
           {!editingId && quick.length > 0 ? (
             <Row style={{ flexWrap: 'wrap' }}>
@@ -153,7 +154,7 @@ export default function DebtDetail() {
             <View style={{ flex: 1 }}>
               {fx && p.paid_mvr_laari ? <Money laari={p.paid_mvr_laari} /> : <Money laari={p.amount_laari} currency={debt.currency} />}
               <Text latin variant="small" color={colors.inkMuted}>
-                {fx && p.paid_mvr_laari ? `${money(p.amount_laari, debt.currency)} · ` : ''}{formatDate(p.paid_on)}{p.note ? ` · ${p.note}` : ''}
+                {fx && p.paid_mvr_laari ? `${money(p.amount_laari, debt.currency)} · ` : ''}{formatDate(p.paid_on)}{p.source === 'auto' ? ` · ${t('debts.fromSalary')}` : ''}{p.note ? ` · ${p.note}` : ''}
               </Text>
             </View>
             <IconButton icon="create-outline" label={t('common.edit')} onPress={() => {
