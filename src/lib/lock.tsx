@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AppState, Modal, Platform, View } from 'react-native';
-import { confirmDialog } from '@/lib/dialog';
+import { confirmDialog, DialogHost } from '@/lib/dialog';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { PinPad } from '@/components/PinPad';
@@ -100,6 +100,8 @@ export function LockGate({ children, active }: { children: ReactNode; active: bo
               <Button label={t('pin.forgot')} kind="ghost" onPress={forgot} />
             </>
           ) : <Button label={t('lock.unlock')} onPress={unlock} />}
+          {/* The "forgot PIN" question must open above this lock, so it gets its own host. */}
+          {locked ? <DialogHost /> : null}
         </View>
       </Modal>
     </>
