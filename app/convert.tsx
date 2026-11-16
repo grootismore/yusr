@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
@@ -90,7 +91,7 @@ export default function Convert() {
             </View>
             <Money laari={c.mvr_laari} prefix="→ " />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('foreign.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => remove.mutate(c.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+              onPress={async () => { if (await confirmDialog({ title: t('foreign.deleteTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) remove.mutate(c.id, { onSuccess: () => toast(t('toast.deleted')) }); }} />
           </Row>
         ))}
       </Card>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
@@ -52,10 +52,7 @@ export default function EditIncome() {
       <ConvertActions source={{ kind: 'income', id: row.id, name: row.note, amountMinor: row.amount_laari, currency: row.currency, fxRate: row.fx_rate_to_mvr, categoryId: null, note: row.note, date: row.received_at }}
         canShare canRepeat removeOriginal={() => remove.mutateAsync(row.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
-        onPress={() => Alert.alert(t('income.deleteTitle'), t('edit.deleteIncomeBody'), [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('edit.delete'), style: 'destructive', onPress: async () => { await remove.mutateAsync(row.id); toast(t('toast.deleted')); router.back(); } },
-        ])} />
+        onPress={async () => { if (await confirmDialog({ title: t('income.deleteTitle'), message: t('edit.deleteIncomeBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(row.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );
 }

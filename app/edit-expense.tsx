@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
@@ -67,10 +68,7 @@ export default function EditExpense() {
       <ConvertActions source={{ kind: 'expense', id: expense.id, name: expense.merchant, amountMinor: expense.amount_laari, currency: expense.currency, fxRate: expense.fx_rate_to_mvr, categoryId: expense.category_id, note: expense.note, date: expense.spent_at }}
         canShare={!sadaqah && !poolPaid} canRepeat={!sadaqah && !poolPaid} removeOriginal={() => remove.mutateAsync(expense.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
-        onPress={() => Alert.alert(t('edit.deleteExpenseTitle'), sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('edit.delete'), style: 'destructive', onPress: async () => { await remove.mutateAsync(expense.id); toast(t('toast.deleted')); router.back(); } },
-        ])} />
+        onPress={async () => { if (await confirmDialog({ title: t('edit.deleteExpenseTitle'), message: sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(expense.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );
 }

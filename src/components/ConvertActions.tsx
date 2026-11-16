@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as api from '@/data/api';
@@ -51,7 +51,7 @@ export function ConvertActions({ source, canShare, canRepeat, removeOriginal }: 
       ) : null}
       {canShare && household ? (
         <Button kind="secondary" icon="people-outline" label={t('edit.moveShared', { name: household.household.name })} loading={addShared.isPending}
-          onPress={() => Alert.alert(t('edit.shareTitle'), t('edit.shareBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('edit.moveShared', { name: household.household.name }), onPress: () => void share() }])} />
+          onPress={async () => { if (await confirmDialog({ title: t('edit.shareTitle'), message: t('edit.shareBody'), confirmLabel: t('edit.moveShared', { name: household.household.name }), cancelLabel: t('common.cancel') })) void share(); }} />
       ) : null}
     </>
   );

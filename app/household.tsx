@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, Share, View } from 'react-native';
+import { Pressable, Share, View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
@@ -120,7 +121,7 @@ export default function HouseholdScreen() {
             <Text style={{ flex: 1 }}>{m.display_name}{m.user_id === userId ? ` (${t('household.you')})` : ''}</Text>
             {me?.role === 'owner' && m.user_id !== userId ? (
               <IconButton icon="close" label={t('household.remove')} color={colors.coral}
-                onPress={() => Alert.alert(t('household.removeTitle', { name: m.display_name }), t('household.removeBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('household.remove'), style: 'destructive', onPress: () => remove.mutate(m.user_id, { onSuccess: () => toast(t('household.removed')) }) }])} />
+                onPress={async () => { if (await confirmDialog({ title: t('household.removeTitle', { name: m.display_name }), message: t('household.removeBody'), confirmLabel: t('household.remove'), cancelLabel: t('common.cancel'), destructive: true })) remove.mutate(m.user_id, { onSuccess: () => toast(t('household.removed')) }); }} />
             ) : null}
           </Row>
         ))}
@@ -137,7 +138,7 @@ export default function HouseholdScreen() {
       </Card>
 
       <Button kind="ghost" label={t('household.leave')} icon="exit-outline"
-        onPress={() => Alert.alert(t('household.leaveTitle'), t('household.leaveBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('household.leave'), style: 'destructive', onPress: async () => { await leave.mutateAsync(undefined); toast(t('household.left')); } }])} />
+        onPress={async () => { if (await confirmDialog({ title: t('household.leaveTitle'), message: t('household.leaveBody'), confirmLabel: t('household.leave'), cancelLabel: t('common.cancel'), destructive: true })) { await leave.mutateAsync(undefined); toast(t('household.left')); } }} />
     </Screen>
   );
 }

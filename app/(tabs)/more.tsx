@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -33,9 +33,10 @@ export default function More() {
         <ListRow icon="information-circle-outline" title={t('about.title')} onPress={() => router.push('/about')} last />
       </Card>
       <Text variant="small" color={colors.inkMuted}>{t('more.about')}</Text>
-      <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={() => (pending > 0
-        ? Alert.alert(t('offline.signOutWaiting', { count: pending }), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('offline.signOutAnyway'), style: 'destructive', onPress: () => void signOut() }])
-        : void signOut())} />
+      <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={async () => {
+        if (pending > 0 && !(await confirmDialog({ title: t('offline.signOutWaiting', { count: pending }), confirmLabel: t('offline.signOutAnyway'), cancelLabel: t('common.cancel'), destructive: true }))) return;
+        void signOut();
+      }} />
     </Screen>
   );
 }

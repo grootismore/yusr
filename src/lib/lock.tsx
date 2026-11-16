@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Alert, AppState, Modal, Platform, View } from 'react-native';
+import { AppState, Modal, Platform, View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTranslation } from 'react-i18next';
 import { PinPad } from '@/components/PinPad';
@@ -76,10 +77,9 @@ export function LockGate({ children, active }: { children: ReactNode; active: bo
   }, [wait]);
 
   // Forgot the PIN: signing out clears the lock; signing back in sets the app up fresh on this phone.
-  const forgot = () => Alert.alert(t('pin.forgotTitle'), t('pin.forgotBody'), [
-    { text: t('common.cancel'), style: 'cancel' },
-    { text: t('pin.forgotConfirm'), style: 'destructive', onPress: async () => { await clearPin(); await setBiometricEnabled(false); await signOut(); open(); } },
-  ]);
+  const forgot = async () => {
+    if (await confirmDialog({ title: t('pin.forgotTitle'), message: t('pin.forgotBody'), confirmLabel: t('pin.forgotConfirm'), cancelLabel: t('common.cancel'), destructive: true })) { await clearPin(); await setBiometricEnabled(false); await signOut(); open(); }
+  };
 
   // The app stays mounted underneath, so unlocking returns to the same screen. The lock sits in a Modal so it also
   // covers any sheet that was open (a native modal screen would otherwise hide a plain overlay).

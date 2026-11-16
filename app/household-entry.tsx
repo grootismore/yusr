@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
@@ -69,13 +69,10 @@ export default function HouseholdEntryScreen() {
       </ExpenseForm>
       {entry.user_id === userId ? (
         <Button kind="secondary" icon="lock-closed-outline" label={t('edit.makePrivate')}
-          onPress={() => Alert.alert(t('edit.privateTitle'), t('edit.privateBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('edit.makePrivate'), onPress: () => void makePrivate() }])} />
+          onPress={async () => { if (await confirmDialog({ title: t('edit.privateTitle'), message: t('edit.privateBody'), confirmLabel: t('edit.makePrivate'), cancelLabel: t('common.cancel') })) void makePrivate(); }} />
       ) : null}
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
-        onPress={() => Alert.alert(t('household.deleteTitle'), t('household.deleteBody'), [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('edit.delete'), style: 'destructive', onPress: async () => { await remove.mutateAsync(entry.id); toast(t('toast.deleted')); router.back(); } },
-        ])} />
+        onPress={async () => { if (await confirmDialog({ title: t('household.deleteTitle'), message: t('household.deleteBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(entry.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -66,10 +67,7 @@ export default function GivingCommitment() {
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {existing ? (
         <Button kind="danger" label={t('commit.stop')}
-          onPress={() => Alert.alert(t('commit.stopTitle'), t('commit.stopBody'), [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('commit.stop'), style: 'destructive', onPress: async () => { await stop.mutateAsync(existing.id); toast(t('commit.stopped')); router.back(); } },
-          ])} />
+          onPress={async () => { if (await confirmDialog({ title: t('commit.stopTitle'), message: t('commit.stopBody'), confirmLabel: t('commit.stop'), cancelLabel: t('common.cancel'), destructive: true })) { await stop.mutateAsync(existing.id); toast(t('commit.stopped')); router.back(); } }} />
       ) : null}
     </Screen>
   );

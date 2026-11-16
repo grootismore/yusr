@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
@@ -36,11 +37,9 @@ export default function Confirm() {
   const [discarding, setDiscarding] = useState(false);
 
   // Unsaved work in a modal: ask before the back swipe or Android back throws the draft away.
-  usePreventRemove(!done && !discarding, () => {
-    Alert.alert(t('confirm.leaveTitle'), t('confirm.leaveBody'), [
-      { text: t('confirm.leaveStay'), style: 'cancel' },
-      { text: t('confirm.leaveDiscard'), style: 'destructive', onPress: () => { if (path) void deleteReceiptImage(path); setDiscarding(true); } },
-    ]);
+  usePreventRemove(!done && !discarding, async () => {
+    const ok = await confirmDialog({ title: t('confirm.leaveTitle'), message: t('confirm.leaveBody'), confirmLabel: t('confirm.leaveDiscard'), cancelLabel: t('confirm.leaveStay'), destructive: true });
+    if (ok) { if (path) void deleteReceiptImage(path); setDiscarding(true); }
   });
 
   useEffect(() => { if (done) router.dismissAll(); }, [done, router]);

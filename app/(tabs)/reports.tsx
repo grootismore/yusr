@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
@@ -157,7 +158,7 @@ export default function Reports() {
                   <Money laari={i.mvr_laari} />
                 </Pressable>
                 <IconButton icon="trash-outline" label={t('common.remove')}
-                  onPress={() => Alert.alert(t('income.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeIncome.mutate(i.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+                  onPress={async () => { if (await confirmDialog({ title: t('income.deleteTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) removeIncome.mutate(i.id, { onSuccess: () => toast(t('toast.deleted')) }); }} />
               </Row>
             ))}
           </Card>

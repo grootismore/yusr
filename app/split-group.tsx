@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -91,7 +92,7 @@ export default function SplitGroupScreen() {
               {me ? <Text variant="small" color={colors.inkMuted}>{t('split.yourShare', { amount: text(shareOf(e.id, me.id), g.currency) })}</Text> : null}
             </View>
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('split.deleteCost'), t('split.deleteCostBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removeExpense.mutate(e.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+              onPress={async () => { if (await confirmDialog({ title: t('split.deleteCost'), message: t('split.deleteCostBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) removeExpense.mutate(e.id, { onSuccess: () => toast(t('toast.deleted')) }); }} />
           </Row>
         ))}
       </Card>
@@ -123,7 +124,7 @@ export default function SplitGroupScreen() {
       </Card>
 
       <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')}
-        onPress={() => Alert.alert(t('split.deleteGroup'), t('split.deleteGroupBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('split.deleteGroup'), style: 'destructive', onPress: async () => { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }])} />
+        onPress={async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );
 }

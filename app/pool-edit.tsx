@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
@@ -77,10 +78,7 @@ export default function PoolEdit() {
       <Button label={t('common.save')} onPress={submit} loading={add.isPending || update.isPending} />
       {existing ? (
         <Button kind="danger" label={t('pools.stop')}
-          onPress={() => Alert.alert(t('pools.stopTitle'), t('pools.stopBody'), [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('pools.stop'), style: 'destructive', onPress: async () => { await stop.mutateAsync(existing.id); toast(t('pools.stopped')); router.back(); } },
-          ])} />
+          onPress={async () => { if (await confirmDialog({ title: t('pools.stopTitle'), message: t('pools.stopBody'), confirmLabel: t('pools.stop'), cancelLabel: t('common.cancel'), destructive: true })) { await stop.mutateAsync(existing.id); toast(t('pools.stopped')); router.back(); } }} />
       ) : null}
     </Screen>
   );

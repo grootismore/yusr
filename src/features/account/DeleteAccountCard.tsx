@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
+import { noticeDialog } from '@/lib/dialog';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Field } from '@/components/ui';
@@ -19,10 +20,10 @@ export function DeleteAccountCard() {
       <Field label={t('deleteAccount.typeLabel')} value={confirmText} onChangeText={setConfirmText} autoCapitalize="characters" autoCorrect={false} />
       <Button
         kind="danger" label={t('deleteAccount.confirm')} loading={deleting} disabled={confirmText.trim().toUpperCase() !== t('deleteAccount.type')}
-        onPress={async () => { setDeleting(true); try { await api.deleteAccount(); } catch { Alert.alert(t('deleteAccount.failed')); } finally { setDeleting(false); } }}
+        onPress={async () => { setDeleting(true); try { await api.deleteAccount(); } catch { await noticeDialog({ title: t('deleteAccount.failed'), okLabel: t('common.done') }); } finally { setDeleting(false); } }}
       />
       <Button kind="ghost" label={t('deleteAccount.privacy')}
-        onPress={() => { const base = process.env.EXPO_PUBLIC_LEGAL_URL; if (base) void Linking.openURL(`${base.replace(/\/$/, '')}/privacy`); else Alert.alert(t('deleteAccount.privacyMissing')); }} />
+        onPress={() => { const base = process.env.EXPO_PUBLIC_LEGAL_URL; if (base) void Linking.openURL(`${base.replace(/\/$/, '')}/privacy`); else void noticeDialog({ title: t('deleteAccount.privacyMissing'), okLabel: t('common.done') }); }} />
     </Card>
   );
 }

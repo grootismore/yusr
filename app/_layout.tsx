@@ -16,6 +16,7 @@ import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/
 import { applyStoredAppearance, loadAppearance } from '@/lib/appearance';
 import { LockGate } from '@/lib/lock';
 import { ToastHost } from '@/lib/toast';
+import { DialogHost } from '@/lib/dialog';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { CACHE_MAX_AGE, KEEP, persister } from '@/lib/queryCache';
 import { CrashScreen } from '@/features/crash/CrashScreen';
@@ -125,6 +126,7 @@ function Routes() {
       </Stack>
       <OfflineBanner />
       <ToastHost />
+      <DialogHost />
     </LockGate>
   );
 }

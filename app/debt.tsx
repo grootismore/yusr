@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
@@ -166,13 +167,13 @@ export default function DebtDetail() {
               setDate(formatDate(p.paid_on)); setNote(p.note ?? ''); setErrors({});
             }} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('debts.deletePaymentTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => removePayment.mutate(p.id, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+              onPress={async () => { if (await confirmDialog({ title: t('debts.deletePaymentTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) removePayment.mutate(p.id, { onSuccess: () => toast(t('toast.deleted')) }); }} />
           </Row>
         ))}
       </Card>
 
       <Button kind="ghost" label={t('debts.delete')} icon="trash-outline"
-        onPress={() => Alert.alert(t('debts.deleteTitle'), t('debts.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('debts.delete'), style: 'destructive', onPress: async () => { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }])} />
+        onPress={async () => { if (await confirmDialog({ title: t('debts.deleteTitle'), message: t('debts.deleteBody'), confirmLabel: t('debts.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );
 }

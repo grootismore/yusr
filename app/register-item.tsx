@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -65,7 +66,7 @@ export default function RegisterItemScreen() {
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {id ? (
         <Button kind="ghost" label={t('common.remove')} icon="trash-outline"
-          onPress={() => Alert.alert(t('register.deleteTitle'), undefined, [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: async () => { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } }])} />
+          onPress={async () => { if (await confirmDialog({ title: t('register.deleteTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } }} />
       ) : null}
       <Text variant="small" color={colors.inkMuted}>{t('register.honest')}</Text>
     </Screen>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
@@ -121,7 +122,7 @@ export default function Giving() {
             <Money laari={e.amount_laari} />
             <IconButton icon="create-outline" label={t('common.edit')} onPress={() => router.push(e.household_entry_id ? { pathname: '/household-entry', params: { id: e.household_entry_id, month: e.spent_at.slice(0, 7) } } : { pathname: '/edit-expense', params: { id: e.expense_id! } })} />
             <IconButton icon="trash-outline" label={t('common.remove')}
-              onPress={() => Alert.alert(t('giving.deleteTitle'), t('giving.deleteBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('common.remove'), style: 'destructive', onPress: () => (e.household_entry_id ? removeShared : remove).mutate((e.household_entry_id ?? e.expense_id)!, { onSuccess: () => toast(t('toast.deleted')) }) }])} />
+              onPress={async () => { if (await confirmDialog({ title: t('giving.deleteTitle'), message: t('giving.deleteBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) (e.household_entry_id ? removeShared : remove).mutate((e.household_entry_id ?? e.expense_id)!, { onSuccess: () => toast(t('toast.deleted')) }); }} />
           </Row>
         ))}
       </Card>

@@ -1,4 +1,5 @@
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -36,7 +37,7 @@ export default function ContactHome() {
                   <View style={{ gap: 8 }}>
                     <Button label={t('contactSide.fine')} onPress={() => answer.mutate({ owner: c.owner_id, answer: 'fine' })} loading={answer.isPending} />
                     <Button kind="secondary" label={t('contactSide.passed')}
-                      onPress={() => Alert.alert(t('contactSide.passedTitle'), t('contactSide.passedBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('contactSide.passed'), style: 'destructive', onPress: () => answer.mutate({ owner: c.owner_id, answer: 'passed' }) }])} />
+                      onPress={async () => { if (await confirmDialog({ title: t('contactSide.passedTitle'), message: t('contactSide.passedBody'), confirmLabel: t('contactSide.passed'), cancelLabel: t('common.cancel'), destructive: true })) answer.mutate({ owner: c.owner_id, answer: 'passed' }); }} />
                   </View>
                 )}
               </>

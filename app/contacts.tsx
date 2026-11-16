@@ -1,4 +1,5 @@
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
@@ -26,7 +27,7 @@ export default function Contacts() {
               <Text variant="small" color={colors.inkMuted}>{t(`contacts.status.${c.status}`)}</Text>
             </View>
             <Button kind="ghost" label={t('contacts.revoke')}
-              onPress={() => Alert.alert(t('contacts.revokeTitle'), t('contacts.revokeBody'), [{ text: t('common.cancel'), style: 'cancel' }, { text: t('contacts.revoke'), style: 'destructive', onPress: () => revoke.mutate(c.id) }])} />
+              onPress={async () => { if (await confirmDialog({ title: t('contacts.revokeTitle'), message: t('contacts.revokeBody'), confirmLabel: t('contacts.revoke'), cancelLabel: t('common.cancel'), destructive: true })) revoke.mutate(c.id); }} />
           </Row>
         ))}
       </Card>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Switch, View } from 'react-native';
+import { Switch, View } from 'react-native';
+import { confirmDialog } from '@/lib/dialog';
 import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -114,10 +115,7 @@ export default function RecurringEdit() {
       <Button label={t('common.save')} onPress={submit} loading={add.isPending || update.isPending} />
       {existing ? (
         <Button kind="danger" label={t('recurring.stop')}
-          onPress={() => Alert.alert(t('recurring.stopTitle'), t('recurring.stopBody'), [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('recurring.stop'), style: 'destructive', onPress: async () => { await stop.mutateAsync(existing.id); toast(t('recurring.stopped')); router.back(); } },
-          ])} />
+          onPress={async () => { if (await confirmDialog({ title: t('recurring.stopTitle'), message: t('recurring.stopBody'), confirmLabel: t('recurring.stop'), cancelLabel: t('common.cancel'), destructive: true })) { await stop.mutateAsync(existing.id); toast(t('recurring.stopped')); router.back(); } }} />
       ) : null}
     </Screen>
   );
