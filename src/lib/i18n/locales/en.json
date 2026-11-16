@@ -1182,5 +1182,28 @@
     "codeInvalid": "That code isn't valid, or it has ended or been used.",
     "codeTooMany": "Too many tries. Wait an hour and try again.",
     "codeAlready": "You already have Plus through your subscription. The code was not used."
+  },
+  "sheet": {
+    "title": "Day sheet",
+    "open": "Day sheet to share",
+    "heading": "Costs and who owes whom",
+    "costs": "Costs on this day",
+    "none": "No costs on this day.",
+    "total": "Total",
+    "among": "Shared by {{names}}",
+    "settledToday": "Paid back today",
+    "whoPays": "Who pays whom",
+    "square": "Everyone is square.",
+    "standing": "Where everyone stands",
+    "footer": "Made with Kharadhu. Amounts include everything up to the end of this day.",
+    "shareImage": "Share as image",
+    "shareText": "Share as text",
+    "sendTitle": "{{group}} day sheet",
+    "unavailable": "Sharing isn't available on this device.",
+    "failed": "Couldn't make the picture. Try sharing as text.",
+    "prevDay": "Day before",
+    "nextDay": "Day after",
+    "yourName": "Your name on the sheet",
+    "yourNameHint": "So people reading it know who \"Me\" is."
   }
 }

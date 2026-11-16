@@ -51,6 +51,7 @@ export default function SplitGroupScreen() {
       </Card>
 
       <Button label={t('split.addExpense')} icon="add" onPress={() => router.push({ pathname: '/split-expense', params: { group: g.id } })} />
+      <Button kind="secondary" label={t('sheet.open')} icon="share-outline" onPress={() => router.push({ pathname: '/split-sheet', params: { group: g.id, date: today() } })} />
 
       <Card>
         <Text variant="heading">{t('split.balances')}</Text>
