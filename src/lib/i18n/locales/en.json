@@ -230,7 +230,9 @@
     "pin": "PIN code",
     "pinNote": "Unlock with a PIN when Face ID or fingerprint isn't available.",
     "hideAmounts": "Hide amounts",
-    "hideAmountsNote": "Shows •••• instead of money. The eye on Home toggles it."
+    "hideAmountsNote": "Shows •••• instead of money. The eye on Home toggles it.",
+    "thaanaKeyboard": "Dhivehi keyboard",
+    "thaanaKeyboardNote": "Type Dhivehi on the Kharadhu keyboard. Turn off to use your phone's own keyboard."
   },
   "lock": {
     "title": "Kharadhu is locked",
@@ -1239,5 +1241,14 @@
     "nextDay": "Day after",
     "yourName": "Your name on the sheet",
     "yourNameHint": "So people reading it know who \"Me\" is."
+  },
+  "kb": {
+    "backspace": "Delete",
+    "hide": "Hide keyboard",
+    "more": "More letters",
+    "letters": "Letters",
+    "english": "English keyboard",
+    "space": "Space",
+    "return": "Return"
   }
 }

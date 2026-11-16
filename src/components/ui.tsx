@@ -1,10 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { createContext, useCallback, useContext, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
+import { AccessibilityInfo, ActivityIndicator, Animated, Dimensions, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KbCtx, type KbApi, type KbTarget } from '@/features/keyboard/context';
+import { KEYBOARD_HEIGHT, ThaanaKeyboard } from '@/features/keyboard/ThaanaKeyboard';
+import { backspaceAt, insertAt, type Edit, type Selection } from '@/features/keyboard/thaana';
+import { useFlag } from '@/lib/flags';
 import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { markBoot } from '@/lib/boot';
@@ -49,15 +53,35 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   const [fields, setFields] = useState(0);
   const insets = useSafeAreaInsets();
   const countField = useCallback((d: number) => setFields((n) => n + d), []);
+  // The Thaana keyboard, for whichever field of this screen is being typed into. It sits at the bottom of the screen itself
+  // (a sheet shown as a modal on a phone is above the root, so the root could not show it).
+  const [kbTarget, setKbTarget] = useState<KbTarget | null>(null);
+  const kbApi = useMemo<KbApi>(() => ({ activate: (t) => setKbTarget(t), deactivate: (id) => setKbTarget((cur) => (cur?.id === id ? null : cur)) }), []);
+  const scrollRef = useRef<ComponentRef<typeof Animated.ScrollView>>(null);
+  const offset = useRef(0);
+  const onScrollY = useCallback((e: unknown) => { offset.current = (e as { nativeEvent: { contentOffset: { y: number } } }).nativeEvent.contentOffset.y; }, []);
+  useEffect(() => {
+    if (!kbTarget) return;
+    let live = true;
+    // Once the page has made room for the keyboard, scroll the field into the part that is left.
+    const wait = setTimeout(() => {
+      void kbTarget.bottom().then((bottom) => {
+        const top = Dimensions.get('window').height - (KEYBOARD_HEIGHT + insets.bottom) - 24;
+        if (live && bottom > top) scrollRef.current?.scrollTo({ y: offset.current + (bottom - top), animated: true });
+      });
+    }, 80);
+    return () => { live = false; clearTimeout(wait); };
+  }, [kbTarget, insets.bottom]);
   const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
       {scroll ? (
-        <CompactTitleCtx.Provider value={setCompact}><FieldCtx.Provider value={countField}>
-          <Animated.ScrollView contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets={fields > 0} alwaysBounceVertical={false} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled"
-            scrollEventThrottle={16} onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: sy } } }], { useNativeDriver: true })}>{children}</Animated.ScrollView>
-        </FieldCtx.Provider></CompactTitleCtx.Provider>
+        <CompactTitleCtx.Provider value={setCompact}><FieldCtx.Provider value={countField}><KbCtx.Provider value={kbApi}>
+          <Animated.ScrollView ref={scrollRef} contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets={fields > 0} alwaysBounceVertical={false} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled"
+            scrollEventThrottle={16} // eslint-disable-next-line react-hooks/refs -- the listener only runs on scroll events, never during render
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: sy } } }], { useNativeDriver: true, listener: onScrollY })}>{children}</Animated.ScrollView>
+        </KbCtx.Provider></FieldCtx.Provider></CompactTitleCtx.Provider>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
       {compact ? (
         <Animated.View pointerEvents="box-none" accessible={false} importantForAccessibility="no-hide-descendants"
@@ -71,6 +95,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
         </Animated.View>
       ) : null}
       {overlay}
+      {kbTarget ? <ThaanaKeyboard target={kbTarget} /> : null}
       <DialogHost />
     </SafeAreaView>
   );
@@ -197,16 +222,49 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
   const ltr = isLtrInput(rest);
   const countField = useContext(FieldCtx);
   useEffect(() => { countField(1); return () => countField(-1); }, [countField]);
+
+  // In Dhivehi, a text field is typed on the Kharadhu Thaana keyboard (unless it was turned off in Settings, or the person
+  // switched this field to the phone's keyboard for English words). Fields for numbers, emails and passwords never use it.
+  const kb = useContext(KbCtx);
+  const enabled = useFlag('thaanaKeyboard') !== false;
+  const [sys, setSys] = useState(false);
+  const switching = useRef(false);
+  const custom = !!kb && enabled && !sys && i18n.language === 'dv' && !ltr && rest.value !== undefined && !!rest.onChangeText && rest.editable !== false;
+  const own = useRef<ComponentRef<typeof TextInput> | null>(null);
+  const live = useRef({ value: rest.value ?? '', maxLength: rest.maxLength, multiline: !!rest.multiline, onChangeText: rest.onChangeText, onSubmitEditing: rest.onSubmitEditing });
+  useEffect(() => { live.current = { value: rest.value ?? '', maxLength: rest.maxLength, multiline: !!rest.multiline, onChangeText: rest.onChangeText, onSubmitEditing: rest.onSubmitEditing }; });
+  const sel = useRef<Selection>({ start: 0, end: 0 });
+  const [forced, setForced] = useState<Selection | undefined>();
+  const id = useId();
+  useImperativeHandle(inputRef, () => own.current as ComponentRef<typeof TextInput>, []);
+  const target = useMemo<KbTarget>(() => {
+    const apply = (r: Edit) => { live.current.onChangeText?.(r.text); live.current.value = r.text; sel.current = { start: r.caret, end: r.caret }; setForced({ start: r.caret, end: r.caret }); };
+    const press = (ch: string) => apply(insertAt(String(live.current.value), sel.current, ch, live.current.maxLength));
+    return {
+      id, press,
+      backspace: () => apply(backspaceAt(String(live.current.value), sel.current)),
+      enter: () => { if (live.current.multiline) press('\n'); else { live.current.onSubmitEditing?.({ nativeEvent: { text: String(live.current.value) } } as never); own.current?.blur(); } },
+      hide: () => own.current?.blur(),
+      system: () => { switching.current = true; setSys(true); own.current?.blur(); setTimeout(() => own.current?.focus(), 80); },
+      bottom: () => new Promise<number>((resolve) => { if (!own.current) resolve(0); else own.current.measureInWindow((_x, y, _w, h) => resolve(y + h)); }),
+    };
+  }, [id]);
+  useEffect(() => () => kb?.deactivate(id), [kb, id]);
   return (
     <View style={{ gap: space.xs }}>
       <Text variant="label">{label}</Text>
       {hint ? <Text variant="small" color={colors.inkMuted}>{hint}</Text> : null}
       <View>
       <TextInput
-        ref={inputRef}
+        ref={own}
         accessibilityLabel={label}
         placeholderTextColor={colors.inkMuted}
         {...rest}
+        showSoftInputOnFocus={custom ? false : rest.showSoftInputOnFocus}
+        selection={custom ? forced : rest.selection}
+        onSelectionChange={(e) => { sel.current = e.nativeEvent.selection; if (forced && forced.start === sel.current.start && forced.end === sel.current.end) setForced(undefined); rest.onSelectionChange?.(e); }}
+        onFocus={(e) => { switching.current = false; if (custom) kb?.activate(target); else kb?.deactivate(id); rest.onFocus?.(e); }}
+        onBlur={(e) => { kb?.deactivate(id); if (!switching.current) setSys(false); rest.onBlur?.(e); }}
         style={[{ minHeight: 52, borderRadius: radius.md, borderCurve: 'continuous', borderWidth: flag || bad ? 2.5 : 1.5, borderColor: bad ? colors.coral : flag ? colors.amberDeep : colors.control,
           backgroundColor: flag ? colors.amberWash : colors.field, paddingHorizontal: space.lg, paddingVertical: space.sm,
           ...faceFor(i18n.language, 'regular', rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}

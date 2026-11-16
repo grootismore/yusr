@@ -5,6 +5,7 @@ import { CURRENCIES } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
 import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
 import { Card, Chip, Field, Row, Screen, SettingRow, StackHeader } from '@/components/ui';
+import { setFlag, useFlag } from '@/lib/flags';
 import * as api from '@/data/api';
 import { usePlan, useProfile, useRates, useWrite } from '@/data/hooks';
 import { APPEARANCES, loadAppearance, saveAppearance, type AppearanceChoice } from '@/lib/appearance';
@@ -39,6 +40,7 @@ export default function Settings() {
   const router = useRouter();
   const profile = useProfile().data;
   const plus = usePlan().data?.plus ?? false;
+  const thaanaKb = useFlag('thaanaKeyboard');
   const rates = useRates().data ?? {};
   const updateProfile = useWrite(api.updateProfile);
   const [appearance, setAppearance] = useState<AppearanceChoice>('system');
@@ -72,6 +74,7 @@ export default function Settings() {
         <Card>
           <Text variant="heading">{t('settings.language')}</Text>
           <Row style={{ flexWrap: 'wrap' }}>{LANGUAGES.map((l) => <Chip key={l} label={LANGUAGE_NAMES[l]} selected={i18n.language === l} onPress={() => pickLanguage(l)} />)}</Row>
+          {i18n.language === 'dv' ? <SettingRow icon="keypad-outline" title={t('settings.thaanaKeyboard')} subtitle={t('settings.thaanaKeyboardNote')} value={thaanaKb !== false} onValueChange={(v) => void setFlag('thaanaKeyboard', v)} last /> : null}
         </Card>
 
         <Card>
