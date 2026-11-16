@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/Text';
 import { Button, Card, Field, Icon, IconButton, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useSplit, useWrite } from '@/data/hooks';
+import { useSplit, useSplitInvites, useWrite } from '@/data/hooks';
+import { useAuth } from '@/lib/auth';
 import { meOf, ofGroup, simplify } from '@/features/split/logic';
 import { formatDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -32,10 +33,27 @@ export default function SplitGroupScreen() {
   const removeGroup = useWrite(api.deleteSplitGroup);
   const addPerson = useWrite(api.addSplitPerson);
   const [name, setName] = useState('');
+  const { userId } = useAuth();
+  const invites = (useSplitInvites().data ?? []).filter((i) => i.group_id === id);
+  const invite = useWrite(api.inviteSplitPerson);
+  const cancelInvite = useWrite(api.cancelSplitInvite);
+  const unlink = useWrite(api.unlinkSplitPerson);
+  const leave = useWrite(api.leaveSplitGroup);
+  const [inviting, setInviting] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  async function sendInvite(personId: string) {
+    const e = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { setEmailError(t('split.invalidEmail')); return; }
+    setEmailError(null);
+    try { await invite.mutateAsync({ group_id: id, person_id: personId, email: e }); setInviting(null); setEmail(''); toast(t('split.inviteSaved')); } catch { setEmailError(t('split.inviteFailed')); }
+  }
 
   if (!g) return <Screen><StackHeader title={t('split.title')} /></Screen>;
   const nameOf = (pid: string) => people.find((p) => p.id === pid)?.name ?? '';
-  const me = meOf(people);
+  const me = meOf(people, userId);
+  const isOwner = !g.user_id || g.user_id === userId;
   const mine = me ? net[me.id] ?? 0 : 0;
   const shareOf = (eid: string, pid?: string) => shares.find((s) => s.expense_id === eid && s.person_id === pid)?.share_minor ?? 0;
 
@@ -118,14 +136,45 @@ export default function SplitGroupScreen() {
 
       <Card>
         <Text variant="heading">{t('split.people')}</Text>
-        <Text variant="small" color={colors.inkMuted}>{people.map((p) => p.name).join(', ')}</Text>
+        {people.map((p) => {
+          const inv = invites.find((i) => i.person_id === p.id);
+          const linked = !!p.account_id;
+          const isMe = !!me && p.id === me.id;
+          return (
+            <View key={p.id} style={{ gap: space.xs, paddingVertical: space.xs }}>
+              <Row>
+                <Icon name={linked ? 'phone-portrait-outline' : 'person-outline'} color={colors.accent} />
+                <View style={{ flex: 1 }}>
+                  <Text>{p.name}{isMe ? ` (${t('split.you')})` : ''}</Text>
+                  <Text variant="small" color={colors.inkMuted}>{isMe ? t('split.thisIsYou') : linked ? t('split.hasApp') : inv ? t('split.invitedEmail', { email: inv.email }) : t('split.nameOnly')}</Text>
+                </View>
+                {inv ? <IconButton icon="close" label={t('split.cancelInvite')} onPress={() => cancelInvite.mutate(inv.id)} /> : null}
+                {isOwner && linked && !isMe ? <IconButton icon="person-remove-outline" label={t('split.removeAccess')} onPress={async () => { if (await confirmDialog({ title: t('split.removeAccessTitle', { name: p.name }), message: t('split.removeAccessBody'), confirmLabel: t('split.removeAccess'), cancelLabel: t('common.cancel'), destructive: true })) unlink.mutate(p.id, { onSuccess: () => toast(t('toast.updated')) }); }} /> : null}
+              </Row>
+              {!linked && !inv && !isMe ? (
+                inviting === p.id ? (
+                  <View style={{ gap: space.sm }}>
+                    <Field label={t('split.theirEmail')} hint={t('split.theirEmailHint')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} maxLength={200} error={emailError} />
+                    <Button label={t('split.sendInvite')} icon="mail-outline" loading={invite.isPending} onPress={() => void sendInvite(p.id)} />
+                  </View>
+                ) : <Button kind="ghost" icon="mail-outline" label={t('split.inviteByEmail')} onPress={() => { setInviting(p.id); setEmail(''); setEmailError(null); }} />
+              ) : null}
+            </View>
+          );
+        })}
+        <Text variant="small" color={colors.inkMuted}>{t('split.peopleNote')}</Text>
         <Field label={t('split.addPerson')} value={name} onChangeText={setName} maxLength={40} autoCapitalize="words" />
         <Button kind="secondary" icon="person-add-outline" label={t('split.addPerson')} loading={addPerson.isPending}
           onPress={async () => { const n = name.trim(); if (!n) return; await addPerson.mutateAsync({ group_id: g.id, name: n } as Parameters<typeof api.addSplitPerson>[0]); setName(''); toast(t('toast.saved')); }} />
       </Card>
 
-      <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')}
-        onPress={async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }} />
+      {isOwner ? null : (
+        <Button kind="ghost" icon="exit-outline" label={t('split.leaveGroup')}
+          onPress={async () => { if (await confirmDialog({ title: t('split.leaveGroup'), message: t('split.leaveGroupBody'), confirmLabel: t('split.leaveGroup'), cancelLabel: t('common.cancel'), destructive: true })) leave.mutate(g.id, { onSuccess: () => { toast(t('split.left')); router.back(); } }); }} />
+      )}
+
+      {isOwner ? <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')}
+        onPress={async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }} /> : null}
     </Screen>
   );
 }

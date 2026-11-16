@@ -9,6 +9,8 @@ import { DateField } from '@/components/DateField';
 import { Text } from '@/components/Text';
 import { Button, Field, Icon, Logo, Row, Screen, StackHeader } from '@/components/ui';
 import { useSplit } from '@/data/hooks';
+import { meOf } from '@/features/split/logic';
+import { useAuth } from '@/lib/auth';
 import { daySheet, type DaySheet } from '@/features/split/sheet';
 import { addDays, formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -25,13 +27,14 @@ export default function SplitSheet() {
   const { group, date: dateParam } = useLocalSearchParams<{ group: string; date?: string }>();
   const splitQ = useSplit();
   const data = useMemo(() => splitQ.data ?? { groups: [], people: [], expenses: [], shares: [], settlements: [] }, [splitQ.data]);
+  const { userId } = useAuth();
   const [text, setText] = useState(formatDate(dateParam && parseDate(dateParam) ? dateParam : today()));
   const date = parseDate(text) ?? today();
   // On a picture others will read, "Me" means nothing: let the person put their name on it.
-  const meRow = data.people.find((p) => p.group_id === group && p.is_me);
+  const meRow = meOf(data.people.filter((p) => p.group_id === group), userId);
   const [myName, setMyName] = useState<string | null>(null);
   const shown = myName ?? meRow?.name ?? '';
-  const sheet = useMemo(() => daySheet(myName === null ? data : { ...data, people: data.people.map((p) => (p.group_id === group && p.is_me ? { ...p, name: myName.trim() || p.name } : p)) }, group, date), [data, group, date, myName]);
+  const sheet = useMemo(() => daySheet(myName === null ? data : { ...data, people: data.people.map((p) => (p.id === meRow?.id ? { ...p, name: myName.trim() || p.name } : p)) }, group, date), [data, group, date, myName, meRow?.id]);
   const ref = useRef<ComponentRef<typeof View>>(null);
   const [busy, setBusy] = useState(false);
   const rtl = i18n.language === 'dv';

@@ -65,6 +65,8 @@ export function useSharedTotals(month: string) {
   return useMemo(() => sharedTotals(entries), [entries]);
 }
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });
+export const useSplitInvites = () => useQuery({ queryKey: ['split-invites'], queryFn: api.listSplitInvites });
+export const useMyInvites = () => useQuery({ queryKey: ['my-invites'], queryFn: api.listMyInvites });
 export const useSplit = () => useQuery({ queryKey: ['split'], queryFn: api.listSplit });
 export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
