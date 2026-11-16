@@ -22,15 +22,15 @@ export const Icon = ({ name, size = 22, color }: { name: string; size?: number; 
 
 // A screen's title, told to the Screen by the ScreenTitle or StackHeader inside it, so the Screen can keep it on show
 // in a slim bar once the real title has scrolled away.
-type CompactTitle = { title: string; brand: boolean } | null;
+type CompactTitle = { title: string; brand: boolean; back: boolean } | null;
 const CompactTitleCtx = createContext<(t: CompactTitle) => void>(() => undefined);
 // A screen with text fields lets iOS lift its content above the keyboard; one without never does, so a keyboard from
 // another screen can never leave stray empty space under it.
 const FieldCtx = createContext<(delta: number) => void>(() => undefined);
 
-function useCompactTitle(title: string, brand: boolean) {
+function useCompactTitle(title: string, brand: boolean, back = false) {
   const set = useContext(CompactTitleCtx);
-  useEffect(() => { set({ title, brand }); return () => set(null); }, [set, title, brand]);
+  useEffect(() => { set({ title, brand, back }); return () => set(null); }, [set, title, brand, back]);
 }
 
 /** Page: ground background, safe area, optional scroll. Sets the web preview direction. */
@@ -39,7 +39,8 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   /** Let the content fill the screen so a footer can sit at the bottom (marginTop: 'auto'). */ grow?: boolean;
   /** A tab screen: leave room for the floating tab bar. */ tabbed?: boolean }) {
   const colors = useColors();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const router = useRouter();
   markBoot('screen');
   const [own] = useState(() => new Animated.Value(0));
   const sy = scrollY ?? own;
@@ -58,11 +59,12 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
         </FieldCtx.Provider></CompactTitleCtx.Provider>
       ) : <View style={[{ flex: 1 }, inner]}>{children}</View>}
       {compact ? (
-        <Animated.View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants"
+        <Animated.View pointerEvents="box-none" accessible={false} importantForAccessibility="no-hide-descendants"
           // Absolute children start at the very top of the screen, under the clock and the notch, so the bar takes the
           // status-bar height as its own top padding and keeps the title in the clear space below it.
           style={{ position: 'absolute', top: 0, start: 0, end: 0, height: 44 + insets.top, paddingTop: insets.top, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.ground, borderBottomWidth: 1, borderBottomColor: colors.line,
             opacity: sy.interpolate({ inputRange: [48, 96], outputRange: [0, 1], extrapolate: 'clamp' }) }}>
+          {compact.back ? <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} /> : null}
           {compact.brand ? <Logo size={22} /> : null}
           <Text variant="heading" numberOfLines={1} style={{ flex: 1 }}>{compact.title}</Text>
         </Animated.View>
@@ -266,7 +268,7 @@ export const Row = ({ children, style, ...rest }: ViewProps & { children: ReactN
 export function StackHeader({ title, numberOfLines }: { title: string; numberOfLines?: number }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  useCompactTitle(title, false);
+  useCompactTitle(title, false, true);
   return (
     <Row style={{ gap: space.sm, paddingTop: space.sm, paddingBottom: space.sm }}>
       <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} />

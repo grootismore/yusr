@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
-import { useLocalSearchParams, useNavigation, usePreventRemove, useRouter } from 'expo-router';
+import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { Msg } from '@/components/Msg';
@@ -22,7 +22,6 @@ export default function Confirm() {
   const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
-  const navigation = useNavigation();
   const { draft: raw, path } = useLocalSearchParams<{ draft: string; path?: string }>();
   const draft: Draft = useMemo(() => JSON.parse(raw), [raw]);
   const categories = useCategories().data ?? [];
@@ -33,16 +32,19 @@ export default function Confirm() {
   const [total, setTotal] = useState<number | null>(draft.total_laari);
   const save = useWrite(saveScan);
   const [done, setDone] = useState(false);
+  // Set when the person confirms discarding. The guard must be lifted before leaving, or the leave is caught again.
+  const [discarding, setDiscarding] = useState(false);
 
   // Unsaved work in a modal: ask before the back swipe or Android back throws the draft away.
-  usePreventRemove(!done, ({ data }) => {
+  usePreventRemove(!done && !discarding, () => {
     Alert.alert(t('confirm.leaveTitle'), t('confirm.leaveBody'), [
       { text: t('confirm.leaveStay'), style: 'cancel' },
-      { text: t('confirm.leaveDiscard'), style: 'destructive', onPress: () => { if (path) void deleteReceiptImage(path); navigation.dispatch(data.action); } },
+      { text: t('confirm.leaveDiscard'), style: 'destructive', onPress: () => { if (path) void deleteReceiptImage(path); setDiscarding(true); } },
     ]);
   });
 
   useEffect(() => { if (done) router.dismissAll(); }, [done, router]);
+  useEffect(() => { if (discarding) router.back(); }, [discarding, router]);
 
   // A receipt from an earlier month is saved under that month, so say so before it seems to go missing.
   const months = t('months', { returnObjects: true }) as string[];
