@@ -206,7 +206,7 @@
     "pools": "Money pools",
     "recurring": "Recurring",
     "household": "Household",
-    "split": "LaariGang"
+    "split": "Hissa Foshi"
   },
   "settings": {
     "title": "Settings",
@@ -1036,7 +1036,7 @@
     "sharedBy": "By {{name}}"
   },
   "split": {
-    "title": "LaariGang",
+    "title": "Hissa Foshi",
     "intro": "Share costs with friends: a trip, a flat, a dinner. Add what each person paid and we work out who owes whom. Your friends don't need the app.",
     "emptyTitle": "No groups yet",
     "emptyBody": "Make a group, add the people, then add costs as they happen.",
@@ -1176,7 +1176,7 @@
       "export": "Monthly summary as PDF or CSV",
       "household": "Households of three or more",
       "history": "Reports older than {{months}} months",
-      "split": "More than {{groups}} LaariGang groups",
+      "split": "More than {{groups}} Hissa Foshi groups",
       "recurring": "More than {{recurring}} recurring items"
     },
     "benefitNote": {
@@ -1194,7 +1194,7 @@
       "export": "The monthly summary is part of Plus.",
       "household": "A household of three or more is part of Plus. You and one other person are free.",
       "history": "Reports older than {{months}} months are part of Plus.",
-      "split": "You have {{groups}} LaariGang groups. More are part of Plus.",
+      "split": "You have {{groups}} Hissa Foshi groups. More are part of Plus.",
       "recurring": "You have {{recurring}} recurring items. More are part of Plus."
     },
     "more": "Scans, people and history for more",
