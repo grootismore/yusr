@@ -8,14 +8,16 @@ type Ask = { id: number; title: string; message?: string; confirmLabel: string; 
 type Options = { title: string; message?: string; confirmLabel: string; cancelLabel?: string; destructive?: boolean };
 
 let n = 0;
-let push: ((a: Ask) => void) | null = null;
+// Every mounted host, oldest first. A question goes to the newest one: a screen shown as a modal on a phone sits on top
+// of the root, and a dialog opened from the root cannot be seen above it, so each screen carries its own host.
+const hosts: ((a: Ask) => void)[] = [];
 
 /**
  * A question in the app's own card, instead of the system alert. Resolves true when the confirm button is tapped, false when
  * cancelled (cancel button, backdrop, or Android back). Call from anywhere; <DialogHost/> shows it, one at a time.
  */
 export function confirmDialog(o: Options): Promise<boolean> {
-  return new Promise((resolve) => { if (push) push({ id: ++n, ...o, resolve }); else resolve(false); });
+  return new Promise((resolve) => { const host = hosts[hosts.length - 1]; if (host) host({ id: ++n, ...o, resolve }); else resolve(false); });
 }
 
 /** A message with one button. Resolves once it is dismissed. */
@@ -28,8 +30,9 @@ export function DialogHost() {
   const [queue, setQueue] = useState<Ask[]>([]);
 
   useEffect(() => {
-    push = (a) => setQueue((q) => [...q, a]);
-    return () => { push = null; };
+    const host = (a: Ask) => setQueue((q) => [...q, a]);
+    hosts.push(host);
+    return () => { const i = hosts.indexOf(host); if (i >= 0) hosts.splice(i, 1); };
   }, []);
 
   const current = queue[0];

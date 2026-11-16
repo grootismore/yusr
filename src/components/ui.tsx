@@ -12,6 +12,7 @@ import { faceFor } from '@/theme/fonts';
 import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
+import { DialogHost } from '@/lib/dialog';
 
 export type IconName = keyof typeof Ionicons.glyphMap;
 // The database default icon "ellipsis" is not an Ionicons glyph; unknown names fall back to one that is.
@@ -70,6 +71,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
         </Animated.View>
       ) : null}
       {overlay}
+      <DialogHost />
     </SafeAreaView>
   );
 }
