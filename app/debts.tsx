@@ -1,5 +1,5 @@
 import { useShareTag } from '@/features/household/useTag';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -11,10 +11,21 @@ import { Button, Card, Chip, Field, Icon, Row, Screen, StackHeader } from '@/com
 import * as api from '@/data/api';
 import { useDebtPayments, useDebts, usePlanSettings, useRates, useWrite } from '@/data/hooks';
 import { computePlan } from '@/features/debts/compute';
-import { InterestTag, DueBadge, useMonthLabel } from '@/features/debts/ui';
+import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { today } from '@/lib/dates';
 import { formatNumber, ltr, parseAmount } from '@/lib/money';
 import { space, useColors } from '@/theme/tokens';
+
+/** One line of a debt's details: what it is on the start side, its value on the end side. Long values wrap instead of being cut. */
+function Detail({ label, children }: { label: string; children: ReactNode }) {
+  const colors = useColors();
+  return (
+    <Row style={{ alignItems: 'flex-start', gap: space.md }}>
+      <Text color={colors.inkMuted} style={{ flex: 1 }}>{label}</Text>
+      <View style={{ flexShrink: 1, alignItems: 'flex-end' }}>{children}</View>
+    </Row>
+  );
+}
 
 export default function Debts() {
   const colors = useColors();
@@ -91,37 +102,47 @@ export default function Debts() {
 
           <Text variant="heading">{t('debts.order')}</Text>
           <Text variant="small" color={colors.inkMuted} style={{ marginTop: -space.sm }}>{t(`debts.orderHint.${settings.strategy}`)}</Text>
-          <Card>
-            {view.open.map((v, i) => (
-              <Pressable key={v.debt.id} accessibilityRole="button" accessibilityLabel={v.debt.lender} onPress={() => router.push({ pathname: '/debt', params: { id: v.debt.id } })} style={{ minHeight: 64, justifyContent: 'center', gap: 4 }}>
-                <Row>
-                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text variant="label" latin color={colors.accent}>{i + 1}</Text>
-                  </View>
-                  <View style={{ flex: 1, gap: 2 }}>
-                    <Text numberOfLines={1}>{v.debt.lender}{v.debt.household_id ? <Text variant="small" color={colors.inkMuted}>{`  · ${tag(v.debt)}`}</Text> : null}</Text>
-                    <Text variant="small" color={colors.inkMuted}>{t(`debts.kind.${v.debt.kind}`)}</Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Money laari={v.debt.balance_laari} currency={v.debt.currency} />
-                    {v.debt.currency !== 'MVR' ? <Msg k="debts.about" amounts={{ amount: v.balanceMvr }} variant="small" color={colors.inkMuted} /> : null}
-                  </View>
-                </Row>
-                <View style={{ gap: 4, paddingStart: 44 }}>
-                  <InterestTag interestBearing={v.debt.interest_bearing} kind={v.debt.kind} rateBps={v.debt.interest_rate_bps} />
-                  <DueBadge state={v.due.state} days={v.due.days} />
-                  {v.autoDeducted ? <Msg k="debts.autoLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : (
+          {view.open.map((v, i) => {
+            const d = v.debt;
+            const rate = d.interest_bearing && d.interest_rate_bps ? `${(d.interest_rate_bps / 100).toFixed(2).replace(/\.?0+$/, '')}%` : null;
+            const extra = v.focus && v.suggestedMvr > v.minMvr;
+            return (
+              <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={d.lender} onPress={() => router.push({ pathname: '/debt', params: { id: d.id } })}>
+                <Card style={{ gap: space.md }}>
+                  <Row style={{ alignItems: 'flex-start' }}>
+                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text variant="label" latin color={colors.accent}>{i + 1}</Text>
+                    </View>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text variant="heading">{d.lender}</Text>
+                      <Text variant="small" color={colors.inkMuted}>{t(`debts.kind.${d.kind}`)}{d.household_id ? `  · ${tag(d)}` : ''}</Text>
+                    </View>
+                  </Row>
+                  <View style={{ height: 1, backgroundColor: colors.line }} />
+                  <Detail label={t('debts.row.owed')}>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Money laari={d.balance_laari} currency={d.currency} variant="heading" />
+                      {d.currency !== 'MVR' ? <Msg k="debts.about" amounts={{ amount: v.balanceMvr }} variant="small" color={colors.inkMuted} /> : null}
+                    </View>
+                  </Detail>
+                  <Detail label={t('debts.row.interest')}>
+                    {d.interest_bearing ? <Text latin={!!rate}>{rate ?? t('debts.interest')}</Text> : <Text>{t('debts.row.noInterest')}</Text>}
+                  </Detail>
+                  {v.autoDeducted ? (
+                    <Detail label={t('debts.row.fromSalary')}><Money laari={v.minMvr} /></Detail>
+                  ) : (
                     <>
-                      {v.minMvr > 0 ? <Msg k="debts.minLine" amounts={{ amount: v.minMvr }} variant="small" color={colors.inkMuted} /> : null}
-                      <Msg k={v.focus && v.suggestedMvr > v.minMvr ? 'debts.payExtra' : 'debts.payThis'} amounts={{ amount: v.suggestedMvr }} variant="small" color={v.focus && v.suggestedMvr > v.minMvr ? colors.accent : colors.ink} />
-                      {v.goodwill ? <Text variant="small" color={colors.inkMuted}>{t('debts.goodwillNote')}</Text> : null}
+                      {v.minMvr > 0 ? <Detail label={t('debts.row.minimum')}><Money laari={v.minMvr} /></Detail> : null}
+                      <Detail label={t('debts.row.payThis')}><Money laari={v.suggestedMvr} color={extra ? colors.accent : undefined} variant={extra ? 'heading' : 'body'} /></Detail>
                     </>
                   )}
-                  {v.clearedMonth ? <Text variant="small" color={colors.inkMuted}>{t('debts.clearedBy', { month: monthLabel(v.clearedMonth) })}</Text> : null}
-                </View>
+                  {v.clearedMonth ? <Detail label={t('debts.row.clearedBy')}><Text>{monthLabel(v.clearedMonth)}</Text></Detail> : null}
+                  {v.due.state !== 'none' && v.due.state !== 'ok' ? <Detail label={t('debts.row.due')}><DueBadge state={v.due.state} days={v.due.days} /></Detail> : null}
+                  {v.goodwill ? <Text variant="small" color={colors.inkMuted}>{t('debts.goodwillNote')}</Text> : null}
+                </Card>
               </Pressable>
-            ))}
-          </Card>
+            );
+          })}
           <Text variant="small" color={colors.inkMuted}>{t('debts.interestNote')}</Text>
         </>
       ) : null}

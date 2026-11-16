@@ -370,7 +370,17 @@
     "autoDeductedNote": "The lender takes the instalment before your pay arrives. We record it each month for you, so you never enter it twice.",
     "autoLine": "{{amount}} a month, deducted from your salary",
     "autoPayNote": "Instalments are recorded for you each month. Add a payment only if you pay extra.",
-    "fromSalary": "From salary"
+    "fromSalary": "From salary",
+    "row": {
+      "owed": "Owed now",
+      "interest": "Interest a year",
+      "minimum": "Monthly minimum",
+      "payThis": "Pay this month",
+      "fromSalary": "Taken from your salary",
+      "clearedBy": "Paid off by",
+      "due": "Due",
+      "noInterest": "None"
+    }
   },
   "giving": {
     "title": "Giving",
