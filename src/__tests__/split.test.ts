@@ -1,4 +1,4 @@
-import { balances, computeShares, ofGroup, simplify, type SplitData, type SplitPerson } from '@/features/split/logic';
+import { balances, computeShares, meOf, ofGroup, simplify, type SplitData, type SplitPerson } from '@/features/split/logic';
 
 const sum = (r: Record<string, number>) => Object.values(r).reduce((s, v) => s + v, 0);
 
@@ -58,5 +58,23 @@ describe('who owes whom', () => {
   it('a share of a deleted expense no longer counts', () => {
     const fewer = balances(people, [data.expenses[1]], data.shares, []);
     expect(fewer).toEqual({ me: -10_000, a: 20_000, b: -10_000 });
+  });
+});
+
+describe('meOf with linked accounts', () => {
+  const people = [
+    { id: 'a', group_id: 'g', name: 'Aisha', is_me: true, account_id: 'u-owner' },
+    { id: 'b', group_id: 'g', name: 'Ahmed', is_me: false, account_id: 'u-friend' },
+    { id: 'c', group_id: 'g', name: 'Shifa', is_me: false, account_id: null },
+  ];
+  it('is the name linked to my account, for the owner and for a friend', () => {
+    expect(meOf(people, 'u-owner')?.id).toBe('a');
+    expect(meOf(people, 'u-friend')?.id).toBe('b');
+  });
+  it("is not the owner's row for a friend who is not linked", () => {
+    expect(meOf(people, 'u-stranger')).toBeUndefined();
+  });
+  it('falls back to the unlinked name marked as mine (a group not yet sent)', () => {
+    expect(meOf([{ id: 'x', group_id: 'g', name: 'Me', is_me: true }], 'u1')?.id).toBe('x');
   });
 });

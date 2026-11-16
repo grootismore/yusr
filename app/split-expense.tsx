@@ -7,6 +7,7 @@ import { Button, Chip, Field, Row, Screen } from '@/components/ui';
 import { DateField } from '@/components/DateField';
 import * as api from '@/data/api';
 import { useSplit, useWrite } from '@/data/hooks';
+import { useAuth } from '@/lib/auth';
 import { SPLIT_TYPES, computeShares, meOf, type SplitType } from '@/features/split/logic';
 import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -20,6 +21,7 @@ export default function SplitExpense() {
   const { t } = useTranslation();
   const router = useRouter();
   const { group } = useLocalSearchParams<{ group: string }>();
+  const { userId } = useAuth();
   const data = useSplit().data;
   const g = data?.groups.find((x) => x.id === group);
   const people = useMemo(() => (data?.people ?? []).filter((p) => p.group_id === group), [data, group]);
@@ -35,7 +37,7 @@ export default function SplitExpense() {
   const [error, setError] = useState<string | null>(null);
 
   if (!g) return <Screen><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;
-  const payer = paidBy ?? meOf(people)?.id ?? people[0]?.id;
+  const payer = paidBy ?? meOf(people, userId)?.id ?? people[0]?.id;
   const isIn = (id: string) => included[id] ?? true;
   const parts = people.filter((p) => isIn(p.id));
   let total = 0;

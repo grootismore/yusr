@@ -14,7 +14,7 @@ import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import type { Household, HouseholdEntry, HouseholdEntryInput, HouseholdMember } from '@/features/household/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
-import type { SplitData, SplitType } from '@/features/split/logic';
+import type { MyInvite, SplitData, SplitInvite, SplitType } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
 import type { ConsentKind } from '@/features/legal/consent';
@@ -549,14 +549,35 @@ export async function listSplit(): Promise<SplitData> {
   if (PREVIEW) return fx.split;
   const supabase = getSupabase();
   const [groups, people, expenses, shares, settlements] = await Promise.all([
-    supabase.from('split_groups').select('id,name,currency,archived').order('created_at', { ascending: false }),
-    supabase.from('split_people').select('id,group_id,name,is_me').order('created_at', { ascending: true }),
+    supabase.from('split_groups').select('id,user_id,name,currency,archived').order('created_at', { ascending: false }),
+    supabase.from('split_people').select('id,group_id,name,is_me,account_id').order('created_at', { ascending: true }),
     supabase.from('split_expenses').select('id,group_id,description,amount_minor,paid_by,split_type,spent_on,note').order('spent_on', { ascending: false }).order('created_at', { ascending: false }),
     supabase.from('split_shares').select('expense_id,person_id,share_minor'),
     supabase.from('split_settlements').select('id,group_id,from_person,to_person,amount_minor,settled_on,note').order('settled_on', { ascending: false }),
   ]);
   return { groups: must(groups), people: must(people), expenses: must(expenses) as SplitData['expenses'], shares: must(shares), settlements: must(settlements) };
 }
+
+/** Invitations still waiting, for the groups I am in. */
+export async function listSplitInvites(): Promise<SplitInvite[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().from('split_invites').select('id,group_id,person_id,email'));
+}
+/** Invitations for my email, from groups I am not in yet. */
+export async function listMyInvites(): Promise<MyInvite[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().rpc('my_split_invites')) as MyInvite[];
+}
+/** Invite the friend behind a name by email. Nothing is sent: they see it when they sign in with that email. */
+export async function inviteSplitPerson(a: { group_id: string; person_id: string; email: string }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('split_invites').insert({ group_id: a.group_id, person_id: a.person_id, email: a.email.trim().toLowerCase(), invited_by: await uid() }));
+}
+export async function acceptSplitInvite(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('accept_split_invite', { p_invite: id })); }
+export async function declineSplitInvite(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('decline_split_invite', { p_invite: id })); }
+export async function cancelSplitInvite(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().from('split_invites').delete().eq('id', id)); }
+export async function leaveSplitGroup(group: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('leave_split_group', { p_group: group })); }
+export async function unlinkSplitPerson(person: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('unlink_split_person', { p_person: person })); }
 
 /** Rows are inserted with ids made on the phone, so every one of these is safe to send twice. */
 const insertOnce = async (table: string, rows: Record<string, unknown> | Record<string, unknown>[]): Promise<void> => {
@@ -568,7 +589,7 @@ export async function addSplitGroup(a: { id?: string; name: string; currency: st
   if (PREVIEW) return;
   const user_id = await uid();
   await insertOnce('split_groups', { id: a.id, user_id, name: a.name, currency: a.currency });
-  await insertOnce('split_people', a.people.map((p) => ({ id: p.id, user_id, group_id: a.id, name: p.name, is_me: p.is_me })));
+  await insertOnce('split_people', a.people.map((p) => ({ id: p.id, user_id, group_id: a.id, name: p.name, is_me: p.is_me, account_id: p.is_me ? user_id : null })));
 }
 export async function addSplitPerson(a: { id?: string; group_id: string; name: string }): Promise<void> {
   if (PREVIEW) return;
