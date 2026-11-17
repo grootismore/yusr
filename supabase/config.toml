@@ -21,3 +21,7 @@ verify_jwt = false
 
 [functions.delete-account]
 verify_jwt = false
+
+# String editor site: the editor key (STRINGS_EDITOR_KEY) is the credential; refuses everything while it is unset.
+[functions.string-edits]
+verify_jwt = false
