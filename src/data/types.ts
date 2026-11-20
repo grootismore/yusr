@@ -6,6 +6,8 @@ export interface Expense {
 export interface NewExpense {
   amount_laari: number; currency: string; fx_rate_to_mvr: string; category_id: string | null; merchant: string | null;
   spent_at: string; note: string | null;
+  /** Foreign income only: keep it in its currency (set by the form when asked). */
+  keep_in_currency?: boolean;
   /** Made on the phone so a save that is sent twice is still one entry. */
   id?: string;
 }

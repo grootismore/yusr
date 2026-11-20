@@ -103,8 +103,11 @@ export async function addIncome(input: NewExpense): Promise<void> {
 /** Everything received in a foreign currency that was kept in it (all time), for the "held in USD" balance. */
 export async function listKeptIncome(): Promise<KeptIncome[]> {
   if (PREVIEW) return fx.kept;
-  const rows = must(await getSupabase().from('income').select('currency,amount_laari,mvr_laari').eq('keep_in_currency', true));
-  return rows.map((r) => ({ currency: r.currency as string, amount_minor: r.amount_laari as number, mvr_laari: r.mvr_laari as number }));
+  const supabase = getSupabase();
+  const rows = must(await supabase.from('income').select('currency,amount_laari,mvr_laari').eq('keep_in_currency', true));
+  // Foreign income received into the shared pot counts for the person who received it.
+  const shared = must(await supabase.from('household_entries').select('currency,amount_laari,mvr_laari').eq('kind', 'income').eq('keep_in_currency', true).eq('user_id', await uid()));
+  return [...rows, ...shared].map((r) => ({ currency: r.currency as string, amount_minor: r.amount_laari as number, mvr_laari: r.mvr_laari as number }));
 }
 
 export async function listConversions(): Promise<Conversion[]> {
@@ -457,7 +460,7 @@ export async function removeHouseholdMember(userId: string): Promise<void> {
 export async function listHouseholdEntries(month: string): Promise<HouseholdEntry[]> {
   if (PREVIEW) return fx.householdEntries;
   return must(
-    await getSupabase().from('household_entries').select('id,household_id,user_id,kind,amount_laari,currency,fx_rate_to_mvr,mvr_laari,category_id,merchant,note,entry_date')
+    await getSupabase().from('household_entries').select('id,household_id,user_id,kind,amount_laari,currency,fx_rate_to_mvr,mvr_laari,category_id,merchant,note,entry_date,keep_in_currency')
       .gte('entry_date', month).lt('entry_date', addMonths(month, 1)).order('entry_date', { ascending: false }).order('created_at', { ascending: false }),
   );
 }

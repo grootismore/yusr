@@ -33,7 +33,10 @@ export function SharedRow({ entry, category, hideDate }: { entry: HouseholdEntry
           {t('household.sharedBy', { name: who })}{hideDate ? '' : ' · '}{hideDate ? null : <Text latin variant="small" color={colors.inkMuted}>{formatDate(entry.entry_date)}</Text>}
         </Text>
       </View>
-      <Money laari={entry.mvr_laari} prefix={income ? '+' : '−'} color={income ? colors.accent : undefined} />
+      <View style={{ alignItems: 'flex-end' }}>
+        <Money laari={entry.mvr_laari} prefix={income ? '+' : '−'} color={income ? colors.accent : undefined} />
+        {entry.currency !== 'MVR' ? <Money laari={entry.amount_laari} currency={entry.currency} variant="small" color={colors.inkMuted} /> : null}
+      </View>
     </Pressable>
   );
 }

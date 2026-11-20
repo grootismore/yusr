@@ -53,11 +53,13 @@ export default function HouseholdEntryScreen() {
         key={entry.id}
         initial={{ amountLaari: entry.amount_laari, currency: entry.currency, rate: String(entry.fx_rate_to_mvr), category_id: entry.category_id, merchant: entry.merchant, date: entry.entry_date, note: entry.note }}
         income={income}
+        offerKeep
+        initialKeep={entry.keep_in_currency ?? false}
         categories={categories}
         submitLabel={t('common.save')}
         busy={update.isPending}
         onSubmit={async (e) => {
-          const input: HouseholdEntryInput = { kind: entry.kind, amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: income ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, user_id: whose ?? entry.user_id };
+          const input: HouseholdEntryInput = { kind: entry.kind, amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: income ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, keep_in_currency: income ? e.keep_in_currency : undefined, user_id: whose ?? entry.user_id };
           await update.mutateAsync({ id: entry.id, input });
           if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr);
           success();
