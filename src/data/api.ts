@@ -14,6 +14,7 @@ import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import type { Household, HouseholdEntry, HouseholdEntryInput, HouseholdMember } from '@/features/household/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
+import type { Iou, IouInput, IouInvite, IouPayment } from '@/features/ious/logic';
 import type { MyInvite, SplitData, SplitInvite, SplitType } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
@@ -619,6 +620,47 @@ export async function deleteSplitGroup(id: string): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('split_groups').delete().eq('id', id));
 }
+
+// ---- IOUs between two people
+const IOU_COLS = 'id,user_id,direction,person_name,person_email,person_account,title,amount_laari,lent_on,due_on,nudge';
+export async function listIous(): Promise<Iou[]> {
+  if (PREVIEW) return fx.ious;
+  return must(await getSupabase().from('ious').select(IOU_COLS).order('lent_on', { ascending: false }).order('created_at', { ascending: false }));
+}
+export async function listIouPayments(): Promise<IouPayment[]> {
+  if (PREVIEW) return fx.iouPayments;
+  return must(await getSupabase().from('iou_payments').select('id,iou_id,amount_laari,paid_on,note,created_by').order('paid_on', { ascending: true }));
+}
+export async function listIouInvites(): Promise<IouInvite[]> {
+  if (PREVIEW) return [];
+  return must(await getSupabase().rpc('my_iou_invites')) as IouInvite[];
+}
+const cleanIou = (input: IouInput): IouInput => ({ ...input, person_name: input.person_name.trim(), person_email: input.person_email?.trim().toLowerCase() || null, title: input.title?.trim() || null });
+export async function addIou({ id, input }: { id?: string; input: IouInput }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('ious').insert({ ...cleanIou(input), id, user_id: await uid() });
+  if (res.error && !isDup(res.error)) must(res);
+}
+export async function updateIou({ id, input }: { id: string; input: IouInput }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('ious').update(cleanIou(input)).eq('id', id));
+}
+export async function deleteIou(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('ious').delete().eq('id', id));
+}
+export async function addIouPayment(a: { id?: string; iou_id: string; amount_laari: number; paid_on: string; note: string | null; created_by: string }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('iou_payments').insert({ id: a.id, iou_id: a.iou_id, amount_laari: a.amount_laari, paid_on: a.paid_on, note: a.note?.trim() || null, created_by: a.created_by });
+  if (res.error && !isDup(res.error)) must(res);
+}
+export async function deleteIouPayment(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('iou_payments').delete().eq('id', id));
+}
+export async function acceptIou(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('accept_iou', { p_iou: id })); }
+export async function declineIou(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('decline_iou', { p_iou: id })); }
+export async function leaveIou(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('leave_iou', { p_iou: id })); }
 
 // ---- money pools
 export async function listPools(): Promise<MoneyPool[]> {

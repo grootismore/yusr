@@ -70,6 +70,9 @@ export const useMyInvites = () => useQuery({ queryKey: ['my-invites'], queryFn: 
 export const useSplit = () => useQuery({ queryKey: ['split'], queryFn: api.listSplit });
 export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
+export const useIous = (enabled = true) => useQuery({ queryKey: ['ious'], queryFn: api.listIous, enabled });
+export const useIouPayments = (enabled = true) => useQuery({ queryKey: ['iou-payments'], queryFn: api.listIouPayments, enabled });
+export const useIouInvites = () => useQuery({ queryKey: ['iou-invites'], queryFn: api.listIouInvites });
 export const usePools = () => useQuery({ queryKey: ['pools'], queryFn: api.listPools });
 export const usePoolPayments = () => useQuery({ queryKey: ['pool-payments'], queryFn: api.listPoolPayments });
 export const useGiving = (month: string) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month) });
