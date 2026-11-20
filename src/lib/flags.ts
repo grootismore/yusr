@@ -4,13 +4,15 @@ import { getItem, setItem } from './kv';
 // Small remembered yes/no choices ("has seen the welcome", "has done first setup"), kept on the device.
 export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen' | 'shareByDefault' | 'thaanaKeyboard';
 const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen', 'shareByDefault', 'thaanaKeyboard'];
+const DEFAULT_ON: ReadonlySet<FlagName> = new Set(['thaanaKeyboard']);
 const cache = new Map<FlagName, boolean>();
 const listeners = new Set<() => void>();
 const key = (k: FlagName) => `kharadhu.flag.${k}`;
 const notify = () => listeners.forEach((l) => l());
 
 export async function loadFlags(names: readonly FlagName[] = ALL): Promise<void> {
-  await Promise.all(names.map(async (n) => { cache.set(n, (await getItem(key(n))) === '1'); }));
+  // A choice nobody has made yet reads as on for the flags that default to on.
+  await Promise.all(names.map(async (n) => { const raw = await getItem(key(n)); cache.set(n, raw === null ? DEFAULT_ON.has(n) : raw === '1'); }));
   notify();
 }
 
@@ -19,6 +21,9 @@ export async function setFlag(name: FlagName, value: boolean): Promise<void> {
   notify();
   await setItem(key(name), value ? '1' : '0');
 }
+
+/** The loaded value of a flag (false before loading). */
+export const flagValue = (name: FlagName): boolean => cache.get(name) ?? false;
 
 /** true or false once loaded, null while still loading. */
 export function useFlag(name: FlagName): boolean | null {
