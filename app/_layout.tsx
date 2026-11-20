@@ -10,6 +10,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
+import { loadStringEdits } from '@/lib/i18n/edits';
 import { VARIANTS, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
 import { reportError, wrapRoot } from '@/lib/monitoring';
 import { clearCrashNote, describeError, readCrashNote, showErrorsHere } from '@/lib/crashNote';
@@ -173,7 +174,7 @@ let dismissedOnce = false;
 function startOnce(): Promise<string | null> {
   startup ??= (async () => {
     void loadAppearance().then(applyStoredAppearance);
-    const [, , , note] = await Promise.all([loadFlags(), loadRuleGroups(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote()]).catch(() => [null, null, null, null] as const);
+    const [, , , note] = await Promise.all([loadFlags(), loadRuleGroups(), initI18n().then((x) => { markBoot('i18n'); void loadStringEdits(); return x; }), readCrashNote()]).catch(() => [null, null, null, null] as const);
     startupCrash = note ?? null;
     startupDone = true;
     return startupCrash;
