@@ -6,7 +6,8 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useIous, useIouInvites, useIouPayments, useWrite } from '@/data/hooks';
+import { confirmDialog } from '@/lib/dialog';
+import { useIous, useIouInvites, useIouPayments, useIouPeople, useWrite } from '@/data/hooks';
 import { paidOf, remaining, roleOf, statusOf, totals, type Iou, type IouPayment } from '@/features/ious/logic';
 import { StatusPill } from '@/features/ious/ui';
 import { useAuth } from '@/lib/auth';
@@ -24,6 +25,8 @@ export default function Ious() {
   const invites = useIouInvites().data ?? [];
   const accept = useWrite(api.acceptIou);
   const decline = useWrite(api.declineIou);
+  const people = useIouPeople().data ?? [];
+  const removePerson = useWrite(api.deleteIouPerson);
   const sum = totals(ious, payments, me);
   const open = ious.filter((i) => remaining(i, payments.filter((p) => p.iou_id === i.id)) > 0);
   const closed = ious.filter((i) => !open.includes(i));
@@ -69,6 +72,22 @@ export default function Ious() {
       {open.map((i) => <IouRow key={i.id} iou={i} payments={payments} me={me} />)}
       {closed.length ? <Text variant="heading">{t('ious.settledTitle')}</Text> : null}
       {closed.map((i) => <IouRow key={i.id} iou={i} payments={payments} me={me} />)}
+
+      {people.length ? (
+        <Card style={{ gap: space.sm }}>
+          <Text variant="title">{t('ious.peopleTitle')}</Text>
+          <Text variant="small" color={colors.inkMuted}>{t('ious.peopleNote')}</Text>
+          {people.map((p) => (
+            <Row key={p.id} style={{ justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text>{p.name}</Text>
+                {p.email ? <Text variant="small" color={colors.inkMuted} latin>{p.email}</Text> : null}
+              </View>
+              <Button kind="ghost" label={t('common.remove')} onPress={async () => { if (await confirmDialog({ title: t('ious.removePersonTitle', { name: p.name }), message: t('ious.removePersonBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) await removePerson.mutateAsync(p.id); }} />
+            </Row>
+          ))}
+        </Card>
+      ) : null}
     </Screen>
   );
 }

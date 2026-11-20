@@ -7,7 +7,7 @@ import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
 import type { HouseholdEntry, HouseholdEntryInput } from '@/features/household/logic';
 import type { MoneyPool, PoolInput } from '@/features/pools/logic';
-import type { Iou, IouInput, IouPayment } from '@/features/ious/logic';
+import type { Iou, IouInput, IouPayment, IouPerson } from '@/features/ious/logic';
 import type { SplitData } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem } from '@/features/recurring/logic';
 
@@ -26,6 +26,7 @@ const OPS = {
   setBudget: api.setBudget, clearBudget: api.clearBudget, addDebt: api.addDebt, updateDebt: api.updateDebt, deleteDebt: api.deleteDebt,
   // IOUs
   addIou: api.addIou, updateIou: api.updateIou, deleteIou: api.deleteIou, addIouPayment: api.addIouPayment, deleteIouPayment: api.deleteIouPayment,
+  addIouPerson: api.addIouPerson, updateIouPerson: api.updateIouPerson, deleteIouPerson: api.deleteIouPerson,
   // money pools
   addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
   // recurring
@@ -34,7 +35,7 @@ const OPS = {
   deleteSplitExpense: api.deleteSplitExpense, deleteSplitSettlement: api.deleteSplitSettlement, deleteSplitGroup: api.deleteSplitGroup,
   linkRecurringRun: api.linkRecurringRun, addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addIou', 'addIouPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addIou', 'addIouPayment', 'addIouPerson', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -133,6 +134,14 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
     } else if (op === 'addIouPayment') {
       const a = args as Parameters<typeof api.addIouPayment>[0];
       qc.setQueryData<IouPayment[]>(['iou-payments'], (old) => [...(old ?? []).filter((p) => p.id !== a.id), { id: a.id as string, iou_id: a.iou_id, amount_laari: a.amount_laari, paid_on: a.paid_on, note: a.note, created_by: a.created_by }]);
+    } else if (op === 'addIouPerson') {
+      const a = args as { id: string; name: string; email: string | null };
+      qc.setQueryData<IouPerson[]>(['iou-people'], (old) => [...(old ?? []).filter((p) => p.id !== a.id), { id: a.id, name: a.name, email: a.email }].sort((x, y) => x.name.localeCompare(y.name)));
+    } else if (op === 'updateIouPerson') {
+      const a = args as { id: string; email: string | null };
+      qc.setQueryData<IouPerson[]>(['iou-people'], (old) => old?.map((p) => (p.id === a.id ? { ...p, email: a.email } : p)));
+    } else if (op === 'deleteIouPerson') {
+      qc.setQueryData<IouPerson[]>(['iou-people'], (old) => old?.filter((p) => p.id !== (args as string)));
     } else if (op === 'deleteIouPayment') {
       qc.setQueryData<IouPayment[]>(['iou-payments'], (old) => old?.filter((p) => p.id !== (args as string)));
     } else if (op === 'addPool') {
