@@ -51,10 +51,20 @@ const deps: Deps = {
   },
 };
 
+// The caller's secret is the IOU_CRON_SECRET environment secret, or the token the scheduled job reads from app_secrets.
+// With neither set up the endpoint stays closed.
+async function allowed(sent: string | null): Promise<boolean> {
+  if (!sent) return false;
+  const env = Deno.env.get('IOU_CRON_SECRET');
+  if (env && sent === env) return true;
+  try {
+    const rows = await rest<{ value: string }[]>('app_secrets?select=value&name=eq.iou_cron');
+    return !!rows[0]?.value && sent === rows[0].value;
+  } catch { return false; }
+}
+
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('IOU_CRON_SECRET');
-  // No secret configured = the endpoint stays closed.
-  if (req.method !== 'POST' || !secret || req.headers.get('x-cron-secret') !== secret) return new Response('forbidden', { status: 403 });
+  if (req.method !== 'POST' || !(await allowed(req.headers.get('x-cron-secret')))) return new Response('forbidden', { status: 403 });
   // Email not set up yet: do nothing, and say so, rather than trying every IOU and failing.
   if (!Deno.env.get('RESEND_API_KEY') || !Deno.env.get('RESEND_FROM')) return Response.json({ skipped: 'email is not set up' });
   try {

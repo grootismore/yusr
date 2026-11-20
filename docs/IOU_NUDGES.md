@@ -5,17 +5,19 @@ IOUs have three reminder settings. **Off** and **Remind me** need nothing from t
 The email goes only to the address the maker typed, only for money they lent, from 2 days before the due date, at most every 3 days, six times in all, and never once it is paid. It names what is left and the due date. Every send is logged in `iou_nudges`.
 
 ## Turning it on
-1. Secrets (Supabase dashboard, Edge Functions, Secrets, or `supabase secrets set`): `RESEND_API_KEY`, `RESEND_FROM` (a verified sender, for example `Kharadhu <no-reply@your-domain>`) and `IOU_CRON_SECRET` (a long random string). They are the same Resend values the release ladder uses.
+1. Secrets (Supabase dashboard, Edge Functions, Secrets, or `supabase secrets set`): `RESEND_API_KEY` and `RESEND_FROM` (a verified sender, for example `Kharadhu <no-reply@your-domain>`). They are the same Resend values the release ladder uses. `IOU_CRON_SECRET` is optional (see step 3).
 2. Deploy the function: Actions, **Deploy functions**, Run workflow, with the list `iou-nudges`.
-3. Schedule it once a day (needs the `pg_cron` and `pg_net` extensions; replace the placeholders):
+3. Schedule it once a day (needs the `pg_cron` and `pg_net` extensions). Migration 027 keeps a private token in `app_secrets`, and the schedule reads it when it runs, so there is nothing to copy into the SQL:
 ```sql
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
 select cron.schedule('iou-nudges', '30 4 * * *', $$
   select net.http_post(
     url := 'https://<project-ref>.supabase.co/functions/v1/iou-nudges',
-    headers := jsonb_build_object('x-cron-secret', '<IOU_CRON_SECRET>', 'content-type', 'application/json'));
+    headers := jsonb_build_object('x-cron-secret', (select value from public.app_secrets where name = 'iou_cron'), 'content-type', 'application/json'));
 $$);
 ```
-`30 4 * * *` is 09:30 in the Maldives. Turn it off with `select cron.unschedule('iou-nudges');`.
+`30 4 * * *` is 09:30 in the Maldives. Turn it off with `select cron.unschedule('iou-nudges');`. The function also accepts the `IOU_CRON_SECRET` secret in the same header, for calling it by hand.
 
 ## Limits
 - Email delivery is not guaranteed, and the other person must read their email.
