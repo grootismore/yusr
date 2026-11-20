@@ -2,8 +2,8 @@ import { useSyncExternalStore } from 'react';
 import { getItem, setItem } from './kv';
 
 // Small remembered yes/no choices ("has seen the welcome", "has done first setup"), kept on the device.
-export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen' | 'shareByDefault' | 'thaanaKeyboard';
-const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen', 'shareByDefault', 'thaanaKeyboard'];
+export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen' | 'shareByDefault' | 'thaanaKeyboard' | 'rule503020';
+const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen', 'shareByDefault', 'thaanaKeyboard', 'rule503020'];
 const DEFAULT_ON: ReadonlySet<FlagName> = new Set(['thaanaKeyboard']);
 const cache = new Map<FlagName, boolean>();
 const listeners = new Set<() => void>();

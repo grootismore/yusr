@@ -21,6 +21,8 @@ import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, 
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
+import { useRule } from '@/features/rule/hooks';
+import { RuleCard } from '@/features/rule/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
@@ -61,6 +63,7 @@ export default function Home() {
   const planSettings = usePlanSettings().data ?? DEFAULT_PLAN;
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
+  const rule = useRule(month);
   const incomeQ = useIncome(month);
   const shared = useSharedTotals(month);
   // In a couple or household, the whole shared pot counts alongside your own.
@@ -177,6 +180,7 @@ export default function Home() {
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
       <SharedCard />
+      <RuleCard lines={rule.lines} income={rule.income} />
       {held.length > 0 ? (
         <Card>
           {/* Folded by default so the figures are not on show; one tap opens it, and Convert is inside. */}

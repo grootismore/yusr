@@ -25,6 +25,7 @@ import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
 import { useOutboxSync } from '@/lib/useOutboxSync';
 import { loadFlags } from '@/lib/flags';
+import { loadRuleGroups } from '@/features/rule/store';
 import { useGate } from '@/lib/gate';
 
 // No `unstable_settings.anchor` here on purpose. An anchor on a guarded screen (the tabs, for a signed-out person) made the
@@ -103,6 +104,7 @@ function Routes() {
           <Stack.Screen name="giving-commitment" options={{ presentation: 'modal' }} />
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
+          <Stack.Screen name="rule" />
           <Stack.Screen name="debt" />
           <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />
         </Stack.Protected>
@@ -166,7 +168,7 @@ let dismissedOnce = false;
 function startOnce(): Promise<string | null> {
   startup ??= (async () => {
     void loadAppearance().then(applyStoredAppearance);
-    const [, , note] = await Promise.all([loadFlags(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote()]).catch(() => [null, null, null] as const);
+    const [, , , note] = await Promise.all([loadFlags(), loadRuleGroups(), initI18n().then((x) => { markBoot('i18n'); return x; }), readCrashNote()]).catch(() => [null, null, null, null] as const);
     startupCrash = note ?? null;
     startupDone = true;
     return startupCrash;
