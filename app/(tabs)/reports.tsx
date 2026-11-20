@@ -18,6 +18,8 @@ import { debtMonth } from '@/features/debts/report';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
+import { useRule } from '@/features/rule/hooks';
+import { RuleCard } from '@/features/rule/ui';
 import { ltr } from '@/lib/money';
 import { useMoneyText } from '@/lib/privacy';
 import { radius, series, space, useColors, useIsDark } from '@/theme/tokens';
@@ -40,6 +42,7 @@ export default function Reports() {
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const shared = useSharedTotals(month);
+  const rule = useRule(month);
   // In a couple or household, the whole shared pot counts alongside your own.
   const total = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const rows = useMemo(() => {
@@ -110,6 +113,8 @@ export default function Reports() {
           <Tile color={colors.sky} label={t('reports.netShort')} laari={incomeTotal - total - dm.byYou} />
         </Row>
       ) : null}
+
+      <RuleCard lines={rule.lines} income={rule.income} />
 
       {dm.open > 0 || dm.byYou + dm.fromSalary > 0 ? (
         <>

@@ -1250,5 +1250,28 @@
     "english": "English keyboard",
     "space": "Space",
     "return": "Return"
+  },
+  "rule": {
+    "title": "50/30/20",
+    "intro": "A simple way to split your income: 50% for needs, 30% for wants, and 20% for saving and paying off debt.",
+    "use": "Use the 50/30/20 rule",
+    "useNote": "Shows on Home, Budget and Reports once you have added income this month.",
+    "needs": "Needs",
+    "wants": "Wants",
+    "savings": "Savings and debt",
+    "short": {
+      "needs": "Needs",
+      "wants": "Wants",
+      "savings": "Savings"
+    },
+    "ofIncome": "of {{amount}} income",
+    "spentOf": "{{spent}} of {{target}}",
+    "overBy": "Over by {{amount}}",
+    "reached": "Goal reached",
+    "noIncome": "Add this month's income to see your 50/30/20 targets.",
+    "categories": "Where each category counts",
+    "categoriesNote": "Giving and money pools count as savings. Change any category here.",
+    "reset": "Back to default",
+    "open": "See 50/30/20 details"
   }
 }
