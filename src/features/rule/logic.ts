@@ -33,18 +33,22 @@ export interface RuleInput {
   spentBy: ReadonlyMap<string | null, number>;
   categories: readonly { id: string; slug: string | null }[];
   overrides: Overrides;
-  /** Debt payments made this month. They count toward Savings and debt. */
+  /** Debt payments made this month. They come off the income first: the rule splits what is left, and they are not savings. */
   debtPaid: number;
 }
 
+/** The income the rule splits: what came in, less the debt payments made. */
+export const netIncome = (income: number, debtPaid: number): number => Math.max(0, income - debtPaid);
+
 export function ruleSplit({ income, spentBy, categories, overrides, debtPaid }: RuleInput): RuleLine[] {
-  const spent: Record<Group, number> = { needs: 0, wants: 0, savings: debtPaid };
+  const base = netIncome(income, debtPaid);
+  const spent: Record<Group, number> = { needs: 0, wants: 0, savings: 0 };
   const known = new Set(categories.map((c) => c.id));
   for (const c of categories) spent[groupOf(c, overrides)] += spentBy.get(c.id) ?? 0;
   // Spending with no category, or in a category this phone doesn't list, counts as Wants.
   for (const [id, v] of spentBy) if (id === null || !known.has(id)) spent.wants += v;
   return GROUPS.map((group) => {
-    const target = Math.floor((income * SHARES[group]) / 100);
+    const target = Math.floor((base * SHARES[group]) / 100);
     const s = spent[group];
     const percent = target > 0 ? Math.min(100, Math.floor((s * 100) / target)) : 0;
     const state = group === 'savings' ? (s >= target && target > 0 ? 'reached' : 'ok') : s > target ? 'over' : s >= target * 0.8 && target > 0 ? 'near' : 'ok';

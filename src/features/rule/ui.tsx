@@ -11,7 +11,7 @@ import { SHARES } from './logic';
 const ICON: Record<Group, IconName> = { needs: 'home', wants: 'bag', savings: 'wallet' };
 
 /** The three 50/30/20 bars for the month. Tapping opens the rule's own screen, unless `link` is off (on that screen itself). */
-export function RuleCard({ lines, income, link = true }: { lines: RuleLine[]; income: number; link?: boolean }) {
+export function RuleCard({ lines, income, debtPaid = 0, link = true }: { lines: RuleLine[]; income: number; debtPaid?: number; link?: boolean }) {
   const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
@@ -20,8 +20,9 @@ export function RuleCard({ lines, income, link = true }: { lines: RuleLine[]; in
       <Card style={{ gap: space.lg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
           <Text variant="title" style={{ flex: 1 }}>{t('rule.title')}</Text>
-          <Msg k="rule.ofIncome" amounts={{ amount: income }} variant="small" color={colors.inkMuted} />
+          <Msg k="rule.ofIncome" amounts={{ amount: Math.max(0, income - debtPaid) }} variant="small" color={colors.inkMuted} />
         </View>
+        {debtPaid > 0 ? <Msg k="rule.afterDebt" amounts={{ debt: debtPaid }} variant="small" color={colors.inkMuted} /> : null}
         {lines.map((l) => <RuleRow key={l.group} line={l} />)}
       </Card>
   );

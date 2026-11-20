@@ -180,7 +180,7 @@ export default function Home() {
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
       <SharedCard />
-      <RuleCard lines={rule.lines} income={rule.income} />
+      <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
       {held.length > 0 ? (
         <Card>
           {/* Folded by default so the figures are not on show; one tap opens it, and Convert is inside. */}

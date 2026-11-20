@@ -17,7 +17,7 @@ export default function Rule() {
   const catName = useCategoryName();
   const categories = useCategories().data ?? [];
   const overrides = useRuleGroups();
-  const { enabled, income, lines } = useRule(monthStart());
+  const { enabled, income, debtPaid, lines } = useRule(monthStart());
   return (
     <Screen>
       <StackHeader title={t('rule.title')} />
@@ -26,7 +26,7 @@ export default function Rule() {
         <SettingRow icon="pie-chart-outline" title={t('rule.use')} subtitle={t('rule.useNote')} value={enabled} onValueChange={(v) => void setFlag('rule503020', v)} last />
       </Card>
       {enabled && !lines.length ? <Card tone="warn"><Text>{t('rule.noIncome')}</Text></Card> : null}
-      {enabled ? <RuleCard lines={lines} income={income} link={false} /> : null}
+      {enabled ? <RuleCard lines={lines} income={income} debtPaid={debtPaid} link={false} /> : null}
       {enabled ? (
         <Card style={{ gap: space.md }}>
           <Text variant="title">{t('rule.categories')}</Text>

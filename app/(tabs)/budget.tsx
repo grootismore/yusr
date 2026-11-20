@@ -115,7 +115,7 @@ export default function Budget() {
         {editingAll ? <LimitEditor categoryId={null} limit={overall} onDone={() => setEditingAll(false)} /> : null}
       </Card>
 
-      {rule.enabled ? <RuleCard lines={rule.lines} income={rule.income} /> : (
+      {rule.enabled ? <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} /> : (
         <Card><ListRow icon="pie-chart-outline" title={t('rule.use')} subtitle={t('rule.intro')} onPress={() => router.push('/rule')} last /></Card>
       )}
 

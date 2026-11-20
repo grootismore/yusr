@@ -114,7 +114,7 @@ export default function Reports() {
         </Row>
       ) : null}
 
-      <RuleCard lines={rule.lines} income={rule.income} />
+      <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
 
       {dm.open > 0 || dm.byYou + dm.fromSalary > 0 ? (
         <>
