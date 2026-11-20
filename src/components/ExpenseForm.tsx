@@ -10,7 +10,7 @@ import { isLow, type Confidence } from '@/lib/receipt';
 import { space, useColors } from '@/theme/tokens';
 import { Msg } from './Msg';
 import { Text } from './Text';
-import { Button, Chip, Field, Icon, Row, type IconName } from './ui';
+import { Button, Chip, Field, Icon, Row, SettingRow, type IconName } from './ui';
 
 export const CURRENCIES = ['MVR', 'USD'];
 
@@ -23,13 +23,15 @@ export interface FormInitial {
  * unsure about (`confidence` below 0.7) get a flagged style and words, not just a colour.
  * `children` renders extra sections (items, GST) between the category and the save button.
  */
-export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange, income, hideAmount }: {
+export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, submitLabel, busy, children, onTotalChange, income, hideAmount, offerKeep, initialKeep = false }: {
   initial?: FormInitial; categories: Category[]; confidence?: Confidence; onSubmit: (e: NewExpense) => void; submitLabel: string; busy?: boolean;
   children?: ReactNode; onTotalChange?: (laari: number | null) => void;
   /** Money coming in: no category or merchant, and the note says where it is from. */
   income?: boolean;
   /** The amount was already typed on the keypad; show everything else. */
   hideAmount?: boolean;
+  /** Foreign income can be kept in its currency: shows the switch and returns the choice as `keep_in_currency`. */
+  offerKeep?: boolean; initialKeep?: boolean;
 }) {
   const colors = useColors();
   const { t } = useTranslation();
@@ -43,6 +45,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
   const [merchant, setMerchant] = useState(initial.merchant ?? '');
   const [date, setDate] = useState(formatDate(initial.date ?? today()));
   const [note, setNote] = useState(initial.note ?? '');
+  const [keep, setKeep] = useState(initialKeep);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const rate = currency === 'MVR' ? '1' : (rateText ?? rates[currency] ?? '');
@@ -61,7 +64,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
     if (!income && !categoryId) next.category = t('expense.chooseCategory');
     setErrors(next);
     if (Object.keys(next).length) return;
-    onSubmit({ amount_laari: minor!, currency, fx_rate_to_mvr: currency === 'MVR' ? '1' : rate.trim(), category_id: income ? null : categoryId, merchant: income ? null : merchant.trim() || null, spent_at: iso!, note: note.trim() || null });
+    onSubmit({ amount_laari: minor!, currency, fx_rate_to_mvr: currency === 'MVR' ? '1' : rate.trim(), category_id: income ? null : categoryId, merchant: income ? null : merchant.trim() || null, spent_at: iso!, note: note.trim() || null, ...(offerKeep && income ? { keep_in_currency: currency !== 'MVR' && keep } : {}) });
   }
 
   return (
@@ -97,6 +100,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
         </Row>
       </View>
       <Field label={`${income ? t('income.noteLabel') : t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} multiline />
+      {offerKeep && income && currency !== 'MVR' ? <SettingRow icon="wallet-outline" title={t('foreign.keep', { currency })} subtitle={t('foreign.keepNote')} value={keep} onValueChange={setKeep} last /> : null}
       {children}
       <Button label={submitLabel} onPress={submit} loading={busy} />
     </View>

@@ -8,10 +8,13 @@ export interface HouseholdEntry {
   user_id: string; kind: 'expense' | 'income';
   amount_laari: number; currency: string; fx_rate_to_mvr: number; mvr_laari: number;
   category_id: string | null; merchant: string | null; note: string | null; entry_date: string;
+  /** Foreign income the person who received it keeps in that currency (it then counts as held, and can be converted). */
+  keep_in_currency?: boolean;
 }
 export interface HouseholdEntryInput {
   kind: 'expense' | 'income'; amount_laari: number; currency: string; fx_rate_to_mvr: string;
   category_id: string | null; merchant: string | null; note: string | null; entry_date: string;
+  keep_in_currency?: boolean;
   /** Who paid or received it, when that is not the person recording it. */
   user_id?: string;
 }

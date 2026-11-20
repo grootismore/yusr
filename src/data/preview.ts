@@ -65,6 +65,7 @@ export const householdEntries: HouseholdEntry[] = [
   { id: 'he2', household_id: 'hh1', user_id: 'u2', kind: 'expense', amount_laari: 450_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 450_000, category_id: 'bills', merchant: 'Electricity', note: null, entry_date: today().slice(0, 7) + '-04' },
   { id: 'he3', household_id: 'hh1', user_id: 'u1', kind: 'expense', amount_laari: 1_200_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 1_200_000, category_id: 'rent', merchant: 'Flat rent', note: null, entry_date: today().slice(0, 7) + '-01' },
   { id: 'he4', household_id: 'hh1', user_id: 'u2', kind: 'income', amount_laari: 500_000, currency: 'MVR', fx_rate_to_mvr: 1, mvr_laari: 500_000, category_id: null, merchant: null, note: 'Towards the household', entry_date: today().slice(0, 7) + '-01' },
+  { id: 'he5', household_id: 'hh1', user_id: 'u1', kind: 'income', amount_laari: 74_000, currency: 'USD', fx_rate_to_mvr: 15.42, mvr_laari: 1_141_080, category_id: null, merchant: null, note: 'Salary', entry_date: today().slice(0, 7) + '-02', keep_in_currency: true },
 ];
 export const split: SplitData = {
   groups: [{ id: 'sg1', name: 'Beach trip', currency: 'MVR', archived: false }, { id: 'sg2', name: 'Flat mates', currency: 'MVR', archived: false }],

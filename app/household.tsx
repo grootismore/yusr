@@ -99,7 +99,10 @@ export default function HouseholdScreen() {
                 <Text numberOfLines={1}>{title}</Text>
                 <Text variant="small" color={colors.inkMuted} numberOfLines={1}>{nameOf(data.members, e.user_id) || t('household.former')} · <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.entry_date)}</Text></Text>
               </View>
-              <Money laari={e.mvr_laari} prefix={e.kind === 'expense' ? '−' : '+'} />
+              <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+                <Money laari={e.mvr_laari} prefix={e.kind === 'expense' ? '−' : '+'} color={e.kind === 'income' ? colors.accent : undefined} />
+                {e.currency !== 'MVR' ? <Money laari={e.amount_laari} currency={e.currency} variant="small" color={colors.inkMuted} /> : null}
+              </View>
             </Pressable>
           );
         })}

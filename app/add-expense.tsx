@@ -132,12 +132,13 @@ export default function AddExpense() {
           hideAmount
           initial={{ amountLaari: laari }}
           income={isIncome}
+          offerKeep={!!(shared && household)}
           categories={categories}
           submitLabel={t('common.save')}
           busy={addExpense.isPending || addIncome.isPending || addShared.isPending}
           onSubmit={async (e) => {
             if (shared && household) {
-              const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at };
+              const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, keep_in_currency: isIncome ? e.keep_in_currency : undefined };
               await addShared.mutateAsync({ householdId: household.household.id, input: { ...input, user_id: whose ?? userId ?? undefined }, userId: whose ?? userId ?? undefined });
             } else await (isIncome ? addIncome : addExpense).mutateAsync(e);
             if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
