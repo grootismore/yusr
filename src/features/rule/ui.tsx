@@ -10,14 +10,13 @@ import { SHARES } from './logic';
 
 const ICON: Record<Group, IconName> = { needs: 'home', wants: 'bag', savings: 'wallet' };
 
-/** The three 50/30/20 bars for the month. Tapping opens the rule's own screen. */
-export function RuleCard({ lines, income }: { lines: RuleLine[]; income: number }) {
+/** The three 50/30/20 bars for the month. Tapping opens the rule's own screen, unless `link` is off (on that screen itself). */
+export function RuleCard({ lines, income, link = true }: { lines: RuleLine[]; income: number; link?: boolean }) {
   const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   if (!lines.length) return null;
-  return (
-    <Pressable accessibilityRole="button" accessibilityLabel={t('rule.open')} onPress={() => router.push('/rule')}>
+  const card = (
       <Card style={{ gap: space.lg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
           <Text variant="title" style={{ flex: 1 }}>{t('rule.title')}</Text>
@@ -25,8 +24,9 @@ export function RuleCard({ lines, income }: { lines: RuleLine[]; income: number 
         </View>
         {lines.map((l) => <RuleRow key={l.group} line={l} />)}
       </Card>
-    </Pressable>
   );
+  if (!link) return card;
+  return <Pressable accessibilityRole="button" accessibilityLabel={t('rule.open')} onPress={() => router.push('/rule')}>{card}</Pressable>;
 }
 
 function RuleRow({ line }: { line: RuleLine }) {
