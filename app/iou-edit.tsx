@@ -4,10 +4,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { DateField } from '@/components/DateField';
 import { Text } from '@/components/Text';
-import { Button, Field, Row, Screen, Segmented, StackHeader } from '@/components/ui';
+import { Button, Chip, Field, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { useIous, useWrite } from '@/data/hooks';
-import type { Direction, IouInput, Nudge } from '@/features/ious/logic';
+import { useIous, useIouPeople, useWrite } from '@/data/hooks';
+import { findPerson, personToSave, type Direction, type IouInput, type Nudge } from '@/features/ious/logic';
 import { requestNotificationPermission } from '@/features/giving/reminders';
 import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
@@ -26,6 +26,9 @@ export default function IouEdit() {
   const existing = useIous().data?.find((i) => i.id === id);
   const add = useWrite(api.addIou);
   const update = useWrite(api.updateIou);
+  const people = useIouPeople().data ?? [];
+  const addPerson = useWrite(api.addIouPerson);
+  const fillPerson = useWrite(api.updateIouPerson);
   const [direction, setDirection] = useState<Direction>(existing?.direction ?? 'lent');
   const [name, setName] = useState(existing?.person_name ?? '');
   const [email, setEmail] = useState(existing?.person_email ?? '');
@@ -53,6 +56,9 @@ export default function IouEdit() {
     if (Object.keys(e).length) return;
     const input: IouInput = { direction, person_name: name.trim(), person_email: email.trim() ? email.trim().toLowerCase() : null, title: title.trim() || null, amount_laari: laari, lent_on: lent!, due_on: due, nudge: shownNudge };
     if (existing) await update.mutateAsync({ id: existing.id, input }); else await add.mutateAsync({ input });
+    // Remember the person for next time. A problem here never undoes the IOU that was just saved.
+    const keep = personToSave(people, input.person_name, input.person_email);
+    if (keep && 'add' in keep) addPerson.mutate(keep.add); else if (keep) fillPerson.mutate(keep.fill);
     if (shownNudge !== 'off') void requestNotificationPermission();
     success();
     toast(t('toast.saved'));
@@ -63,6 +69,14 @@ export default function IouEdit() {
     <Screen>
       <StackHeader title={existing ? t('ious.editTitle') : t('ious.addTitle')} />
       <Segmented<Direction> value={direction} onChange={setDirection} options={[{ key: 'lent', label: t('ious.dir.lent') }, { key: 'borrowed', label: t('ious.dir.borrowed') }]} />
+      {people.length ? (
+        <View style={{ gap: space.sm }}>
+          <Text variant="label">{t('ious.savedPeople')}</Text>
+          <Row style={{ flexWrap: 'wrap' }}>
+            {people.map((p) => <Chip key={p.id} label={p.name} selected={findPerson(people, name)?.id === p.id} onPress={() => { setName(p.name); setEmail(p.email ?? ''); setErrors({}); }} />)}
+          </Row>
+        </View>
+      ) : null}
       <Field label={t(direction === 'lent' ? 'ious.whoLent' : 'ious.whoBorrowed')} value={name} onChangeText={setName} maxLength={80} error={errors.name} autoCapitalize="words" />
       <Field label={`${t('ious.email')} (${t('common.optional')})`} hint={t('ious.emailHint')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} maxLength={120} error={errors.email} />
       <Field label={`${t('ious.amount')} (MVR)`} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" error={errors.amount} style={{ fontSize: 24 }} />

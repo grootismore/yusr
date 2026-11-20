@@ -1368,6 +1368,11 @@
       "accept": "Add to my IOUs",
       "decline": "No thanks",
       "joined": "IOU added"
-    }
+    },
+    "savedPeople": "Pick someone you saved",
+    "peopleTitle": "Saved people",
+    "peopleNote": "Everyone you make an IOU with is saved here, so you can pick them next time.",
+    "removePersonTitle": "Remove {{name}}?",
+    "removePersonBody": "They disappear from this list. IOUs already made with them stay."
   }
 }

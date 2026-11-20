@@ -1,4 +1,4 @@
-import { isSettled, nudgeDates, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment } from '@/features/ious/logic';
+import { findPerson, isSettled, nudgeDates, personToSave, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment, type IouPerson } from '@/features/ious/logic';
 
 const iou: Iou = { id: 'i1', user_id: 'me', direction: 'lent', person_name: 'Ahmed', person_email: null, person_account: null, title: 'Rent help', amount_laari: 50_000, lent_on: '2026-11-01', due_on: '2026-12-01', nudge: 'me' };
 const pay = (id: string, amount: number, on: string): IouPayment => ({ id, iou_id: 'i1', amount_laari: amount, paid_on: on, note: null, created_by: 'me' });
@@ -40,4 +40,19 @@ it('plans reminders from 2 days before the due date, every 3 days, six in all', 
 it('adds up what you are owed and what you owe', () => {
   const owed: Iou = { ...iou, id: 'i2', user_id: 'them', direction: 'lent', amount_laari: 10_000 }; // they lent me
   expect(totals([iou, owed], [pay('a', 20_000, '2026-11-10')], 'me')).toEqual({ owedToMe: 30_000, iOwe: 10_000 });
+});
+
+describe('saved people', () => {
+  const people: IouPerson[] = [{ id: 'p1', name: 'Ahmed', email: null }, { id: 'p2', name: 'Aisha', email: 'aisha@example.mv' }];
+  it('finds a person by name without caring about case or spaces', () => {
+    expect(findPerson(people, ' ahmed ')?.id).toBe('p1');
+    expect(findPerson(people, 'Shiyam')).toBeUndefined();
+  });
+  it('saves a new person, fills in a missing email, and otherwise leaves the list alone', () => {
+    expect(personToSave(people, ' Shiyam ', null)).toEqual({ add: { name: 'Shiyam', email: null } });
+    expect(personToSave(people, 'ahmed', 'ahmed@example.mv')).toEqual({ fill: { id: 'p1', email: 'ahmed@example.mv' } });
+    expect(personToSave(people, 'Aisha', 'other@example.mv')).toBeNull(); // never overwrites an email already saved
+    expect(personToSave(people, 'Ahmed', null)).toBeNull();
+    expect(personToSave(people, '  ', null)).toBeNull();
+  });
 });

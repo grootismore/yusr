@@ -102,3 +102,22 @@ export function totals(ious: readonly Iou[], payments: readonly IouPayment[], me
   }
   return { owedToMe, iOwe };
 }
+
+export interface IouPerson { id: string; name: string; email: string | null }
+
+const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+/** The saved person with this name (names are matched without regard to case or spaces at the ends). */
+export const findPerson = (people: readonly IouPerson[], name: string): IouPerson | undefined => people.find((p) => same(p.name, name));
+
+/**
+ * What to do with the saved people when an IOU is saved: add the person if they are new; fill in their email if the list
+ * had none and this IOU has one. Nothing else changes, so a typo here never overwrites someone saved earlier.
+ */
+export function personToSave(people: readonly IouPerson[], name: string, email: string | null): { add: { name: string; email: string | null } } | { fill: { id: string; email: string } } | null {
+  const n = name.trim();
+  if (!n) return null;
+  const known = findPerson(people, n);
+  if (!known) return { add: { name: n, email } };
+  if (!known.email && email) return { fill: { id: known.id, email } };
+  return null;
+}

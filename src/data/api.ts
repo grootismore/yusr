@@ -14,7 +14,7 @@ import { sumByMonth } from '@/features/trends/trend';
 import type { GivingCommitment, GivingEntry, GivingKind } from '@/features/giving/logic';
 import type { Household, HouseholdEntry, HouseholdEntryInput, HouseholdMember } from '@/features/household/logic';
 import type { MoneyPool, PoolInput, PoolPayment } from '@/features/pools/logic';
-import type { Iou, IouInput, IouInvite, IouPayment } from '@/features/ious/logic';
+import type { Iou, IouInput, IouInvite, IouPayment, IouPerson } from '@/features/ious/logic';
 import type { MyInvite, SplitData, SplitInvite, SplitType } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem, RecurringRun } from '@/features/recurring/logic';
 import { inviteLink, newInviteToken } from '@/features/register/invite';
@@ -657,6 +657,23 @@ export async function addIouPayment(a: { id?: string; iou_id: string; amount_laa
 export async function deleteIouPayment(id: string): Promise<void> {
   if (PREVIEW) return;
   must(await getSupabase().from('iou_payments').delete().eq('id', id));
+}
+export async function listIouPeople(): Promise<IouPerson[]> {
+  if (PREVIEW) return fx.iouPeople;
+  return must(await getSupabase().from('iou_people').select('id,name,email').order('name', { ascending: true }));
+}
+export async function addIouPerson({ id, name, email }: { id?: string; name: string; email: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  const res = await getSupabase().from('iou_people').insert({ id, user_id: await uid(), name: name.trim(), email: email?.trim().toLowerCase() || null });
+  if (res.error && !isDup(res.error)) must(res);
+}
+export async function updateIouPerson({ id, email }: { id: string; email: string | null }): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('iou_people').update({ email: email?.trim().toLowerCase() || null }).eq('id', id));
+}
+export async function deleteIouPerson(id: string): Promise<void> {
+  if (PREVIEW) return;
+  must(await getSupabase().from('iou_people').delete().eq('id', id));
 }
 export async function acceptIou(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('accept_iou', { p_iou: id })); }
 export async function declineIou(id: string): Promise<void> { if (!PREVIEW) must(await getSupabase().rpc('decline_iou', { p_iou: id })); }
