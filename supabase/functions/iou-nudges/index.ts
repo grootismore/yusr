@@ -15,12 +15,13 @@ async function rest<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 const ids = (xs: string[]) => `in.(${xs.join(',')})`;
 
-const today = new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10); // Maldives time (UTC+5)
+// Maldives time (UTC+5), read on every call: a running instance can live past midnight.
+const todayStr = () => new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10);
 
 const deps: Deps = {
-  today,
+  get today() { return todayStr(); },
   async candidates() {
-    const soon = new Date(Date.parse(`${today}T00:00:00Z`) + 2 * 86_400_000).toISOString().slice(0, 10);
+    const soon = new Date(Date.parse(`${todayStr()}T00:00:00Z`) + 2 * 86_400_000).toISOString().slice(0, 10);
     const rows = await rest<{ id: string; user_id: string; person_email: string; title: string | null; amount_laari: number; due_on: string }[]>(
       `ious?select=id,user_id,person_email,title,amount_laari,due_on&nudge=eq.both&direction=eq.lent&person_email=not.is.null&due_on=lte.${soon}&limit=500`);
     if (!rows.length) return [];
@@ -40,7 +41,7 @@ const deps: Deps = {
   async send(c, m) {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${Deno.env.get('RESEND_API_KEY')}`, 'Content-Type': 'application/json', 'Idempotency-Key': `iou-${c.id}-${today}` },
+      headers: { Authorization: `Bearer ${Deno.env.get('RESEND_API_KEY')}`, 'Content-Type': 'application/json', 'Idempotency-Key': `iou-${c.id}-${todayStr()}` },
       body: JSON.stringify({ from: Deno.env.get('RESEND_FROM'), to: [c.to], subject: m.subject, text: m.body }),
     });
     if (!r.ok) throw new Error(`resend ${r.status}`);
@@ -50,10 +51,22 @@ const deps: Deps = {
   },
 };
 
+// The caller's secret is the IOU_CRON_SECRET environment secret, or the token the scheduled job reads from app_secrets.
+// With neither set up the endpoint stays closed.
+async function allowed(sent: string | null): Promise<boolean> {
+  if (!sent) return false;
+  const env = Deno.env.get('IOU_CRON_SECRET');
+  if (env && sent === env) return true;
+  try {
+    const rows = await rest<{ value: string }[]>('app_secrets?select=value&name=eq.iou_cron');
+    return !!rows[0]?.value && sent === rows[0].value;
+  } catch { return false; }
+}
+
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('IOU_CRON_SECRET');
-  // No secret configured = the endpoint stays closed.
-  if (req.method !== 'POST' || !secret || req.headers.get('x-cron-secret') !== secret) return new Response('forbidden', { status: 403 });
+  if (req.method !== 'POST' || !(await allowed(req.headers.get('x-cron-secret')))) return new Response('forbidden', { status: 403 });
+  // Email not set up yet: do nothing, and say so, rather than trying every IOU and failing.
+  if (!Deno.env.get('RESEND_API_KEY') || !Deno.env.get('RESEND_FROM')) return Response.json({ skipped: 'email is not set up' });
   try {
     return Response.json(await runNudges(deps));
   } catch (e) {
