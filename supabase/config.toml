@@ -25,3 +25,7 @@ verify_jwt = false
 # String editor site: the editor key (STRINGS_EDITOR_KEY) is the credential; refuses everything while it is unset.
 [functions.string-edits]
 verify_jwt = false
+
+# Called by a scheduler with a shared secret (x-cron-secret). Nothing in this repo schedules it.
+[functions.iou-nudges]
+verify_jwt = false

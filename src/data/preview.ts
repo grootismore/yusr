@@ -9,6 +9,7 @@ import type { Debt, DebtPayment } from '@/features/debts/types';
 // ---- giving (preview)
 import type { GivingEntry } from '@/features/giving/logic';
 import type { MoneyPool } from '@/features/pools/logic';
+import type { Iou, IouPayment } from '@/features/ious/logic';
 import type { HouseholdEntry } from '@/features/household/logic';
 import type { RecurringItem } from '@/features/recurring/logic';
 import type { SplitData } from '@/features/split/logic';
@@ -87,6 +88,16 @@ export const recurring: RecurringItem[] = [
   { id: 'rc1', kind: 'income', name: 'Flat rent from tenant', note: null, amount_minor: 800_000, currency: 'MVR', category_id: null, every: 'month', starts_on: '2026-09-05', ended_on: null, auto_add: false },
   { id: 'rc2', kind: 'expense', name: 'Internet', note: null, amount_minor: 69_900, currency: 'MVR', category_id: 'bills', every: 'month', starts_on: '2026-09-20', ended_on: null, auto_add: true },
   { id: 'rc3', kind: 'expense', name: 'Netflix', note: null, amount_minor: 1_500, currency: 'USD', category_id: null, every: 'month', starts_on: '2026-09-25', ended_on: null, auto_add: true },
+];
+export const ious: Iou[] = [
+  { id: 'io1', user_id: '', direction: 'lent', person_name: 'Ahmed', person_email: 'ahmed@example.mv', person_account: null, title: 'Rent help', amount_laari: 150_000, lent_on: '2026-10-20', due_on: '2026-11-30', nudge: 'both' },
+  { id: 'io2', user_id: '', direction: 'borrowed', person_name: 'Aisha', person_email: null, person_account: null, title: 'Phone repair', amount_laari: 60_000, lent_on: '2026-11-02', due_on: '2026-11-12', nudge: 'me' },
+  { id: 'io3', user_id: '', direction: 'lent', person_name: 'Shiyam', person_email: null, person_account: null, title: null, amount_laari: 20_000, lent_on: '2026-09-15', due_on: null, nudge: 'off' },
+];
+export const iouPayments: IouPayment[] = [
+  { id: 'ip1', iou_id: 'io1', amount_laari: 50_000, paid_on: '2026-11-03', note: null, created_by: '' },
+  { id: 'ip2', iou_id: 'io2', amount_laari: 20_000, paid_on: '2026-11-08', note: 'First part', created_by: '' },
+  { id: 'ip3', iou_id: 'io3', amount_laari: 20_000, paid_on: '2026-10-01', note: null, created_by: '' },
 ];
 export const pools: MoneyPool[] = [
   { id: 'pl1', name: 'Office pool', note: null, amount_minor: 100_000, currency: 'MVR', due_day: 5, members: 10, payout_month: '2027-03-01', payout_received: false, started_on: '2026-09-01', ended_on: null },

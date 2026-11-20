@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider } from '@/lib/auth';
+import { AuthProvider, useAuth } from '@/lib/auth';
 import { i18n, initI18n } from '@/lib/i18n';
 import { VARIANTS, markBoot, previousAlive, previousBoot, previousVariant, variant } from '@/lib/boot';
 import { reportError, wrapRoot } from '@/lib/monitoring';
@@ -21,6 +21,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { CACHE_MAX_AGE, KEEP, persister } from '@/lib/queryCache';
 import { CrashScreen } from '@/features/crash/CrashScreen';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
+import { useIouReminderSync } from '@/features/ious/useReminderSync';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
 import { useOutboxSync } from '@/lib/useOutboxSync';
@@ -48,6 +49,7 @@ function Routes() {
   markBoot(`path:${pathname}`);
   const { signedIn, waiting, needsConsent, needsSetup } = useGate();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
+  useIouReminderSync(signedIn && !WEB_LIMITED, useAuth().userId);
   useActivity(signedIn && !WEB_LIMITED);
   useOutboxSync(signedIn && !WEB_LIMITED);
   useEffect(() => { if (!waiting) hideSplash(); }, [waiting]);
@@ -105,6 +107,9 @@ function Routes() {
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
           <Stack.Screen name="rule" />
+          <Stack.Screen name="ious" />
+          <Stack.Screen name="iou" />
+          <Stack.Screen name="iou-edit" />
           <Stack.Screen name="debt" />
           <Stack.Screen name="debt-edit" options={{ presentation: 'modal' }} />
         </Stack.Protected>

@@ -7,6 +7,7 @@ import type { Debt, DebtInput, DebtPayment } from '@/features/debts/types';
 import type { BudgetRow } from '@/lib/budget';
 import type { HouseholdEntry, HouseholdEntryInput } from '@/features/household/logic';
 import type { MoneyPool, PoolInput } from '@/features/pools/logic';
+import type { Iou, IouInput, IouPayment } from '@/features/ious/logic';
 import type { SplitData } from '@/features/split/logic';
 import type { RecurringInput, RecurringItem } from '@/features/recurring/logic';
 
@@ -23,6 +24,8 @@ const OPS = {
   deleteConversion: api.deleteConversion,
   // budgets and debts
   setBudget: api.setBudget, clearBudget: api.clearBudget, addDebt: api.addDebt, updateDebt: api.updateDebt, deleteDebt: api.deleteDebt,
+  // IOUs
+  addIou: api.addIou, updateIou: api.updateIou, deleteIou: api.deleteIou, addIouPayment: api.addIouPayment, deleteIouPayment: api.deleteIouPayment,
   // money pools
   addPool: api.addPool, updatePool: api.updatePool, endPool: api.endPool, logPoolPayment: api.logPoolPayment,
   // recurring
@@ -31,7 +34,7 @@ const OPS = {
   deleteSplitExpense: api.deleteSplitExpense, deleteSplitSettlement: api.deleteSplitSettlement, deleteSplitGroup: api.deleteSplitGroup,
   linkRecurringRun: api.linkRecurringRun, addRecurring: api.addRecurring, updateRecurring: api.updateRecurring, endRecurring: api.endRecurring, logRecurring: api.logRecurring, skipRecurring: api.skipRecurring,
 } as const;
-const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
+const CREATES: readonly string[] = ['addExpense', 'addIncome', 'addIncomeSplit', 'logGiving', 'addDebtPayment', 'addDebt', 'addPool', 'logPoolPayment', 'addIou', 'addIouPayment', 'addRecurring', 'logRecurring', 'addHouseholdEntry', 'addSplitGroup', 'addSplitPerson', 'addSplitExpense', 'addSplitSettlement'];
 export type OpName = keyof typeof OPS;
 
 export const opNameOf = (fn: unknown): OpName | null => (Object.keys(OPS) as OpName[]).find((k) => OPS[k] === fn) ?? null;
@@ -119,6 +122,19 @@ export function applyOptimistic(qc: QueryClient, op: OpName, args: unknown): voi
       const id = args as string;
       qc.setQueryData<Debt[]>(['debts'], (old) => old?.filter((d) => d.id !== id));
       qc.setQueryData<DebtPayment[]>(['debt-payments'], (old) => old?.filter((p) => p.debt_id !== id));
+    } else if (op === 'addIou') {
+      const { id, input } = args as { id: string; input: IouInput };
+      prepend(qc, ['ious'], { ...input, id, user_id: '', person_account: null } as Iou);
+    } else if (op === 'updateIou') {
+      const { id, input } = args as { id: string; input: IouInput };
+      qc.setQueryData<Iou[]>(['ious'], (old) => old?.map((i) => (i.id === id ? { ...i, ...input } : i)));
+    } else if (op === 'deleteIou') {
+      qc.setQueryData<Iou[]>(['ious'], (old) => old?.filter((i) => i.id !== (args as string)));
+    } else if (op === 'addIouPayment') {
+      const a = args as Parameters<typeof api.addIouPayment>[0];
+      qc.setQueryData<IouPayment[]>(['iou-payments'], (old) => [...(old ?? []).filter((p) => p.id !== a.id), { id: a.id as string, iou_id: a.iou_id, amount_laari: a.amount_laari, paid_on: a.paid_on, note: a.note, created_by: a.created_by }]);
+    } else if (op === 'deleteIouPayment') {
+      qc.setQueryData<IouPayment[]>(['iou-payments'], (old) => old?.filter((p) => p.id !== (args as string)));
     } else if (op === 'addPool') {
       const { id, input } = args as { id: string; input: PoolInput };
       prepend(qc, ['pools'], { ...input, id, started_on: new Date().toISOString().slice(0, 10), ended_on: null } as MoneyPool);
