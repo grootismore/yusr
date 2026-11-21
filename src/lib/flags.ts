@@ -2,8 +2,11 @@ import { useSyncExternalStore } from 'react';
 import { getItem, setItem } from './kv';
 
 // Small remembered yes/no choices ("has seen the welcome", "has done first setup"), kept on the device.
-export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen' | 'shareByDefault' | 'thaanaKeyboard' | 'rule503020';
-const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen', 'shareByDefault', 'thaanaKeyboard', 'rule503020'];
+export type FlagName = 'onboarded' | 'setupDone' | 'hideAmounts' | 'heldOpen' | 'shareByDefault' | 'thaanaKeyboard' | 'rule503020'
+  // Which optional features are switched on (see src/features/features), and whether the first-time pass has run.
+  | 'featRecurring' | 'featDebts' | 'featGiving' | 'featPools' | 'featHousehold' | 'featSplit' | 'featIous' | 'featRegister' | 'featuresSeeded';
+const ALL: readonly FlagName[] = ['onboarded', 'setupDone', 'hideAmounts', 'heldOpen', 'shareByDefault', 'thaanaKeyboard', 'rule503020',
+  'featRecurring', 'featDebts', 'featGiving', 'featPools', 'featHousehold', 'featSplit', 'featIous', 'featRegister', 'featuresSeeded'];
 const DEFAULT_ON: ReadonlySet<FlagName> = new Set(['thaanaKeyboard']);
 const cache = new Map<FlagName, boolean>();
 const listeners = new Set<() => void>();

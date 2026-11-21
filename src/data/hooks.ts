@@ -49,7 +49,7 @@ export function useCategoryName() {
   return (c: Category | undefined | null) => (c ? (i18n.language === 'dv' ? c.name_dv : c.name_en) : t('reports.uncategorised'));
 }
 
-export const useDebts = () => useQuery({ queryKey: ['debts'], queryFn: api.listDebts });
+export const useDebts = (enabled = true) => useQuery({ queryKey: ['debts'], queryFn: api.listDebts, enabled });
 export const useDebtPayments = () => useQuery({ queryKey: ['debt-payments'], queryFn: api.listDebtPayments });
 export const usePlanSettings = () => useQuery({ queryKey: ['debt-plan'], queryFn: api.getPlanSettings });
 
@@ -57,8 +57,8 @@ export const usePaidCommitments = (month: string) => useQuery({ queryKey: ['givi
 export const usePlan = () => useQuery({ queryKey: ['plan'], queryFn: api.getPlan });
 export const useReceipt = (id: string | null | undefined) => useQuery({ queryKey: ['receipt', id], queryFn: () => api.getReceipt(id!), enabled: !!id });
 export const useReceiptPhoto = (path: string | null | undefined) => useQuery({ queryKey: ['receipt-photo', path], queryFn: () => api.receiptPhotoUrl(path!), enabled: !!path, staleTime: 240_000 });
-export const useCommitments = () => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments });
-export const useHousehold = () => useQuery({ queryKey: ['household'], queryFn: api.getHousehold });
+export const useCommitments = (enabled = true) => useQuery({ queryKey: ['giving-commitments'], queryFn: api.listCommitments, enabled });
+export const useHousehold = (enabled = true) => useQuery({ queryKey: ['household'], queryFn: api.getHousehold, enabled });
 /** The shared pot's totals for a month, to add to your own. Zero when you are not in a household. */
 export function useSharedTotals(month: string) {
   const entries = useHouseholdEntries(month).data;
@@ -67,19 +67,19 @@ export function useSharedTotals(month: string) {
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });
 export const useSplitInvites = () => useQuery({ queryKey: ['split-invites'], queryFn: api.listSplitInvites });
 export const useMyInvites = () => useQuery({ queryKey: ['my-invites'], queryFn: api.listMyInvites });
-export const useSplit = () => useQuery({ queryKey: ['split'], queryFn: api.listSplit });
-export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
+export const useSplit = (enabled = true) => useQuery({ queryKey: ['split'], queryFn: api.listSplit, enabled });
+export const useRecurring = (enabled = true) => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring, enabled });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
 export const useIous = (enabled = true) => useQuery({ queryKey: ['ious'], queryFn: api.listIous, enabled });
 export const useIouPayments = (enabled = true) => useQuery({ queryKey: ['iou-payments'], queryFn: api.listIouPayments, enabled });
 export const useIouPeople = (enabled = true) => useQuery({ queryKey: ['iou-people'], queryFn: api.listIouPeople, enabled });
 export const useIouInvites = () => useQuery({ queryKey: ['iou-invites'], queryFn: api.listIouInvites });
-export const usePools = () => useQuery({ queryKey: ['pools'], queryFn: api.listPools });
+export const usePools = (enabled = true) => useQuery({ queryKey: ['pools'], queryFn: api.listPools, enabled });
 export const usePoolPayments = () => useQuery({ queryKey: ['pool-payments'], queryFn: api.listPoolPayments });
-export const useGiving = (month: string) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month) });
+export const useGiving = (month: string, enabled = true) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month), enabled });
 export const useZakat = (enabled = true) => useQuery({ queryKey: ['zakat'], queryFn: api.getZakat, enabled });
 
-export const useRegisterItems = () => useQuery({ queryKey: ['register-items'], queryFn: api.listRegisterItems });
+export const useRegisterItems = (enabled = true) => useQuery({ queryKey: ['register-items'], queryFn: api.listRegisterItems, enabled });
 export const useContacts = () => useQuery({ queryKey: ['contacts'], queryFn: api.listContacts });
 export const useCheckin = () => useQuery({ queryKey: ['checkin'], queryFn: api.getCheckin });
 export const useAudit = () => useQuery({ queryKey: ['audit'], queryFn: api.listAudit });
