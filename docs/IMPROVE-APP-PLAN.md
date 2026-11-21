@@ -15,9 +15,9 @@
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done | CUSTOMER.md | 2026-11-21 |
 | 2 | ux-heuristics | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
-| 3 | design-everyday-things | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
-| 4 | refactoring-ui | pending | DESIGN.md, EXPERIMENTS.md | |
-| 5 | microinteractions | pending | DESIGN.md, EXPERIMENTS.md | |
+| 3 | design-everyday-things | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
+| 4 | refactoring-ui | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
+| 5 | microinteractions | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 | 6 | made-to-stick | pending | POSITIONING.md, EXPERIMENTS.md | |
 | 7 | influence-psychology | pending | POSITIONING.md, EXPERIMENTS.md | |
 | 8 | high-perf-browser | skipped: native app, no browser surface; a short "feels fast" check is folded into Phase 5 | DESIGN.md | 2026-11-21 |
@@ -35,8 +35,10 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-11-21 | 2 | Fix all four severity-3 findings (U1 tab labels, U2 no cut-off amounts, U3 calm over-budget, U4 Plus honesty) | Owner chose all four; ordered by severity times screen frequency. |
 | 2026-11-21 | 2 | Fix severity 1-2 findings (U5-U11) in the same pass, including Activity search | Owner chose the full pass. |
 | 2026-11-21 | 2,3 | Phases 2 and 3 run from the built-in method (ux-heuristics and design-everyday-things skills not installed) | Owner declined nothing; fallback is allowed by the journey. |
+| 2026-11-21 | 3 | Undo replaces the confirm dialog for entries, payments and people; whole groups and the account keep the dialog | Owner chose the recommended option. |
+| 2026-11-21 | 3 | Constraint over error: hint under an empty amount; Save waits for a category | Owner chose the recommended option. |
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phase 3: owner decides where undo replaces a confirm dialog and where a constraint replaces an error (Areesh, next)
+- [ ] Phases 4 and 5: owner decides V1 (card lift), V2 (watermark) and the signature moment M6 (Areesh, next)
 - [ ] Implement U1-U11 and the Phase 3 fixes in PRs after the audits (Claude, after Phase 7)

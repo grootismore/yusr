@@ -7,11 +7,20 @@ Signature moment, personality, references. (Phase 4 and 5 fill this.)
 Typefaces, scale, measure, line height, loading strategy. (Phase 4.)
 
 ## Tokens
-Spacing scale · color palette (shades, tinted grays) · shadows. (Phase 4.)
+Source of truth: `src/theme/tokens.ts` ("Ink and sky"). Audited in Phase 4 against the refactoring-ui method (built-in brief, skill not installed).
+- **Spacing:** 4-pt grid `xs 4 · sm 8 · md 12 · lg 16 · xl 24 · xxl 32`. Consistent; no change needed.
+- **Radius:** `8 · 14 · 22 · pill`. Consistent.
+- **Palette:** tinted dusty blue-greys (page #CBD2D9, card #D9DFE5), matte black ink, one soft sky accent (#8EC5F0), coral for over-budget and errors, amber for warnings. Text pairs are documented as AA; borders 3:1. Strong and already systematic.
+- **Shadows:** cards rely on a hairline rim; the toast has a heavy shadow. Few levels. Fine.
+- **Verdict:** the system is sound, so Phase 4 fixes are small (V1-V4 below), not a new palette. Skip-heuristic applies in part: the UI reads in grayscale and uses one scale.
 
 ## Components
 | Component | Decision | Status |
 |---|---|---|
+| V1 Card on page | Card (#D9DFE5) on page (#CBD2D9) is about 1.15:1: cards separate only by a hairline, so screens read flat. Lift cards one step lighter than the page (about #E4E9EE) and keep "never pure white". | open (owner to confirm) |
+| V2 Figure panel watermark | The ghost "MVR" letters and dot pattern sit behind the budget line and compete with text ("of MVR 12,000 budget" overlaps the letters). Lower the watermark to a faint corner mark or remove it. | open (owner to confirm) |
+| V3 Primary action on Home | Four equal round quick actions (Add expense, Scan receipt, Debt-free plan, Giving) plus the centre scan tab: no single dominant action. Make Add expense a filled pill; the others stay quiet circles. | open |
+| V4 State colour | The panel progress bar stays sky blue even when over budget; the colour does not follow the state (see U3). Over: amber bar, calm text. | open (with U3) |
 
 ## UX Audit Findings
 Phase 2 heuristic evaluation, 2026-11-21. Source: audit of the screens in a 390px phone preview (Home, Budget, Reports, Add expense, Scan, Plus), run against Nielsen's 10 heuristics. Severity 0 none, 1 cosmetic, 2 minor, 3 major, 4 catastrophe. Evidence is audit only; there are no user recordings yet, so "frequency" is estimated from how often the screen is opened.
@@ -54,5 +63,16 @@ Source: audit of the core flows in code and the phone preview: add an entry, sca
 | How can I search? | Fail: no search anywhere in the app (U8) |
 
 ## Microinteraction Inventory
+Phase 5 audit, from code and the phone preview. "Feels fast" is folded in here (Phase 8 skipped, native app): no device traces were taken, so speed rows are to be verified on a phone.
+
 | Interaction | Trigger/Rules/Feedback/Loops | Fix | Status |
 |---|---|---|---|
+| M1 Press any button or row | Trigger: tap. Rules: none. Feedback: opacity drops to 0.85 only (barely visible). Loop: none. | Press scale to 0.97 with a quick return, plus the existing haptic on chips; one shared press style. | open |
+| M2 Save an entry | Trigger: Save. Feedback: success screen with check and haptic. Loop: "Add another". Good. | Keep. Add the signature moment (M6). | keep |
+| M3 Open Home before data arrives | Trigger: launch or tab. Feedback: the figure may read MVR 0 until the data arrives, a wrong-looking number (to verify on a phone). | Show a quiet placeholder (dashes) until the month has loaded, never a zero. | open (verify) |
+| M4 Switch a feature on or off | Trigger: switch. Feedback: switch moves, no haptic, no words. | Light haptic, and for off, say where to get it back (D2). | open |
+| M5 Shared money from a partner | Trigger: partner adds an entry. Rules: appears on next fetch. Feedback: none. No pull-to-refresh anywhere, so people cannot ask "is this up to date?" | Pull to refresh on Home, Activity and the household screen; "Updated just now" is not needed. | open |
+| M6 Signature moment | Trigger: saving an entry. Today the success screen shows what was saved. The job is to see where the month is going. | After saving, show what it means: "MVR X left this month" with the budget bar sliding to its new place (or "On track" with no budget set). Calm, useful, tied to the job. Removal test: the app would feel worse without it, because saving would again feel like filing, not seeing progress. | open (owner to confirm) |
+| M7 Delete | Trigger: delete. Feedback: dialog then gone. | Undo toast (D1, D3). | open (Phase 3) |
+| M8 Progress bars | Trigger: data change. Feedback: 450ms ease-out fill. Good. | Keep. | keep |
+| M9 Offline | Trigger: no signal. Feedback: offline banner, queued saves, optimistic rows. Good. | Keep. | keep |
