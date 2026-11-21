@@ -95,7 +95,7 @@ export default function Reports() {
             <ProgressBar onHero percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
             {overallState === 'over' || overallState === 'near' ? (
               <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
-                <Icon name={overallState === 'over' ? 'information-circle' : 'warning'} size={18} color={colors.amber} />
+                <Icon name={overallState === 'over' ? 'information-circle' : 'warning'} size={18} color={overallState === 'over' ? '#FF8A7A' : colors.amber} />
                 {overallState === 'over'
                   ? <Msg k="home.overNext" amounts={{ amount: total - overall }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
                   : <Text variant="small" color={colors.onHero}>{t('reports.nearLimit')}</Text>}

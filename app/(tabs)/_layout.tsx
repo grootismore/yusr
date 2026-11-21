@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Icon, type IconName } from '@/components/ui';
 import { LIFT, space, useColors, useIsDark } from '@/theme/tokens';
+import { AddMenu } from '@/components/AddMenu';
 
 // Each tab draws its own icon, centred in the full height of the pill (the built-in item left the icon sitting high).
 // Icon with its name underneath: an icon alone does not say what the section is.
@@ -34,6 +35,7 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const tint = { on: colors.sky, off: '#A9C2B3' };
   return (
+    <>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -72,5 +74,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="reports" options={{ title: t('tabs.reports'), tabBarButton: tab('pie-chart-outline', 'pie-chart', tint, t('tabs.reports')) }} />
       <Tabs.Screen name="more" options={{ title: t('tabs.more'), tabBarButton: tab('ellipsis-horizontal-circle-outline', 'ellipsis-horizontal-circle', tint, t('tabs.more')) }} />
     </Tabs>
+    <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + TAB_HEIGHT + space.md} onPick={(kind) => router.push({ pathname: '/add-expense', params: { mode: kind } })} />
+    </>
   );
 }

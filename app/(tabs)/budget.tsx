@@ -58,7 +58,7 @@ function LimitRow({ title, icon, categoryId, limit, spent, last }: { title: stri
             ? <Text latin variant="small" color={colors.inkMuted} style={{ writingDirection: 'ltr' }}>MVR {formatNumber(spent)} / {formatNumber(limit)}</Text>
             : <Text variant="small" color={colors.inkMuted}>{t('budget.noLimit')}</Text>}
         </View>
-        <Button kind={limit ? 'ghost' : 'secondary'} label={limit ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditing(!editing)} style={limit ? undefined : { minHeight: 44, paddingHorizontal: space.lg }} />
+        <Button kind="secondary" label={limit ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditing(!editing)} style={{ minHeight: 44, paddingHorizontal: space.lg }} />
       </Row>
       {limit ? <ProgressBar percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} /> : null}
       {limit && state !== 'ok' && state !== 'none' ? (
