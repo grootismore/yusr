@@ -6,7 +6,7 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Icon, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
-import { confirmDialog } from '@/lib/dialog';
+import { removeWithUndo } from '@/lib/undo';
 import { useIous, useIouInvites, useIouPayments, useIouPeople, useWrite } from '@/data/hooks';
 import { groupByPerson, paidOf, totals, type IouPayment, type PersonGroup } from '@/features/ious/logic';
 import { StatusPill } from '@/features/ious/ui';
@@ -27,6 +27,7 @@ export default function Ious() {
   const decline = useWrite(api.declineIou);
   const people = useIouPeople().data ?? [];
   const removePerson = useWrite(api.deleteIouPerson);
+  const restorePerson = useWrite(api.addIouPerson);
   const sum = totals(ious, payments, me);
   const groups = groupByPerson(ious, payments, me, t('ious.other'), today());
   const open = groups.filter((g) => g.openCount > 0);
@@ -84,7 +85,7 @@ export default function Ious() {
                 <Text>{p.name}</Text>
                 {p.email ? <Text variant="small" color={colors.inkMuted} latin>{p.email}</Text> : null}
               </View>
-              <Button kind="ghost" label={t('common.remove')} onPress={async () => { if (await confirmDialog({ title: t('ious.removePersonTitle', { name: p.name }), message: t('ious.removePersonBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) await removePerson.mutateAsync(p.id); }} />
+              <Button kind="ghost" label={t('common.remove')} onPress={() => void removeWithUndo({ remove: () => removePerson.mutateAsync(p.id), restore: () => restorePerson.mutateAsync({ name: p.name, email: p.email }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') })} />
             </Row>
           ))}
         </Card>

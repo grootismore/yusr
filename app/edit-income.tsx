@@ -11,6 +11,7 @@ import { saveRate } from '@/data/api';
 import { useIncomeRow, useWrite } from '@/data/hooks';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
+import { removeWithUndo } from '@/lib/undo';
 import { useColors } from '@/theme/tokens';
 
 /** Fix income that was entered wrongly: amount, currency and rate, date, note, whether it is kept in its own currency; or delete it. */
@@ -23,6 +24,7 @@ export default function EditIncome() {
   const [keep, setKeep] = useState<boolean | null>(null);
   const update = useWrite(api.updateIncome);
   const remove = useWrite(api.deleteIncome);
+  const restore = useWrite(api.addIncome);
 
   if (!row) return <Screen><StackHeader title={t('edit.incomeTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;
   const keepNow = keep ?? row.keep_in_currency;
@@ -52,7 +54,16 @@ export default function EditIncome() {
       <ConvertActions source={{ kind: 'income', id: row.id, name: row.note, amountMinor: row.amount_laari, currency: row.currency, fxRate: row.fx_rate_to_mvr, categoryId: null, note: row.note, date: row.received_at }}
         canShare canRepeat removeOriginal={() => remove.mutateAsync(row.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
-        onPress={async () => { if (await confirmDialog({ title: t('income.deleteTitle'), message: t('edit.deleteIncomeBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(row.id); toast(t('toast.deleted')); router.back(); } }} />
+        onPress={async () => {
+          // Income kept in its currency counts toward what is held, which Undo would not restore, so it keeps the question.
+          if (!row.keep_in_currency) {
+            const r = row;
+            await removeWithUndo({ remove: () => remove.mutateAsync(r.id), restore: () => restore.mutateAsync({ amount_laari: r.amount_laari, currency: r.currency, fx_rate_to_mvr: String(r.fx_rate_to_mvr), category_id: null, merchant: null, spent_at: r.received_at, note: r.note }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') });
+            router.back();
+            return;
+          }
+          if (await confirmDialog({ title: t('income.deleteTitle'), message: t('edit.deleteIncomeBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(row.id); toast(t('toast.deleted')); router.back(); }
+        }} />
     </Screen>
   );
 }

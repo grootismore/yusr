@@ -14,6 +14,7 @@ import { ConvertActions } from '@/components/ConvertActions';
 import { GIVING_KINDS, type GivingKind } from '@/features/giving/logic';
 import { success } from '@/lib/haptics';
 import { toast } from '@/lib/toast';
+import { removeWithUndo } from '@/lib/undo';
 import { space, useColors } from '@/theme/tokens';
 
 /** Fix an expense that was entered wrongly: every field can change, and it can be deleted. Giving entries also show their type and recipient. */
@@ -33,6 +34,7 @@ export default function EditExpense() {
   const update = useWrite(api.updateExpense);
   const updateGiving = useWrite(api.updateSadaqah);
   const remove = useWrite(api.deleteExpense);
+  const restore = useWrite(api.addExpense);
   const poolPaid = usePoolPayments().data?.some((p) => p.expense_id === id) ?? false;
 
   if (!expense) return <Screen><StackHeader title={t('edit.expenseTitle')} /><Text color={colors.inkMuted}>{t('common.loading')}</Text></Screen>;
@@ -68,7 +70,16 @@ export default function EditExpense() {
       <ConvertActions source={{ kind: 'expense', id: expense.id, name: expense.merchant, amountMinor: expense.amount_laari, currency: expense.currency, fxRate: expense.fx_rate_to_mvr, categoryId: expense.category_id, note: expense.note, date: expense.spent_at }}
         canShare={!sadaqah && !poolPaid} canRepeat={!sadaqah && !poolPaid} removeOriginal={() => remove.mutateAsync(expense.id)} />
       <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
-        onPress={async () => { if (await confirmDialog({ title: t('edit.deleteExpenseTitle'), message: sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(expense.id); toast(t('toast.deleted')); router.back(); } }} />
+        onPress={async () => {
+          // A plain expense is removed at once with an Undo; one tied to a giving record or a pool keeps the question, since Undo could not bring that record back.
+          if (!sadaqah && !poolPaid) {
+            const e = expense;
+            await removeWithUndo({ remove: () => remove.mutateAsync(e.id), restore: () => restore.mutateAsync({ amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: String(e.fx_rate_to_mvr), category_id: e.category_id, merchant: e.merchant, spent_at: e.spent_at, note: e.note }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') });
+            router.back();
+            return;
+          }
+          if (await confirmDialog({ title: t('edit.deleteExpenseTitle'), message: sadaqah ? `${t('edit.deleteExpenseBody')} ${t('edit.deleteGivingNote')}` : t('edit.deleteExpenseBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(expense.id); toast(t('toast.deleted')); router.back(); }
+        }} />
     </Screen>
   );
 }

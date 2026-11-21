@@ -7,7 +7,7 @@ import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Button, Card, Chip, Icon, IconButton, Row, Screen, StackHeader, Tile, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
-import { usePlan, useCategories, useCategoryName, useHousehold, useHouseholdEntries, useWrite } from '@/data/hooks';
+import { usePlan, useCategories, useCategoryName, useHousehold, useHouseholdEntries, useRefresh, useWrite } from '@/data/hooks';
 import { coupleBalance, nameOf, summarize } from '@/features/household/logic';
 import { householdNeedsPlus } from '@/features/plus/limits';
 import { HouseholdStart } from '@/features/household/Start';
@@ -40,6 +40,7 @@ export default function HouseholdScreen() {
   const plus = usePlan().data?.plus ?? false;
   const makeInvite = useWrite(api.createHouseholdInvite);
 
+  const refresh = useRefresh();
   if (hq.isLoading) return <Screen><StackHeader title={t('household.title')} /></Screen>;
 
   if (!data) {
@@ -53,7 +54,7 @@ export default function HouseholdScreen() {
   }
 
   return (
-    <Screen>
+    <Screen onRefresh={refresh}>
       <StackHeader title={data.household.name} />
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton icon={i18n.language === 'dv' ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />

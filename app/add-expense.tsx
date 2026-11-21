@@ -183,6 +183,7 @@ export default function AddExpense() {
         {PRESETS.map((p) => <Chip key={p} label={p} selected={typed === p} onPress={() => setTyped(p)} />)}
       </Row>
       <Keypad value={typed} onChange={setTyped} />
+      {laari <= 0 ? <Text variant="small" color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('add.enterAmount')}</Text> : null}
       <Button label={t('add.next')} disabled={laari <= 0} onPress={() => setStep('details')} />
     </Screen>
   );
