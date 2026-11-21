@@ -16,7 +16,7 @@ import { space, useColors } from '@/theme/tokens';
 /** Split: groups of friends, a trip, a flat. Who paid for what, who owes whom, settling up. */
 export default function Split() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const text = useMoneyText();
   const dataQ = useSplit();
@@ -27,7 +27,7 @@ export default function Split() {
   const invites = useMyInvites().data ?? [];
   const accept = useWrite(api.acceptSplitInvite);
   const decline = useWrite(api.declineSplitInvite);
-  const chevron = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
+  const chevron = 'chevron-forward';
 
   return (
     <Screen>

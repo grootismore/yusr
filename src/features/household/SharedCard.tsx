@@ -15,7 +15,7 @@ import { coupleBalance, summarize } from './logic';
 /** The shared pot at a glance, on Home and in Reports, so the household is never a menu away. Nothing shows without a household. */
 export function SharedCard({ month = monthStart(), withActions = true }: { month?: string; withActions?: boolean }) {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { userId } = useAuth();
   const data = useHousehold().data;
@@ -34,7 +34,7 @@ export function SharedCard({ month = monthStart(), withActions = true }: { month
             <Text variant="heading" numberOfLines={1}>{data.household.name}</Text>
             <Text variant="small" color={colors.inkMuted}>{t(`household.mode.${couple ? 'couple' : 'household'}`)}</Text>
           </View>
-          <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+          <Icon name={'chevron-forward'} color={colors.inkMuted} />
         </Row>
       </Pressable>
       <Row style={{ alignItems: 'flex-start', gap: space.lg }}>

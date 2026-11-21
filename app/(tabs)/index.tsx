@@ -70,7 +70,7 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   useEffect(() => { markBoot('home'); }, []);
   const [scrollY] = useState(() => new Animated.Value(0));
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
   const month = monthStart();
@@ -236,7 +236,7 @@ export default function Home() {
             <Row>
               <Icon name="repeat" color={colors.accent} />
               <Text variant="heading" style={{ flex: 1 }}>{t('recurring.dueCard', { count: recurringDue })}</Text>
-              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+              <Icon name={'chevron-forward'} color={colors.inkMuted} />
             </Row>
           </Card>
         </Pressable>
@@ -248,7 +248,7 @@ export default function Home() {
             <Row>
               <Icon name="leaf-outline" color={colors.accent} />
               <Text variant="heading" style={{ flex: 1 }}>{t('debts.title')}</Text>
-              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+              <Icon name={'chevron-forward'} color={colors.inkMuted} />
             </Row>
             <Money laari={debtPlan.total} variant="title" />
             {debtPlan.result.debtFreeMonth ? <Text color={colors.inkMuted}>{t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) })}</Text> : null}
@@ -263,7 +263,7 @@ export default function Home() {
             <Row>
               <Icon name="heart-outline" color={colors.accent} />
               <Text variant="heading" style={{ flex: 1 }}>{t('giving.title')}</Text>
-              <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} color={colors.inkMuted} />
+              <Icon name={'chevron-forward'} color={colors.inkMuted} />
             </Row>
             {goal ? (
               <>

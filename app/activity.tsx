@@ -18,7 +18,7 @@ type Filter = 'all' | 'income' | 'expenses';
 /** Everything that moved in a month, newest day first, with All / Income / Expenses tabs. */
 export default function Activity() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const money = useMoneyText();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
@@ -31,7 +31,6 @@ export default function Activity() {
   const shared = useHouseholdEntries(month).data;
   const cats = useCategories().data;
   const byId = useMemo(() => new Map((cats ?? []).map((c) => [c.id, c])), [cats]);
-  const rtl = i18n.language === 'dv';
 
   const days = useMemo(() => {
     type Row = { kind: 'expense' | 'income' | 'shared'; id: string };
@@ -56,9 +55,9 @@ export default function Activity() {
           options={[{ key: 'all', label: t('activity.all') }, { key: 'income', label: t('activity.income') }, { key: 'expenses', label: t('activity.expenses') }]} />
         <Field label={t('activity.search')} value={search} onChangeText={setSearch} placeholder={t('activity.searchHint')} autoCorrect={false} returnKeyType="search" />
         <Row style={{ justifyContent: 'space-between' }}>
-          <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
+          <IconButton icon={'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
           <Text variant="heading" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="heading">{month.slice(0, 4)}</Text></Text>
-          <IconButton icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
+          <IconButton icon={'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
         </Row>
         {days.length === 0 ? (
           <Card style={{ alignItems: 'center', padding: space.xl }}><Text color={colors.inkMuted}>{t(search.trim() ? 'activity.searchEmpty' : 'activity.empty')}</Text></Card>
