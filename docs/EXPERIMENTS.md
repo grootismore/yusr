@@ -46,4 +46,11 @@
 | M3 Placeholder instead of MVR 0 while loading | 6 / 6 / 7 | proposed (verify first) |
 | M4 Haptic on switches | 2 / 8 / 9 | proposed |
 | M5 Pull to refresh | 6 / 8 / 7 | proposed |
-| M6 "MVR X left this month" on the save screen (signature moment) | 8 / 6 / 7 | proposed (owner to confirm) |
+| M6 "MVR X left this month" on the save screen (signature moment) | 8 / 6 / 7 | approved (EXP-002) |
+| C1 Onboarding line without the word Raseedhu | 3 / 7 / 9 | proposed |
+| C3 Over-budget message that says what to do next | 6 / 6 / 8 | proposed (with U3) |
+| C4 Offline failure message in plain words | 4 / 8 / 9 | proposed |
+| C5 Scan screen introduces Raseedhu once | 3 / 7 / 9 | proposed |
+| C6 "Merchant" becomes "Shop or place" | 2 / 7 / 9 | proposed |
+| P1 Plus screen leads with what stays free | 4 / 7 / 9 | proposed |
+| P2 Plus benefit list shows only what exists | 6 / 9 / 9 | proposed (with U4) |
