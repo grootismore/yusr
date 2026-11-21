@@ -44,6 +44,7 @@ export function Text({ variant = 'body', color, latin, style, children, ...rest 
           fontSize: size,
           lineHeight: Math.round(size * (dv ? DV_LINE_HEIGHT : t.lh)),
           ...(thaana ? {} : { letterSpacing: t.track }),
+          fontVariant: ['tabular-nums'], // figures line up in lists and totals
           color: color ?? colors.ink,
           writingDirection: dv ? 'rtl' : 'ltr',
         },

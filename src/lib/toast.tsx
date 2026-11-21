@@ -3,7 +3,7 @@ import { AccessibilityInfo, Animated, Platform, Pressable, View } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Icon } from '@/components/ui';
-import { radius, space, useColors } from '@/theme/tokens';
+import { LIFT, radius, space, useColors } from '@/theme/tokens';
 
 export type ToastAction = { label: string; onPress: () => void };
 type Toast = { id: number; text: string; kind: 'ok' | 'error'; action?: ToastAction };
@@ -37,7 +37,7 @@ export function ToastHost() {
     <View pointerEvents={current.action ? 'box-none' : 'none'} style={{ position: 'absolute', top: insets.top + space.sm, start: space.lg, end: space.lg, alignItems: 'center' }}>
       <Animated.View accessibilityLiveRegion="polite" style={{ opacity: shown, transform: [{ translateY: shown.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] }) }],
         flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm + 2, paddingHorizontal: space.lg, maxWidth: 420, borderRadius: radius.lg, borderCurve: 'continuous',
-        backgroundColor: colors.hero, borderWidth: 1, borderColor: colors.cardEdge, boxShadow: '0 10px 24px rgba(0,0,0,0.28)' }}>
+        backgroundColor: colors.hero, borderWidth: 1, borderColor: colors.cardEdge, boxShadow: LIFT }}>
         <Icon name={bad ? 'alert-circle' : 'checkmark-circle'} size={20} color={bad ? colors.coral : colors.sky} />
         <Text variant="body" color="#FFFFFF" style={{ flexShrink: 1 }}>{current.text}</Text>
         {current.action ? (

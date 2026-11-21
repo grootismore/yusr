@@ -27,7 +27,7 @@ import { RuleCard } from '@/features/rule/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
-import { radius, space, useColors } from '@/theme/tokens';
+import { LIFT, radius, space, useColors } from '@/theme/tokens';
 
 type AddKind = 'expense' | 'income' | 'split';
 
@@ -51,13 +51,13 @@ function AddMenu({ bottom, onPick }: { bottom: number; onPick: (kind: AddKind) =
         {open ? options.map((o) => (
           <Pressable key={o.kind} accessibilityRole="button" accessibilityLabel={o.label} onPress={() => { setOpen(false); onPick(o.kind); }}
             style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 26, borderCurve: 'continuous', backgroundColor: colors.card,
-              borderWidth: 1, borderColor: colors.cardEdge, boxShadow: '0 6px 16px rgba(0,0,0,0.22)', opacity: pressed ? 0.85 : 1 })}>
+              borderWidth: 1, borderColor: colors.cardEdge, boxShadow: LIFT, opacity: pressed ? 0.85 : 1 })}>
             <Icon name={o.icon} color={colors.accent} />
             <Text variant="label">{o.label}</Text>
           </Pressable>
         )) : null}
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} accessibilityLabel={t('home.addExpense')} onPress={() => setOpen(!open)}
-          style={({ pressed }) => ({ width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, boxShadow: '0 8px 20px rgba(0,0,0,0.28)', transform: [{ scale: pressed ? 0.95 : 1 }] })}>
+          style={({ pressed }) => ({ width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, boxShadow: LIFT, transform: [{ scale: pressed ? 0.95 : 1 }] })}>
           <View style={{ transform: [{ rotate: open ? '45deg' : '0deg' }] }}><Icon name="add" color={colors.onAccent} size={30} /></View>
         </Pressable>
       </View>

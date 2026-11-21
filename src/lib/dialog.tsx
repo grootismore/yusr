@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { Button } from '@/components/ui';
-import { radius, space, useColors } from '@/theme/tokens';
+import { LIFT, radius, space, useColors } from '@/theme/tokens';
 
 type Ask = { id: number; title: string; message?: string; confirmLabel: string; cancelLabel?: string; destructive?: boolean; resolve: (ok: boolean) => void };
 type Options = { title: string; message?: string; confirmLabel: string; cancelLabel?: string; destructive?: boolean };
@@ -48,7 +48,7 @@ export function DialogHost() {
       <View style={{ flex: 1, justifyContent: 'center', padding: space.xl }}>
         <Pressable accessibilityLabel={current.cancelLabel ?? current.confirmLabel} onPress={() => settle(false)} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
         <View key={current.id} accessibilityRole="alert" style={{ alignSelf: 'center', width: '100%', maxWidth: 420, gap: space.md, padding: space.xl, borderRadius: radius.lg, borderCurve: 'continuous',
-          backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardEdge, boxShadow: '0 10px 24px rgba(0,0,0,0.28)' }}>
+          backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardEdge, boxShadow: LIFT }}>
           <Text variant="heading" accessibilityRole="header">{current.title}</Text>
           {current.message ? <Text color={colors.inkMuted}>{current.message}</Text> : null}
           <View style={{ gap: space.sm, marginTop: space.sm }}>
