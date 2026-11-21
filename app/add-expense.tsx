@@ -12,6 +12,7 @@ import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow } from '@
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { PersonPick } from '@/features/household/PersonPick';
+import { MonthStanding } from '@/features/standing/Standing';
 import { useCategories, useCategoryName, useExpenses, useHousehold, useWrite } from '@/data/hooks';
 import { categoriesByUse } from '@/lib/categoryOrder';
 import type { HouseholdEntryInput } from '@/features/household/logic';
@@ -112,6 +113,7 @@ export default function AddExpense() {
         <Card tone="hero" style={{ alignItems: 'center', padding: space.xl }}>
           <Money laari={saved.amount_laari} currency={saved.currency} prefix={isIncome ? '+' : '−'} variant="display" color={colors.onHero} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, lineHeight: 52 }} />
         </Card>
+        {isIncome ? null : <MonthStanding month={`${saved.spent_at.slice(0, 7)}-01`} />}
         <Card>
           {isIncome ? null : <Row style={{ justifyContent: 'space-between' }}><Text color={colors.inkMuted}>{t('expense.category')}</Text><Text>{catName(cat)}</Text></Row>}
           <Row style={{ justifyContent: 'space-between' }}><Text color={colors.inkMuted}>{t('expense.date')}</Text><Text latin>{formatDate(saved.spent_at)}</Text></Row>

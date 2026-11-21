@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
-import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
+import { Card, Field, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import { SharedRow } from '@/components/SharedRow';
-import { useCategories, useExpenses, useHouseholdEntries, useIncome } from '@/data/hooks';
+import { useCategories, useCategoryName, useExpenses, useHouseholdEntries, useIncome } from '@/data/hooks';
+import { matchesSearch } from '@/lib/search';
 import { useMoneyText } from '@/lib/privacy';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
@@ -22,6 +23,8 @@ export default function Activity() {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const [month, setMonth] = useState(monthStart());
+  const [search, setSearch] = useState('');
+  const catName = useCategoryName();
   const expenses = useExpenses(month).data;
   const income = useIncome(month).data;
   const shared = useHouseholdEntries(month).data;
@@ -33,11 +36,12 @@ export default function Activity() {
     type Row = { kind: 'expense' | 'income' | 'shared'; id: string };
     const groups = new Map<string, Row[]>();
     const add = (date: string, row: Row) => groups.set(date, [...(groups.get(date) ?? []), row]);
-    if (filter !== 'income') for (const e of expenses ?? []) add(e.spent_at, { kind: 'expense', id: e.id });
-    if (filter !== 'expenses') for (const i of income ?? []) add(i.received_at, { kind: 'income', id: i.id });
-    for (const e of shared ?? []) if (filter === 'all' || (filter === 'income') === (e.kind === 'income')) add(e.entry_date, { kind: 'shared', id: e.id });
+    const cat = (id: string | null) => { const c = id ? byId.get(id) : undefined; return c ? catName(c) : null; };
+    if (filter !== 'income') for (const e of expenses ?? []) if (matchesSearch(search, [e.merchant, e.note, cat(e.category_id), e.mvr_laari])) add(e.spent_at, { kind: 'expense', id: e.id });
+    if (filter !== 'expenses') for (const i of income ?? []) if (matchesSearch(search, [i.note, i.mvr_laari])) add(i.received_at, { kind: 'income', id: i.id });
+    for (const e of shared ?? []) if ((filter === 'all' || (filter === 'income') === (e.kind === 'income')) && matchesSearch(search, [e.merchant, e.note, cat(e.category_id), e.mvr_laari])) add(e.entry_date, { kind: 'shared', id: e.id });
     return [...groups].sort((a, b) => (a[0] < b[0] ? 1 : -1));
-  }, [filter, expenses, income, shared]);
+  }, [filter, search, expenses, income, shared, byId, catName]);
   const sharedById = useMemo(() => new Map((shared ?? []).map((e) => [e.id, e])), [shared]);
   const expenseById = useMemo(() => new Map((expenses ?? []).map((e) => [e.id, e])), [expenses]);
   const incomeById = useMemo(() => new Map((income ?? []).map((i) => [i.id, i])), [income]);
@@ -49,13 +53,14 @@ export default function Activity() {
       <>
         <Segmented<Filter> value={filter} onChange={setFilter}
           options={[{ key: 'all', label: t('activity.all') }, { key: 'income', label: t('activity.income') }, { key: 'expenses', label: t('activity.expenses') }]} />
+        <Field label={t('activity.search')} value={search} onChangeText={setSearch} placeholder={t('activity.searchHint')} autoCorrect={false} returnKeyType="search" />
         <Row style={{ justifyContent: 'space-between' }}>
           <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
           <Text variant="heading" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="heading">{month.slice(0, 4)}</Text></Text>
           <IconButton icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
         </Row>
         {days.length === 0 ? (
-          <Card style={{ alignItems: 'center', padding: space.xl }}><Text color={colors.inkMuted}>{t('activity.empty')}</Text></Card>
+          <Card style={{ alignItems: 'center', padding: space.xl }}><Text color={colors.inkMuted}>{t(search.trim() ? 'activity.searchEmpty' : 'activity.empty')}</Text></Card>
         ) : days.map(([day, rows]) => (
           <View key={day} style={{ gap: space.sm }}>
             <Text variant="label" color={colors.inkMuted}>{dayLabel(day) ?? <Text latin variant="label" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
