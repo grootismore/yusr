@@ -23,3 +23,16 @@ export function budgetState(spent: number, limit: number | undefined): BudgetSta
 
 /** Whole percent of the limit used, capped at 100 for the bar. */
 export const percentUsed = (spent: number, limit: number): number => Math.min(100, Math.floor((spent * 100) / limit));
+
+/** Days left in the month of `todayIso` (YYYY-MM-DD), counting today. */
+export function daysLeftInMonth(todayIso: string): number {
+  const y = Number(todayIso.slice(0, 4)), m = Number(todayIso.slice(5, 7)), d = Number(todayIso.slice(8, 10));
+  return new Date(Date.UTC(y, m, 0)).getUTCDate() - d + 1;
+}
+
+/** What is left of a month's budget, and a fair share of it for each remaining day (integer laari, rounded down). */
+export function dailyAllowance(spent: number, limit: number, todayIso: string): { left: number; days: number; perDay: number } {
+  const left = Math.max(0, limit - spent);
+  const days = daysLeftInMonth(todayIso);
+  return { left, days, perDay: Math.floor(left / days) };
+}
