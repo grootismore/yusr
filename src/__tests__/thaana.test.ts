@@ -21,8 +21,9 @@ describe('Thaana keyboard layout', () => {
     });
   });
 
-  it('has the Rufiyaa sign on Shift+R and on the symbols page', () => {
-    expect(ROWS[0][3].shift).toBe(RUFIYAA);
+  it('has the Rufiyaa sign on the symbols page only, and zaa on Shift+R', () => {
+    expect(ROWS[0][3].shift).toBe('ޜ');
+    expect(ROWS.flat().flatMap((k) => [k.base, k.shift])).not.toContain(RUFIYAA);
     expect(SYMBOLS.flat()).toContain(RUFIYAA);
   });
 
