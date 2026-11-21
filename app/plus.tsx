@@ -10,14 +10,14 @@ import { usePlan, useWrite } from '@/data/hooks';
 import { FREE, PLUS_SCANS, type PlusFeature } from '@/features/plus/limits';
 import { formatDate } from '@/lib/dates';
 import { success } from '@/lib/haptics';
-import { buyPlus, redeemStoreCode, restorePurchases, type PurchaseResult } from '@/lib/purchases';
+import { buyPlus, purchasesReady, redeemStoreCode, restorePurchases, type PurchaseResult } from '@/lib/purchases';
 import { toast } from '@/lib/toast';
 import { space, useColors } from '@/theme/tokens';
 
-const BENEFITS: { key: PlusFeature; icon: IconName; soon?: boolean }[] = [
+// Only what exists today. (The PDF/CSV summary is left out until it is built.)
+const BENEFITS: { key: PlusFeature; icon: IconName }[] = [
   { key: 'scans', icon: 'scan' },
   { key: 'photos', icon: 'image-outline' },
-  { key: 'export', icon: 'document-text-outline', soon: true },
   { key: 'household', icon: 'people-outline' },
   { key: 'history', icon: 'time-outline' },
   { key: 'split', icon: 'swap-horizontal' },
@@ -74,36 +74,41 @@ export default function Plus() {
       ) : null}
 
       <Card>
+        <Text variant="heading">{t('plus.freeTitle')}</Text>
+        <Text color={colors.inkMuted}>{t('plus.freeBody', nums)}</Text>
+      </Card>
+
+      <Text variant="heading">{t('plus.adds')}</Text>
+      <Card>
         {BENEFITS.map((b) => (
           <Row key={b.key} style={{ alignItems: 'flex-start', paddingVertical: space.xs }}>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}><Icon name={b.icon} color={colors.accent} /></View>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text>{t(`plus.benefit.${b.key}`, nums)}{b.soon ? <Text variant="small" color={colors.inkMuted}>{`  · ${t('plus.comingSoon')}`}</Text> : null}</Text>
+              <Text>{t(`plus.benefit.${b.key}`, nums)}</Text>
               <Text variant="small" color={colors.inkMuted}>{t(`plus.benefitNote.${b.key}`, nums)}</Text>
             </View>
           </Row>
         ))}
       </Card>
 
-      {plan?.plus ? null : (
+      {plan?.plus ? null : purchasesReady() ? (
         <>
           <Button label={t('plus.get')} icon="sparkles-outline" onPress={() => void run(buyPlus)} />
           <Button kind="ghost" label={t('plus.restore')} onPress={() => void run(restorePurchases)} />
           <Text variant="small" color={colors.inkMuted}>{t('plus.priceNote')}</Text>
         </>
+      ) : (
+        // Store purchases are not set up yet, so there is no button that cannot finish. A promotion code works now.
+        <Card tone="good"><Text>{t('plus.notOnSale')}</Text></Card>
       )}
 
       <Card>
         <Text variant="heading">{t('plus.haveCode')}</Text>
         <Field label={t('plus.codeLabel')} hint={t('plus.codeHint')} value={code} onChangeText={(v) => { setCode(v.toUpperCase()); setCodeError(null); }} autoCapitalize="characters" autoCorrect={false} maxLength={14} error={codeError} />
         <Button kind="secondary" label={t('plus.useCode')} loading={redeem.isPending} onPress={() => void applyCode()} />
-        {plan?.plus ? null : <Button kind="ghost" label={t('plus.storeCode')} onPress={() => void run(redeemStoreCode)} />}
+        {plan?.plus || !purchasesReady() ? null : <Button kind="ghost" label={t('plus.storeCode')} onPress={() => void run(redeemStoreCode)} />}
       </Card>
 
-      <Card>
-        <Text variant="heading">{t('plus.freeTitle')}</Text>
-        <Text color={colors.inkMuted}>{t('plus.freeBody', nums)}</Text>
-      </Card>
     </Screen>
   );
 }
