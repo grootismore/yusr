@@ -29,18 +29,39 @@ import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
-/** Round shortcut: an icon in a circle over a short label. */
-/** A round shortcut under the panel. The main one (Add expense) is filled and larger so it is plainly the first thing to tap. */
-function QuickAction({ icon, label, onPress, main }: { icon: IconName; label: string; onPress: () => void; main?: boolean }) {
+type AddKind = 'expense' | 'income' | 'split';
+
+/**
+ * The one entry point on Home: a round plus floating above the tab bar, always in reach. Tap it and it opens into the three
+ * things you can add (an expense, income, a split payday); tap away to close. Home only.
+ */
+function AddMenu({ bottom, onPick }: { bottom: number; onPick: (kind: AddKind) => void }) {
   const colors = useColors();
-  const size = main ? 64 : 56;
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const options: { kind: AddKind; icon: IconName; label: string }[] = [
+    { kind: 'split', icon: 'git-compare-outline', label: t('home.addSplit') },
+    { kind: 'income', icon: 'arrow-down', label: t('home.addIncome') },
+    { kind: 'expense', icon: 'arrow-up', label: t('home.addExpense') },
+  ];
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}>
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: main ? colors.accent : colors.field, borderWidth: main ? 0 : 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon} color={main ? colors.onAccent : colors.accent} size={main ? 28 : 22} />
+    <>
+      {open ? <Pressable accessibilityRole="button" accessibilityLabel={t('common.cancel')} onPress={() => setOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} /> : null}
+      <View pointerEvents="box-none" style={{ position: 'absolute', end: space.lg, bottom, alignItems: 'flex-end', gap: space.md }}>
+        {open ? options.map((o) => (
+          <Pressable key={o.kind} accessibilityRole="button" accessibilityLabel={o.label} onPress={() => { setOpen(false); onPick(o.kind); }}
+            style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 26, borderCurve: 'continuous', backgroundColor: colors.card,
+              borderWidth: 1, borderColor: colors.cardEdge, boxShadow: '0 6px 16px rgba(0,0,0,0.22)', opacity: pressed ? 0.85 : 1 })}>
+            <Icon name={o.icon} color={colors.accent} />
+            <Text variant="label">{o.label}</Text>
+          </Pressable>
+        )) : null}
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} accessibilityLabel={t('home.addExpense')} onPress={() => setOpen(!open)}
+          style={({ pressed }) => ({ width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, boxShadow: '0 8px 20px rgba(0,0,0,0.28)', transform: [{ scale: pressed ? 0.95 : 1 }] })}>
+          <View style={{ transform: [{ rotate: open ? '45deg' : '0deg' }] }}><Icon name="add" color={colors.onAccent} size={30} /></View>
+        </Pressable>
       </View>
-      <Text variant="small" numberOfLines={2} style={{ textAlign: 'center', fontWeight: main ? '700' : '400' }}>{label}</Text>
-    </Pressable>
+    </>
   );
 }
 
@@ -121,7 +142,8 @@ export default function Home() {
 
   return (
     <Screen padded={false} bleed tabbed scrollY={scrollY} onRefresh={refresh} overlay={
-      // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
+      <>
+      {/* The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view. */}
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.hero, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
         opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
         transform: [{ translateY: scrollY.interpolate({ inputRange: [110, 190], outputRange: [-12, 0], extrapolate: 'clamp' }) }] }}>
@@ -130,6 +152,8 @@ export default function Home() {
           <Money laari={spent} variant="heading" color={colors.onHero} />
         </Row>
       </Animated.View>
+      <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + 72 + space.md} onPick={(kind) => router.push({ pathname: '/add-expense', params: { mode: kind } })} />
+      </>
     }>
       {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}
       <View pointerEvents="none" style={{ position: 'absolute', top: -900, start: 0, end: 0, height: 900, backgroundColor: colors.hero }} />
@@ -180,12 +204,8 @@ export default function Home() {
         </Row>
       ) : null}
 
-      <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
-        <QuickAction main icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
-        {/* One action, nothing to choose between: Scan is the middle tab, and Debts and Giving have their own cards below when switched on. */}
-      </Row>
 
-      <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
+      <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: showTiles ? space.lg : -36 + space.lg }}>
       {featHousehold ? <SharedCard /> : null}
       <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
       {held.length > 0 ? (
