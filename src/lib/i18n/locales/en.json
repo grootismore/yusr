@@ -761,7 +761,10 @@
     "empty": "No activity this month.",
     "search": "Search",
     "searchHint": "Shop, note, category or amount",
-    "searchEmpty": "Nothing matches that in this month."
+    "searchEmpty": "Nothing matches that in this month.",
+    "allCategories": "All categories",
+    "daySpent": "Spent {{amount}}",
+    "dayReceived": "Received {{amount}}"
   },
   "foreign": {
     "salaryChip": "Split pay",
