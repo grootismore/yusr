@@ -13,9 +13,9 @@ import { WEB_LIMITED } from '@/lib/platform';
 import { LANGUAGES, LANGUAGE_NAMES, setLanguage, type Language } from '@/lib/i18n';
 import { space, useColors } from '@/theme/tokens';
 
-const PAGES: { key: 'p1' | 'p2' | 'p3' }[] = [{ key: 'p1' }, { key: 'p2' }, { key: 'p3' }];
+const PAGES: { key: 'p1' | 'p3' }[] = [{ key: 'p1' }, { key: 'p3' }];
 
-/** First launch: three short pages, a language choice, then sign-up. Shown once; "I already have an account" goes to sign-in. */
+/** First launch: two short pages (the promise, and privacy), a language choice, then sign-up. Shown once; "I already have an account" goes to sign-in. */
 export default function Welcome() {
   markBoot('welcome');
   const colors = useColors();

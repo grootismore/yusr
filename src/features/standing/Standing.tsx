@@ -1,6 +1,7 @@
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Msg } from '@/components/Msg';
-import { Card, Icon, ProgressBar, Row } from '@/components/ui';
+import { Button, Card, Icon, ProgressBar, Row } from '@/components/ui';
 import { useBudgets, useExpenses, useSharedTotals } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { monthStart } from '@/lib/dates';
@@ -14,13 +15,19 @@ import { space, useColors } from '@/theme/tokens';
 export function MonthStanding({ month }: { month: string }) {
   const colors = useColors();
   const { t } = useTranslation();
+  const router = useRouter();
   const expenses = useExpenses(month).data;
   const limit = useBudgets(month).data?.get(null);
   const shared = useSharedTotals(month);
   if (month !== monthStart() || !expenses) return null;
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   if (!limit) {
-    return <Card><Msg k="add.spentSoFar" amounts={{ amount: spent }} /></Card>;
+    return (
+      <Card>
+        <Msg k="add.spentSoFar" amounts={{ amount: spent }} />
+        <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} />
+      </Card>
+    );
   }
   const state = budgetState(spent, limit);
   const percent = percentUsed(spent, limit);
