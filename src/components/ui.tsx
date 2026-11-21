@@ -13,7 +13,7 @@ import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { markBoot } from '@/lib/boot';
 import { faceFor } from '@/theme/fonts';
-import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
+import { radius, space, TOUCH, useColors } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
 import { DialogHost } from '@/lib/dialog';
@@ -112,13 +112,11 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
 /** A card: solid fill with a fine rim. Tones: warn / bad / good are tinted washes, hero is the deep-green panel. */
 export const Card = ({ children, tone = 'plain', style }: { children: ReactNode; tone?: 'plain' | 'warn' | 'bad' | 'good' | 'hero'; style?: ViewStyle }) => {
   const colors = useColors();
-  const dark = useIsDark();
   const fill = tone === 'hero' ? colors.hero : tone === 'warn' ? colors.amberWash : tone === 'bad' ? colors.coralWash : tone === 'good' ? colors.accentWash : colors.card;
   const rim = tone === 'warn' ? colors.amberDeep : tone === 'bad' ? colors.coral : tone === 'hero' ? 'transparent' : colors.cardEdge;
   return (
     <View
-      style={{ borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 1, borderColor: rim, backgroundColor: fill,
-        ...(dark ? {} : { boxShadow: '0 1px 2px rgba(14,21,17,0.04), 0 8px 20px rgba(14,21,17,0.05)' }) }}
+      style={{ borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 1, borderColor: rim, backgroundColor: fill }}
     >
       {tone === 'hero' ? <PanelArt /> : null}
       <View style={[{ padding: space.lg, gap: space.md }, style]}>{children}</View>
@@ -379,7 +377,7 @@ export function Segmented<K extends string>({ options, value, onChange }: { opti
         const on = o.key === value;
         return (
           <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => { tick(); onChange(o.key); }}
-            style={{ flex: 1, minHeight: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.surface : 'transparent', boxShadow: on ? '0 1px 3px rgba(0,0,0,0.15)' : undefined }}>
+            style={{ flex: 1, minHeight: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.surface : 'transparent', borderWidth: 1, borderColor: on ? colors.cardEdge : 'transparent' }}>
             <Text variant="small" color={on ? colors.accent : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
           </Pressable>
         );

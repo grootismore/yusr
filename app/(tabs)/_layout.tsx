@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Icon, type IconName } from '@/components/ui';
-import { space, useColors, useIsDark } from '@/theme/tokens';
+import { LIFT, space, useColors, useIsDark } from '@/theme/tokens';
 
 // Each tab draws its own icon, centred in the full height of the pill (the built-in item left the icon sitting high).
 // Icon with its name underneath: an icon alone does not say what the section is.
@@ -43,7 +43,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: '#A9C2B3',
         tabBarShowLabel: false,
         tabBarStyle: { position: 'absolute', start: space.lg, end: space.lg, bottom: Math.max(insets.bottom, space.sm) + space.xs, height: TAB_HEIGHT, borderRadius: 36, borderCurve: 'continuous',
-          backgroundColor: colors.hero, borderTopWidth: 0, borderWidth: 1, borderColor: dark ? colors.cardEdge : 'transparent', paddingTop: 0, paddingBottom: 0, boxShadow: '0 10px 24px rgba(0,0,0,0.28)' },
+          backgroundColor: colors.hero, borderTopWidth: 0, borderWidth: 1, borderColor: dark ? colors.cardEdge : 'transparent', paddingTop: 0, paddingBottom: 0, boxShadow: LIFT },
       }}
     >
       <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarButton: tab('home-outline', 'home', tint, t('tabs.home')) }} />

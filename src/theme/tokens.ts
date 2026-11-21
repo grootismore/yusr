@@ -78,6 +78,9 @@ export const useIsDark = (): boolean => useColorScheme() === 'dark';
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 export const radius = { sm: 8, md: 14, lg: 22, pill: 999 } as const;
 
+/** The one shadow, for things that float above the page (tab bar, menu, toast, dialog). Cards and tiles have none: a hairline rim separates them. */
+export const LIFT = '0 2px 12px rgba(0,0,0,0.14)';
+
 /** Minimum touch target in points (WCAG 2.5.8 and platform guidance). */
 export const TOUCH = 44;
 
