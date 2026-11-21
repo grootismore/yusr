@@ -18,12 +18,12 @@ Phase 9 review, 2026-11-21 (built-in method; steve-jobs-design-review skill not 
 ### Ranked cut list (focusing is saying no)
 | # | Cut | Why | Job served | Priority | Status |
 |---|---|---|---|---|---|
-| 1 | Remove the setup step "Who is this for?" and fold household into the Features step | It asks the same question as the Household switch. One fewer screen before value. | Core job (first use) | P1 | proposed |
-| 2 | Cut the three intro pages to two | Page 2 ("Pay debts down. Give with intention.") sells optional features and contradicts "simple by default". Keep the core promise and the privacy promise. | Core job (first use) | P1 | proposed |
-| 3 | Home shortcuts: keep only Add expense | Scan is already the middle tab; Debts and Giving already have cards on Home when switched on. One action, nothing to choose between. | Core job (daily use) | P1 | proposed |
-| 4 | Ask for the monthly budget after the first entry, not before | A budget before any data is a guess. Home already offers "Set a monthly budget". The save screen then shows "spent so far" and can invite a budget right there. | Core job (first use) | P2 | proposed |
-| 5 | Merge IOUs and Hissa Foshi into one "With friends" feature | Both are money with named people; people confuse them. A larger change: decide before building. | Adjacent job (sharing) | P3 | consider |
-| 6 | Fold Money pools into Recurring | A pool is a monthly payment with a payout; it is a kind of recurring item. | Adjacent job | P3 | consider |
+| 1 | Remove the setup step "Who is this for?" and fold household into the Features step | It asks the same question as the Household switch. One fewer screen before value. | Core job (first use) | P1 | built, PR #147 |
+| 2 | Cut the three intro pages to two | Page 2 ("Pay debts down. Give with intention.") sells optional features and contradicts "simple by default". Keep the core promise and the privacy promise. | Core job (first use) | P1 | built, PR #147 |
+| 3 | Home shortcuts: keep only Add expense | Scan is already the middle tab; Debts and Giving already have cards on Home when switched on. One action, nothing to choose between. | Core job (daily use) | P1 | built, PR #147 |
+| 4 | Ask for the monthly budget after the first entry, not before | A budget before any data is a guess. Home already offers "Set a monthly budget". The save screen then shows "spent so far" and can invite a budget right there. | Core job (first use) | P2 | built, PR #147 |
+| 5 | Merge IOUs and Hissa Foshi into one "With friends" feature | Both are money with named people; people confuse them. A larger change: decide before building. | Adjacent job (sharing) | P3 | deferred: revisit with real users |
+| 6 | Fold Money pools into Recurring | A pool is a monthly payment with a payout; it is a kind of recurring item. | Adjacent job | P3 | deferred: revisit with real users |
 
 ### Fix list (not cuts)
 | # | Fix | Priority | Status |

@@ -21,7 +21,7 @@
 | 6 | made-to-stick | done | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
 | 7 | influence-psychology | done | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
 | 8 | high-perf-browser | skipped: native app, no browser surface; a short "feels fast" check is folded into Phase 5 | DESIGN.md | 2026-11-21 |
-| 9 | steve-jobs-design-review | in-progress | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
+| 9 | steve-jobs-design-review | done | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reason> · skipped: <reason>
 
 ## Key Decisions
@@ -43,11 +43,18 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-11-21 | 6 | Ship all the English copy rewrites; introduce Raseedhu once | Owner chose the recommended option. |
 | 2026-11-21 | 7 | Plus: remove unbuilt benefit, show "Not on sale yet", keep the promo code, lead with what is free | Owner chose the recommended option. |
 | 2026-11-21 | 2-7 | Fixes built as PRs #142 to #146 | Evidence before redesign: each PR cites its finding. |
+| 2026-11-21 | 9 | Accept cuts 1-4 (drop the who-is-this-for step, intro pages 3 to 2, Home keeps only Add expense, budget asked after the first entry) | Owner accepted all four; built as PR #147. |
+| 2026-11-21 | 9 | Leave the "With friends" merge and folding pools into recurring for later | Large changes to working features; revisit with real users. |
+| 2026-11-21 | 9 | Leave the sign-up and sign-in emails as they are | Owner chose to backlog it. |
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phase 9: owner accepts or edits the cut list and the back-of-the-fence fixes (Areesh, next)
-- [ ] Merge PRs #142 to #146 (Areesh)
-- [ ] Verify on a phone: tab labels, Undo, pull to refresh, save screen, Plus screen (Areesh)
-- [ ] Native review of the Dhivehi strings added (Areesh or reviewer)
-- [ ] Implement U1-U11 and the Phase 3 fixes in PRs after the audits (Claude, after Phase 7)
+The journey is complete. Carried into the owning artifacts:
+- [ ] Merge PRs #142 to #147 in order (#142, #143, #144, #145, #146, then #147 which sits on #146) (Areesh)
+- [ ] Verify on a phone: tab labels, Undo, pull to refresh, the save screen, the Plus screen, the shorter first run (Areesh)
+- [ ] Native review of every Dhivehi string added (Areesh or a reviewer) (`docs/PRODUCT.md` F5)
+- [ ] Start talking to testers weekly and fill `docs/CUSTOMER.md` "Evidence log" (`docs/PRODUCT.md` Discovery Cadence)
+- [ ] Revisit the "With friends" merge and folding pools into recurring once real use shows the confusion (`docs/PRODUCT.md` cuts 5 and 6)
+- [ ] Decide on sign-in without leaving the app and custom auth emails (`docs/PRODUCT.md` F1, F2)
+- [ ] Optional end-of-day reminder, off by default (`docs/PRODUCT.md` Activation plan)
+- Forward routing: when the experience holds up and the goal shifts to habit and growth loops, continue with the grow-app skill.
