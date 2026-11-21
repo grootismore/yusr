@@ -7,7 +7,7 @@
  */
 export interface LetterKey { base: string; shift?: string; latin: string }
 
-/** The Rufiyaa sign, Unicode 17+. Shown in the keyboard's own font; where a font lacks it the person can still type Rf. */
+/** The Rufiyaa sign (U+20C2). No system font has it yet, so the bundled Thaana Noor fonts carry a drawn glyph for it (a raa with a strike bar). */
 export const RUFIYAA = '\u20C2';
 
 const k = (latin: string, base: string, shift?: string): LetterKey => ({ latin, base, shift });
