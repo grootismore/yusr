@@ -52,6 +52,7 @@ export default function Iou() {
     const e: { amount?: string; date?: string } = {};
     let laari = 0;
     try { laari = parseAmount(amount); if (laari <= 0) throw new Error('x'); } catch { e.amount = t('expense.invalidAmount'); }
+    if (!e.amount && laari > left) e.amount = t('ious.tooMuch', { amount: `MVR ${formatNumber(left)}` });
     const date = parseDate(paidOn);
     if (!date) e.date = t('expense.invalidDate');
     setErrors(e);

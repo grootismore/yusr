@@ -175,7 +175,7 @@ export default function Home() {
 
       <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
         <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
-        <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
+        <QuickAction icon="scan" label={t('home.scanReceipt')} onPress={() => router.push('/scan')} />
         {featDebts ? <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} /> : null}
         {featGiving ? <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} /> : null}
       </Row>
