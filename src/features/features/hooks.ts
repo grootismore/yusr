@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useCommitments, useDebts, useGiving, useHousehold, useIous, usePools, useRecurring, useRegisterItems, useSplit } from '@/data/hooks';
+import { useCommitments, useDebts, useGiving, useHousehold, useIous, useIouInvites, useMyInvites, usePools, useRecurring, useRegisterItems, useSplit } from '@/data/hooks';
 import { monthStart } from '@/lib/dates';
 import { setFlag, useFlag } from '@/lib/flags';
 import { FEATURES, featureById, featuresInUse, type FeatureId } from './registry';
@@ -28,6 +28,13 @@ export function useFeatureSeed(signedIn: boolean) {
   const go = signedIn && seeded === false;
   const debts = useDebts(go), ious = useIous(go), split = useSplit(go), pools = usePools(go), recurring = useRecurring(go);
   const household = useHousehold(go), commitments = useCommitments(go), giving = useGiving(monthStart(), go), register = useRegisterItems(go);
+  // Someone who invites you (to an IOU or a Hissa Foshi group) must be seen, so an invitation switches that feature on.
+  const iouInvites = useIouInvites(signedIn && seeded === true).data;
+  const splitInvites = useMyInvites(signedIn && seeded === true).data;
+  useEffect(() => {
+    if ((iouInvites?.length ?? 0) > 0) void setFeature('ious', true);
+    if ((splitInvites?.length ?? 0) > 0) void setFeature('split', true);
+  }, [iouInvites, splitInvites]);
   const ready = [debts, ious, split, pools, recurring, household, commitments, giving, register].every((q) => q.isSuccess);
   useEffect(() => {
     if (!go || !ready) return;

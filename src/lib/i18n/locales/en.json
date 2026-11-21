@@ -704,7 +704,10 @@
     "justMe": "Just me",
     "together": "Me and my partner or family",
     "whoNote": "Shared entries go in one pot you all see. Everything else stays private.",
-    "next": "Continue"
+    "next": "Continue",
+    "featuresTitle": "What else do you want to use?",
+    "featuresBody": "Kharadhu works without any of these. Switch on what you need. You can change this any time under More, Add features.",
+    "start": "Start"
   },
   "forgot": {
     "title": "Reset your password",

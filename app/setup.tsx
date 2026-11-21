@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { HouseholdStart } from '@/features/household/Start';
+import { setFeature } from '@/features/features/hooks';
+import { FeatureSwitches } from '@/features/features/ui';
 import { Keypad } from '@/components/Keypad';
 import { Text } from '@/components/Text';
 import { Button, Chip, Icon, Row, Screen } from '@/components/ui';
@@ -21,7 +23,7 @@ export default function Setup() {
   const colors = useColors();
   const { t } = useTranslation();
   const save = useWrite(api.setBudget);
-  const [step, setStep] = useState<'who' | 'together' | 'budget'>('who');
+  const [step, setStep] = useState<'who' | 'together' | 'budget' | 'features'>('who');
   const hasHousehold = !!useHousehold().data;
   const [typed, setTyped] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,21 @@ export default function Setup() {
       } catch { setError(t('expense.invalidAmount')); return; }
     }
     success();
-    await setFlag('setupDone', true);
+    setStep('features');
+  }
+
+  if (step === 'features') {
+    return (
+      <Screen>
+        <View style={{ gap: space.xs, paddingTop: space.md }}>
+          <Text variant="heading" color={colors.accent}>{t('app.name')}</Text>
+          <Text variant="title" accessibilityRole="header">{t('setup.featuresTitle')}</Text>
+          <Text color={colors.inkMuted}>{t('setup.featuresBody')}</Text>
+        </View>
+        <FeatureSwitches />
+        <Button label={t('setup.start')} onPress={() => void setFlag('setupDone', true)} />
+      </Screen>
+    );
   }
 
   if (step !== 'budget') {
@@ -54,8 +70,8 @@ export default function Setup() {
           </View>
         ) : (
           <View style={{ gap: space.lg }}>
-            <HouseholdStart onDone={() => setStep('budget')} />
-            <Button kind="ghost" label={hasHousehold ? t('setup.next') : t('setup.skip')} onPress={() => setStep('budget')} />
+            <HouseholdStart onDone={() => { void setFeature('household', true); setStep('budget'); }} />
+            <Button kind="ghost" label={hasHousehold ? t('setup.next') : t('setup.skip')} onPress={() => { if (hasHousehold) void setFeature('household', true); setStep('budget'); }} />
           </View>
         )}
       </Screen>
@@ -85,7 +101,7 @@ export default function Setup() {
 
       <View style={{ gap: space.xs, marginTop: 'auto' }}>
         <Button label={t('setup.save')} onPress={submit} loading={save.isPending} />
-        <Button kind="ghost" label={t('setup.skip')} onPress={() => void setFlag('setupDone', true)} />
+        <Button kind="ghost" label={t('setup.skip')} onPress={() => setStep('features')} />
         <Row style={{ justifyContent: 'center' }}>
           <Icon name="scan" size={18} color={colors.accent} />
           <Text variant="small" color={colors.inkMuted} style={{ flex: 1 }}>{t('setup.tip')}</Text>

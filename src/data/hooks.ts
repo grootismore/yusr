@@ -66,14 +66,14 @@ export function useSharedTotals(month: string) {
 }
 export const useHouseholdEntries = (month: string) => useQuery({ queryKey: ['household-entries', month], queryFn: () => api.listHouseholdEntries(month) });
 export const useSplitInvites = () => useQuery({ queryKey: ['split-invites'], queryFn: api.listSplitInvites });
-export const useMyInvites = () => useQuery({ queryKey: ['my-invites'], queryFn: api.listMyInvites });
+export const useMyInvites = (enabled = true) => useQuery({ queryKey: ['my-invites'], queryFn: api.listMyInvites, enabled });
 export const useSplit = (enabled = true) => useQuery({ queryKey: ['split'], queryFn: api.listSplit, enabled });
 export const useRecurring = (enabled = true) => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring, enabled });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
 export const useIous = (enabled = true) => useQuery({ queryKey: ['ious'], queryFn: api.listIous, enabled });
 export const useIouPayments = (enabled = true) => useQuery({ queryKey: ['iou-payments'], queryFn: api.listIouPayments, enabled });
 export const useIouPeople = (enabled = true) => useQuery({ queryKey: ['iou-people'], queryFn: api.listIouPeople, enabled });
-export const useIouInvites = () => useQuery({ queryKey: ['iou-invites'], queryFn: api.listIouInvites });
+export const useIouInvites = (enabled = true) => useQuery({ queryKey: ['iou-invites'], queryFn: api.listIouInvites, enabled });
 export const usePools = (enabled = true) => useQuery({ queryKey: ['pools'], queryFn: api.listPools, enabled });
 export const usePoolPayments = () => useQuery({ queryKey: ['pool-payments'], queryFn: api.listPoolPayments });
 export const useGiving = (month: string, enabled = true) => useQuery({ queryKey: ['giving', month], queryFn: () => api.listGiving(month), enabled });
