@@ -13,7 +13,7 @@ import { tick } from '@/lib/haptics';
 import { isLtrInput } from '@/lib/inputs';
 import { markBoot } from '@/lib/boot';
 import { faceFor } from '@/theme/fonts';
-import { radius, space, TOUCH, useColors, useIsDark } from '@/theme/tokens';
+import { radius, space, TOUCH, useColors } from '@/theme/tokens';
 import { Money } from './Money';
 import { Text } from './Text';
 import { DialogHost } from '@/lib/dialog';
