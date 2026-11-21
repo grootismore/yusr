@@ -1,4 +1,4 @@
-import { findPerson, isSettled, nudgeDates, personToSave, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment, type IouPerson } from '@/features/ious/logic';
+import { findPerson, groupByPerson, isSettled, nudgeDates, personTimeline, personToSave, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment, type IouPerson } from '@/features/ious/logic';
 
 const iou: Iou = { id: 'i1', user_id: 'me', direction: 'lent', person_name: 'Ahmed', person_email: null, person_account: null, title: 'Rent help', amount_laari: 50_000, lent_on: '2026-11-01', due_on: '2026-12-01', nudge: 'me' };
 const pay = (id: string, amount: number, on: string): IouPayment => ({ id, iou_id: 'i1', amount_laari: amount, paid_on: on, note: null, created_by: 'me' });
@@ -54,5 +54,38 @@ describe('saved people', () => {
     expect(personToSave(people, 'Aisha', 'other@example.mv')).toBeNull(); // never overwrites an email already saved
     expect(personToSave(people, 'Ahmed', null)).toBeNull();
     expect(personToSave(people, '  ', null)).toBeNull();
+  });
+});
+
+describe('IOUs by person', () => {
+  const a: Iou = { ...iou, id: 'a', person_name: 'Ahmed', amount_laari: 26_000, due_on: null };
+  const b: Iou = { ...iou, id: 'b', person_name: ' ahmed ', amount_laari: 30_000, lent_on: '2026-11-05', due_on: '2026-11-20' };
+  const c: Iou = { ...iou, id: 'c', person_name: 'Aisha', direction: 'borrowed', amount_laari: 10_000, due_on: null };
+  const pays = [{ id: 'p', iou_id: 'b', amount_laari: 10_000, paid_on: '2026-11-08', note: null, created_by: 'me' }];
+
+  it('shows each person once, however many IOUs they have', () => {
+    const g = groupByPerson([a, b, c], pays, 'me', 'Them', '2026-11-21');
+    expect(g.map((x) => x.name)).toEqual(['Ahmed', 'Aisha']); // Ahmed (overdue) before Aisha; the first spelling is kept
+    const ahmed = g.find((x) => x.key === 'n:ahmed')!;
+    expect(ahmed.ious).toHaveLength(2);
+    expect(ahmed.owedToMe).toBe(46_000); // 260 + (300 - 100)
+    expect(ahmed.status).toBe('overdue');
+    expect(g.find((x) => x.name === 'Aisha')!.net).toBe(-10_000);
+  });
+
+  it('nets what they owe you against what you owe them', () => {
+    const both = groupByPerson([a, { ...c, person_name: 'Ahmed' }], [], 'me', 'Them', '2026-11-21');
+    expect(both).toHaveLength(1);
+    expect(both[0].net).toBe(16_000);
+    expect([both[0].owedToMe, both[0].iOwe]).toEqual([26_000, 10_000]);
+  });
+
+  it('puts settled people last and runs the balance through the timeline', () => {
+    const done = { ...a, id: 'd', person_name: 'Zed', amount_laari: 5_000 };
+    const g = groupByPerson([done, c], [{ id: 'q', iou_id: 'd', amount_laari: 5_000, paid_on: '2026-11-02', note: null, created_by: 'me' }], 'me', 'Them', '2026-11-21');
+    expect(g.map((x) => x.name)).toEqual(['Aisha', 'Zed']);
+    const t = personTimeline(groupByPerson([a, b], pays, 'me', 'Them', '2026-11-21')[0], pays, 'me', '2026-11-21');
+    expect(t.map((e) => e.kind)).toEqual(['lent', 'lent', 'theyPaid']);
+    expect(t.map((e) => e.net)).toEqual([26_000, 56_000, 46_000]);
   });
 });

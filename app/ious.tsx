@@ -8,7 +8,7 @@ import { Button, Card, Icon, ProgressBar, Row, Screen, StackHeader } from '@/com
 import * as api from '@/data/api';
 import { confirmDialog } from '@/lib/dialog';
 import { useIous, useIouInvites, useIouPayments, useIouPeople, useWrite } from '@/data/hooks';
-import { paidOf, remaining, roleOf, statusOf, totals, type Iou, type IouPayment } from '@/features/ious/logic';
+import { groupByPerson, paidOf, totals, type IouPayment, type PersonGroup } from '@/features/ious/logic';
 import { StatusPill } from '@/features/ious/ui';
 import { useAuth } from '@/lib/auth';
 import { today } from '@/lib/dates';
@@ -28,8 +28,9 @@ export default function Ious() {
   const people = useIouPeople().data ?? [];
   const removePerson = useWrite(api.deleteIouPerson);
   const sum = totals(ious, payments, me);
-  const open = ious.filter((i) => remaining(i, payments.filter((p) => p.iou_id === i.id)) > 0);
-  const closed = ious.filter((i) => !open.includes(i));
+  const groups = groupByPerson(ious, payments, me, t('ious.other'), today());
+  const open = groups.filter((g) => g.openCount > 0);
+  const closed = groups.filter((g) => g.openCount === 0);
   return (
     <Screen>
       <StackHeader title={t('ious.title')} />
@@ -69,9 +70,9 @@ export default function Ious() {
         </Card>
       ) : null}
 
-      {open.map((i) => <IouRow key={i.id} iou={i} payments={payments} me={me} />)}
+      {open.map((g) => <PersonRow key={g.key} group={g} payments={payments} />)}
       {closed.length ? <Text variant="heading">{t('ious.settledTitle')}</Text> : null}
-      {closed.map((i) => <IouRow key={i.id} iou={i} payments={payments} me={me} />)}
+      {closed.map((g) => <PersonRow key={g.key} group={g} payments={payments} />)}
 
       {people.length ? (
         <Card style={{ gap: space.sm }}>
@@ -92,26 +93,24 @@ export default function Ious() {
   );
 }
 
-function IouRow({ iou, payments, me }: { iou: Iou; payments: IouPayment[]; me: string }) {
+function PersonRow({ group, payments }: { group: PersonGroup; payments: IouPayment[] }) {
   const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
-  const mine = payments.filter((p) => p.iou_id === iou.id);
-  const left = remaining(iou, mine);
-  const role = roleOf(iou, me);
-  const name = iou.user_id === me || !me ? iou.person_name : t('ious.other');
-  const status = statusOf(iou, mine, today());
-  const percent = Math.min(100, Math.floor((paidOf(mine) * 100) / iou.amount_laari));
+  const open = group.ious.filter((i) => payments.filter((p) => p.iou_id === i.id).reduce((s, p) => s + p.amount_laari, 0) < i.amount_laari);
+  const total = open.reduce((s, i) => s + i.amount_laari, 0);
+  const paid = open.reduce((s, i) => s + paidOf(payments.filter((p) => p.iou_id === i.id)), 0);
+  const percent = total > 0 ? Math.min(100, Math.floor((paid * 100) / total)) : 100;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={name} onPress={() => router.push({ pathname: '/iou', params: { id: iou.id } })}>
+    <Pressable accessibilityRole="button" accessibilityLabel={group.name} onPress={() => router.push({ pathname: '/iou-person', params: { key: group.key } })}>
       <Card style={{ gap: space.sm }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="title" style={{ flex: 1 }}>{name}</Text>
-          <StatusPill status={status} />
+          <Text variant="title" style={{ flex: 1 }}>{group.name}</Text>
+          <StatusPill status={group.status} />
         </Row>
-        <Msg k={left === 0 ? 'ious.paidInFull' : role === 'lent' ? 'ious.owesYou' : 'ious.youOweThem'} values={{ name }} amounts={{ amount: left === 0 ? iou.amount_laari : left }} />
-        {iou.title ? <Text variant="small" color={colors.inkMuted}>{iou.title}</Text> : null}
-        <ProgressBar percent={percent} state={status === 'overdue' ? 'over' : status === 'dueSoon' ? 'near' : 'ok'} label={t('a11y.progress', { percent })} />
+        <Msg k={group.openCount === 0 ? 'ious.allSettled' : group.net > 0 ? 'ious.owesYou' : group.net < 0 ? 'ious.youOweThem' : 'ious.pt.even'} values={{ name: group.name }} amounts={{ amount: Math.abs(group.net) }} />
+        <Text variant="small" color={colors.inkMuted}>{t('ious.iouCount', { n: group.ious.length })}</Text>
+        <ProgressBar percent={percent} state={group.status === 'overdue' ? 'over' : group.status === 'dueSoon' ? 'near' : 'ok'} label={t('a11y.progress', { percent })} />
       </Card>
     </Pressable>
   );

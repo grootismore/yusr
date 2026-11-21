@@ -22,7 +22,7 @@ export default function IouEdit() {
   const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, name: presetName, email: presetEmail } = useLocalSearchParams<{ id?: string; name?: string; email?: string }>();
   const existing = useIous().data?.find((i) => i.id === id);
   const add = useWrite(api.addIou);
   const update = useWrite(api.updateIou);
@@ -30,8 +30,8 @@ export default function IouEdit() {
   const addPerson = useWrite(api.addIouPerson);
   const fillPerson = useWrite(api.updateIouPerson);
   const [direction, setDirection] = useState<Direction>(existing?.direction ?? 'lent');
-  const [name, setName] = useState(existing?.person_name ?? '');
-  const [email, setEmail] = useState(existing?.person_email ?? '');
+  const [name, setName] = useState(existing?.person_name ?? presetName ?? '');
+  const [email, setEmail] = useState(existing?.person_email ?? presetEmail ?? '');
   const [amount, setAmount] = useState(existing ? formatNumber(existing.amount_laari).replace(/,/g, '') : '');
   const [title, setTitle] = useState(existing?.title ?? '');
   const [lentOn, setLentOn] = useState(formatDate(existing?.lent_on ?? today()));

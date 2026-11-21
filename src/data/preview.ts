@@ -93,6 +93,7 @@ export const recurring: RecurringItem[] = [
 export const ious: Iou[] = [
   { id: 'io1', user_id: '', direction: 'lent', person_name: 'Ahmed', person_email: 'ahmed@example.mv', person_account: null, title: 'Rent help', amount_laari: 150_000, lent_on: '2026-10-20', due_on: '2026-11-30', nudge: 'both' },
   { id: 'io2', user_id: '', direction: 'borrowed', person_name: 'Aisha', person_email: null, person_account: null, title: 'Phone repair', amount_laari: 60_000, lent_on: '2026-11-02', due_on: '2026-11-12', nudge: 'me' },
+  { id: 'io4', user_id: '', direction: 'lent', person_name: 'Ahmed', person_email: 'ahmed@example.mv', person_account: null, title: 'Help', amount_laari: 30_000, lent_on: '2026-11-10', due_on: null, nudge: 'me' },
   { id: 'io3', user_id: '', direction: 'lent', person_name: 'Shiyam', person_email: null, person_account: null, title: null, amount_laari: 20_000, lent_on: '2026-09-15', due_on: null, nudge: 'off' },
 ];
 export const iouPeople: IouPerson[] = [
