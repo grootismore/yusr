@@ -85,45 +85,47 @@ export default function Activity() {
         </Row>
         {days.length === 0 ? (
           <Card style={{ alignItems: 'center', padding: space.xl }}><Text color={colors.inkMuted}>{t(search.trim() ? 'activity.searchEmpty' : 'activity.empty')}</Text></Card>
-        ) : days.map(([day, rows]) => (
-          <View key={day} style={{ gap: space.sm }}>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Text variant="label" color={colors.inkMuted}>{dayLabel(day) ?? <Text latin variant="label" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
-              {(() => {
-                const tot = dayTotals.get(day);
-                if (!tot) return null;
-                return tot.spent > 0 ? <Msg k="activity.daySpent" amounts={{ amount: tot.spent }} variant="small" color={colors.inkMuted} /> : tot.received > 0 ? <Msg k="activity.dayReceived" amounts={{ amount: tot.received }} variant="small" color={colors.income} /> : null;
-              })()}
-            </Row>
-            <Card>
-              {rows.map((r) => {
-                if (r.kind === 'shared') {
-                  const e = sharedById.get(r.id);
-                  return e ? <SharedRow key={r.id} hideDate entry={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;
-                }
-                if (r.kind === 'expense') {
-                  const e = expenseById.get(r.id);
-                  return e ? <ExpenseRow key={r.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;
-                }
-                const i = incomeById.get(r.id);
-                if (!i) return null;
-                return (
-                  <Pressable key={r.id} accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/edit-income', params: { id: r.id } })}
-                    style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, opacity: pressed ? 0.6 : 1 })}>
-                    <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="arrow-down" color={colors.accent} />
-                    </View>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text numberOfLines={1}>{i.note || t('add.income')}</Text>
-                      {i.currency !== 'MVR' ? <Text latin variant="small" color={colors.inkMuted}>{money(i.amount_laari, i.currency)}</Text> : null}
-                    </View>
-                    <Money laari={i.mvr_laari} prefix="+" color={colors.income} />
-                  </Pressable>
-                );
-              })}
-            </Card>
-          </View>
-        ))}
+        ) : (
+          <Card style={{ gap: space.xs }}>
+            {days.map(([day, rows], di) => (
+              <View key={day} style={{ gap: space.xs, paddingTop: di === 0 ? 0 : space.sm, borderTopWidth: di === 0 ? 0 : 1, borderTopColor: colors.line }}>
+              <Row style={{ justifyContent: 'space-between' }}>
+                <Text variant="label" color={colors.inkMuted}>{dayLabel(day) ?? <Text latin variant="label" color={colors.inkMuted}>{formatDate(day)}</Text>}</Text>
+                {(() => {
+                  const tot = dayTotals.get(day);
+                  if (!tot) return null;
+                  return tot.spent > 0 ? <Msg k="activity.daySpent" amounts={{ amount: tot.spent }} variant="small" color={colors.inkMuted} /> : tot.received > 0 ? <Msg k="activity.dayReceived" amounts={{ amount: tot.received }} variant="small" color={colors.income} /> : null;
+                })()}
+              </Row>
+                {rows.map((r) => {
+                  if (r.kind === 'shared') {
+                    const e = sharedById.get(r.id);
+                    return e ? <SharedRow key={r.id} hideDate entry={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;
+                  }
+                  if (r.kind === 'expense') {
+                    const e = expenseById.get(r.id);
+                    return e ? <ExpenseRow key={r.id} hideDate expense={e} category={e.category_id ? byId.get(e.category_id) : undefined} /> : null;
+                  }
+                  const i = incomeById.get(r.id);
+                  if (!i) return null;
+                  return (
+                    <Pressable key={r.id} accessibilityRole="button" accessibilityHint={t('edit.tapToEdit')} onPress={() => router.push({ pathname: '/edit-income', params: { id: r.id } })}
+                      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, opacity: pressed ? 0.6 : 1 })}>
+                      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon name="arrow-down" color={colors.accent} />
+                      </View>
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <Text numberOfLines={1}>{i.note || t('add.income')}</Text>
+                        {i.currency !== 'MVR' ? <Text latin variant="small" color={colors.inkMuted}>{money(i.amount_laari, i.currency)}</Text> : null}
+                      </View>
+                      <Money laari={i.mvr_laari} prefix="+" color={colors.income} />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
+          </Card>
+        )}
       </>
     </Screen>
   );

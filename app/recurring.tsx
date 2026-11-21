@@ -66,7 +66,7 @@ export default function Recurring() {
               <Text>{item.name}</Text>
               <Text variant="small" color={colors.inkMuted}>{formatDate(occurrence)} · {text(item.amount_minor, item.currency)}</Text>
               <Row>
-                <Button label={item.kind === 'income' ? t('recurring.received') : t('recurring.paid')} icon="checkmark" loading={record.isPending}
+                <Button kind="secondary" label={item.kind === 'income' ? t('recurring.received') : t('recurring.paid')} icon="checkmark" loading={record.isPending}
                   onPress={async () => { await record.mutateAsync({ recurring_id: item.id, occurrence, kind: item.kind, name: item.name, amount_minor: item.amount_minor, currency: item.currency, fx_rate_to_mvr: rateFor(item.currency), category_id: item.category_id, household: shareTarget(item) }); success(); toast(t('toast.saved')); }} />
                 <Button kind="ghost" label={t('recurring.skip')} loading={skip.isPending}
                   onPress={async () => { await skip.mutateAsync({ recurring_id: item.id, occurrence }); toast(t('recurring.skipped')); }} />

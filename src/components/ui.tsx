@@ -380,7 +380,7 @@ export function Segmented<K extends string>({ options, value, onChange }: { opti
         return (
           <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => { tick(); onChange(o.key); }}
             style={{ flex: 1, minHeight: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.surface : 'transparent', borderWidth: 1, borderColor: on ? colors.cardEdge : 'transparent' }}>
-            <Text variant="small" color={on ? colors.accent : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
+            <Text variant="small" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} color={on ? colors.accent : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
           </Pressable>
         );
       })}

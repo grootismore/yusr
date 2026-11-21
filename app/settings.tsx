@@ -75,21 +75,17 @@ export default function Settings() {
         </Card>
 
         <Card>
-          <Text variant="heading">{t('settings.language')}</Text>
+          <Text variant="label" color={colors.inkMuted}>{t('settings.language')}</Text>
           <Row style={{ flexWrap: 'wrap' }}>{LANGUAGES.map((l) => <Chip key={l} label={LANGUAGE_NAMES[l]} selected={i18n.language === l} onPress={() => pickLanguage(l)} />)}</Row>
           {i18n.language === 'dv' ? <SettingRow icon="keypad-outline" title={t('settings.thaanaKeyboard')} subtitle={t('settings.thaanaKeyboardNote')} value={thaanaKb !== false} onValueChange={(v) => void setFlag('thaanaKeyboard', v)} last /> : null}
-        </Card>
-
-        <Card>
-          <Text variant="heading">{t('settings.appearance')}</Text>
+          <Text variant="label" color={colors.inkMuted}>{t('settings.appearance')}</Text>
           <Row style={{ flexWrap: 'wrap' }}>
             {APPEARANCES.map((a) => <Chip key={a} label={t(`settings.appearanceChoice.${a}`)} selected={appearance === a} onPress={() => { setAppearance(a); void saveAppearance(a); }} />)}
           </Row>
-        </Card>
-
-        <Card>
-          <Text variant="heading">{t('settings.baseCurrency')}</Text>
-          <Text color={colors.inkMuted}>{t('settings.baseCurrencyNote')}</Text>
+          <Row style={{ justifyContent: 'space-between' }}>
+            <Text variant="label" color={colors.inkMuted}>{t('settings.baseCurrency')}</Text>
+            <Text>{t('settings.baseCurrencyNote')}</Text>
+          </Row>
         </Card>
 
         <Card>
