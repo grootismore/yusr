@@ -1,4 +1,4 @@
-import { findPerson, groupByPerson, isSettled, nudgeDates, personTimeline, personToSave, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment, type IouPerson } from '@/features/ious/logic';
+import { findPerson, groupByPerson, payerOf, isSettled, nudgeDates, personTimeline, personToSave, remaining, roleOf, statusOf, timeline, totals, type Iou, type IouPayment, type IouPerson } from '@/features/ious/logic';
 
 const iou: Iou = { id: 'i1', user_id: 'me', direction: 'lent', person_name: 'Ahmed', person_email: null, person_account: null, title: 'Rent help', amount_laari: 50_000, lent_on: '2026-11-01', due_on: '2026-12-01', nudge: 'me' };
 const pay = (id: string, amount: number, on: string): IouPayment => ({ id, iou_id: 'i1', amount_laari: amount, paid_on: on, note: null, created_by: 'me' });
@@ -88,4 +88,9 @@ describe('IOUs by person', () => {
     expect(t.map((e) => e.kind)).toEqual(['lent', 'lent', 'theyPaid']);
     expect(t.map((e) => e.net)).toEqual([26_000, 56_000, 46_000]);
   });
+});
+
+it('names the person who owes as the payer, not whoever typed the payment in', () => {
+  expect(payerOf('lent', 'Ahmed', 'you')).toBe('Ahmed'); // you lent, so Ahmed pays you back, even if you record it
+  expect(payerOf('borrowed', 'Ahmed', 'you')).toBe('you'); // you borrowed, so you pay Ahmed
 });
