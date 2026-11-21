@@ -6,8 +6,8 @@ import { useColorScheme } from 'react-native';
 export const light = {
   ground: '#CBD2D9', // page background: dusty blue-grey
   groundDeep: '#B9C1C9', // tracks, unselected segments
-  surface: '#D9DFE5', // solid surfaces: a dusty tone, never white
-  card: '#D9DFE5', // card fill
+  surface: '#E4E9EE', // solid surfaces: one step lighter than the page, never pure white
+  card: '#E4E9EE', // card fill: lighter than the page (#CBD2D9) so cards read as cards, not as the page itself
   cardEdge: '#B7BFC8', // card rim
   field: '#D9DFE5', // input and chip fill
   ink: '#1E2023', // text and icons: matte black
