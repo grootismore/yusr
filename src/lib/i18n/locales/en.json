@@ -652,7 +652,9 @@
     "another": "Add another",
     "details": "Details",
     "howMuch": "How much?",
-    "next": "Next"
+    "next": "Next",
+    "moreOptions": "More options",
+    "fewerOptions": "Fewer options"
   },
   "income": {
     "addTitle": "Add income",
