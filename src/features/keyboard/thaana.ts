@@ -22,9 +22,9 @@ export const NUMBERS: readonly { base: string; shift: string }[] = [
 ];
 /** The symbols page: punctuation and signs, including the Thaana comma, semicolon and question mark. */
 export const SYMBOLS: readonly (readonly string[])[] = [
-  ['-', '/', ':', ';', '(', ')', '$', '&', '@', '"'],
-  ['.', ',', '?', '!', "'", '،', '؛', '؟', '%', '+'],
-  ['=', '*', '#', '_', '<', '>', '[', ']'],
+  ['@', '#', '$', '%', '&', '*', '-', '+', '=', '/'],
+  ['(', ')', 'ޜ', '{', '}', '[', ']', '<', '>', '^'],
+  [':', ';', '،', '÷', '×', '!', '"', "'"],
 ];
 /** Is this a vowel sign (fili or sukun)? Those are shown on a dotted circle so it is clear they sit on a letter. */
 export const isSign = (ch: string): boolean => ch.length === 1 && ch.charCodeAt(0) >= 0x07a6 && ch.charCodeAt(0) <= 0x07b0;

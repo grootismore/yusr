@@ -77,7 +77,7 @@ export function ThaanaKeyboard({ target }: { target: KbTarget }) {
         <>
           {row(SYMBOLS[0].map((s) => cap(s, () => target.press(s), { children: text(s) })), 's0')}
           {row(SYMBOLS[1].map((s) => cap(s, () => target.press(s), { children: text(s) })), 's1')}
-          {row(<>{SYMBOLS[2].map((s) => cap(s, () => target.press(s), { children: text(s) }))}{backspace(2)}</>, 's2')}
+          {row(<>{SYMBOLS[2].map((s) => cap(s, () => target.press(s), { children: text(s) }))}{backspace(1.5)}</>, 's2')}
         </>
       ) : (
         <>
@@ -92,8 +92,8 @@ export function ThaanaKeyboard({ target }: { target: KbTarget }) {
       )}
 
       {row(<>
-        {cap('symbols', () => { setSymbols(!symbols); setShift(false); }, { flex: 1.5, fn: true, a11y: symbols ? t('kb.letters') : t('kb.symbols'), children: text(symbols ? 'ހ' : '!#1') })}
-        {cap('؟', () => target.press('؟'), { children: text('؟') })}
+        {cap('symbols', () => { setSymbols(!symbols); setShift(false); }, { flex: 1.5, fn: true, on: symbols, a11y: symbols ? t('kb.letters') : t('kb.symbols'), children: text(symbols ? 'އަކުރު' : '!#1', symbols ? colors.onAccent : colors.ink) })}
+        {cap('?', () => target.press(symbols ? '?' : '؟'), { children: text(symbols ? '?' : '؟') })}
         {cap('space', () => target.press(' '), { flex: 4, children: <Text variant="small" color={colors.inkMuted} numberOfLines={1}>{t('kb.space')}</Text>, a11y: t('kb.space') })}
         {cap('.', () => target.press('.'), { children: text('.') })}
         {cap('enter', () => target.enter(), { flex: 1.5, fn: true, a11y: t('kb.return'), children: <Icon name="return-down-back" size={22} color={colors.ink} /> })}
