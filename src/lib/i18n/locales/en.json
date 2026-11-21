@@ -91,7 +91,7 @@
     "recent": "Recent",
     "seeAll": "See all",
     "emptyTitle": "No spending yet",
-    "emptyBody": "Add your first expense, or scan a receipt with Raseedhu.",
+    "emptyBody": "Add your first expense, or photograph a receipt.",
     "addExpense": "Add expense",
     "income": "Income",
     "incomeLine": "Income {{amount}}",
@@ -107,7 +107,7 @@
     "rateHint": "How many MVR for 1 {{code}}?",
     "mvrValue": "About {{amount}}",
     "category": "Category",
-    "merchant": "Merchant",
+    "merchant": "Shop or place",
     "date": "Date",
     "dateHint": "Day / month / year",
     "note": "Note",
@@ -118,8 +118,8 @@
     "chooseCategory": "Choose a category"
   },
   "scan": {
-    "title": "Raseedhu",
-    "subtitle": "Photograph a receipt. We fill in the details for you to check.",
+    "title": "Scan a receipt",
+    "subtitle": "Raseedhu, our receipt reader, fills in the details for you to check.",
     "left": "{{left}} of {{limit}} scans left this month",
     "camera": "Take a photo",
     "gallery": "Choose from gallery",
@@ -671,7 +671,7 @@
   },
   "onboarding": {
     "p1Title": "Know where your money goes",
-    "p1Body": "Log spending in MVR in seconds, or photograph a receipt and let Raseedhu read it.",
+    "p1Body": "Log what you spend in MVR in seconds. Or photograph a receipt and we read it for you.",
     "p2Title": "Pay debts down. Give with intention.",
     "p2Body": "A calm plan to be debt-free, plus a place for your sadaqah and zakat.",
     "p3Title": "Private, and for your family",
@@ -738,7 +738,7 @@
     "empty": "No activity this month."
   },
   "foreign": {
-    "salaryChip": "Salary",
+    "salaryChip": "Split pay",
     "splitHelp": "Paid in more than one currency? Add one entry for each.",
     "keep": "Keep this in {{currency}}",
     "keepNote": "Turn on if you haven't exchanged it yet. Convert to MVR later.",
@@ -878,8 +878,8 @@
     "cantSave": "No internet, so this wasn't saved. Try again online.",
     "waiting_one": "{{count}} saved item waiting to upload.",
     "waiting_other": "{{count}} saved items waiting to upload.",
-    "someFailed_one": "{{count}} saved item could not be uploaded and was dropped.",
-    "someFailed_other": "{{count}} saved items could not be uploaded and were dropped.",
+    "someFailed_one": "{{count}} saved item could not be sent, so it was not saved. Please add it again.",
+    "someFailed_other": "{{count}} saved items could not be sent, so they were not saved. Please add them again.",
     "signOutWaiting_one": "{{count}} saved item hasn't uploaded. Signing out loses it.",
     "signOutWaiting_other": "{{count}} saved items haven't uploaded. Signing out loses them.",
     "signOutAnyway": "Sign out anyway"
@@ -1187,11 +1187,11 @@
     "comingSoon": "Coming soon",
     "priceNote": "The App Store or Google Play shows the price when you subscribe. You can cancel any time in your store account.",
     "freeTitle": "Always free",
-    "freeBody": "Adding entries by hand, budgets and charts, the debt-free plan, zakat, sadaqah and giving, couple sharing, working offline, the PIN lock, and {{free}} Raseedhu scans a month.",
+    "freeBody": "Adding entries by hand, budgets and charts, the debt-free plan, zakat, sadaqah and giving, couple sharing, working offline, the PIN lock, and {{free}} receipt scans a month.",
     "needed": "This needs Kharadhu Plus.",
     "status": "Plus",
     "benefit": {
-      "scans": "{{plus}} Raseedhu scans a month",
+      "scans": "{{plus}} receipt scans a month",
       "photos": "Keep your receipt photos",
       "export": "Monthly summary as PDF or CSV",
       "household": "Households of three or more",
@@ -1225,7 +1225,9 @@
     "storeCode": "I have an App Store or Google Play offer code",
     "codeInvalid": "That code isn't valid, or it has ended or been used.",
     "codeTooMany": "Too many tries. Wait an hour and try again.",
-    "codeAlready": "You already have Plus through your subscription. The code was not used."
+    "codeAlready": "You already have Plus through your subscription. The code was not used.",
+    "notOnSale": "Plus is not on sale yet. If we gave you a promotion code, enter it below.",
+    "adds": "Plus adds"
   },
   "sheet": {
     "title": "Day sheet",
