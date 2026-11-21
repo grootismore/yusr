@@ -14,7 +14,7 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done | CUSTOMER.md | 2026-11-21 |
-| 2 | ux-heuristics | pending | DESIGN.md, EXPERIMENTS.md | |
+| 2 | ux-heuristics | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 | 3 | design-everyday-things | pending | DESIGN.md, EXPERIMENTS.md | |
 | 4 | refactoring-ui | pending | DESIGN.md, EXPERIMENTS.md | |
 | 5 | microinteractions | pending | DESIGN.md, EXPERIMENTS.md | |
@@ -35,4 +35,4 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phase 2: heuristic evaluation of Home, add entry, scan, budget, reports and the first-time path, rated 0-4 (Claude, next)
+- [ ] Phase 2: owner decides which severity-3 findings (U1-U4) are fixed now and which are backlogged (Areesh, next)
