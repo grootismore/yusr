@@ -54,3 +54,16 @@
 | C6 "Merchant" becomes "Shop or place" | 2 / 7 / 9 | proposed |
 | P1 Plus screen leads with what stays free | 4 / 7 / 9 | proposed |
 | P2 Plus benefit list shows only what exists | 6 / 9 / 9 | proposed (with U4) |
+
+## Shipped changes (improve-app journey, 2026-11-21)
+Every change has a metric to watch. Until analytics exist, "watch" means asking testers and comparing before and after by hand.
+
+| Change | PR | Metric to move (pre-committed) | Guardrail |
+|---|---|---|---|
+| Labelled tab bar (U1) | #142 | New accounts that open Budget or Reports in week one (EXP-001) | Bar does not crowd content on 360px phones |
+| Calm over-budget message and amber bar (U3, V4) | #142 | Fewer people who go over budget and stop logging: entries per person in the week after first going over | Over-budget still noticed (tap-through to Budget) |
+| Home panel order, no cut-off dates (U9, U2) | #142 | Fewer "what does this number mean" questions from testers | none |
+| Lighter cards, quieter watermark, one main action, press feedback (V1-V3, M1) | #143 | Testers rate "looks finished" higher; Add expense taps from Home | Contrast tests still pass |
+| Undo instead of confirm; pull to refresh; no false zero; hints (D1-D6, M3-M5) | #144 | Wrong deletes that stay deleted (Undo used); partner entries seen without relaunching | Undo does not duplicate entries |
+| Plainer words; honest Plus screen (C1-C6, U4, U6, P1, P2) | #145 | Fewer questions about "Raseedhu"; no complaints about a missing PDF or a dead Get Plus | none |
+| Save screen shows the month; Activity search (M6, U8) | #146 | Entries logged per person in days 1-14 (EXP-002); searches used per week | Time from keypad to saved stays under 10 seconds |

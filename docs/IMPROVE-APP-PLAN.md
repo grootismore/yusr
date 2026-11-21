@@ -18,10 +18,10 @@
 | 3 | design-everyday-things | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 | 4 | refactoring-ui | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 | 5 | microinteractions | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
-| 6 | made-to-stick | in-progress | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
-| 7 | influence-psychology | in-progress | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
+| 6 | made-to-stick | done | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
+| 7 | influence-psychology | done | POSITIONING.md, EXPERIMENTS.md | 2026-11-21 |
 | 8 | high-perf-browser | skipped: native app, no browser surface; a short "feels fast" check is folded into Phase 5 | DESIGN.md | 2026-11-21 |
-| 9 | steve-jobs-design-review | pending | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
+| 9 | steve-jobs-design-review | in-progress | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reason> · skipped: <reason>
 
 ## Key Decisions
@@ -40,8 +40,14 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-11-21 | 4 | Ship: lift cards off the page colour, tone down the panel watermark, Add expense as the dominant Home action | Owner chose all three. No new palette: the token system is already sound. |
 | 2026-11-21 | 5 | Signature moment: the save screen shows what is left this month | Owner chose it. Passes the removal test. |
 | 2026-11-21 | 5 | Ship M1 press feedback, M3 loading placeholder, M4 switch haptic, M5 pull to refresh | Owner chose all four. |
+| 2026-11-21 | 6 | Ship all the English copy rewrites; introduce Raseedhu once | Owner chose the recommended option. |
+| 2026-11-21 | 7 | Plus: remove unbuilt benefit, show "Not on sale yet", keep the promo code, lead with what is free | Owner chose the recommended option. |
+| 2026-11-21 | 2-7 | Fixes built as PRs #142 to #146 | Evidence before redesign: each PR cites its finding. |
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phases 6 and 7: owner decides the copy rewrites and the Plus changes (Areesh, next)
+- [ ] Phase 9: owner accepts or edits the cut list and the back-of-the-fence fixes (Areesh, next)
+- [ ] Merge PRs #142 to #146 (Areesh)
+- [ ] Verify on a phone: tab labels, Undo, pull to refresh, save screen, Plus screen (Areesh)
+- [ ] Native review of the Dhivehi strings added (Areesh or reviewer)
 - [ ] Implement U1-U11 and the Phase 3 fixes in PRs after the audits (Claude, after Phase 7)
