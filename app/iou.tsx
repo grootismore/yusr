@@ -17,6 +17,7 @@ import { formatDate, parseDate, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { toast } from '@/lib/toast';
+import { removeWithUndo } from '@/lib/undo';
 import { space, useColors } from '@/theme/tokens';
 
 /** One IOU: where it stands, its timeline, a payment form, and the reminders. */
@@ -109,7 +110,7 @@ export default function Iou() {
           {payments.filter((p) => p.created_by === me).map((p) => (
             <Row key={p.id} style={{ justifyContent: 'space-between' }}>
               <Msg k="ious.paymentLine" amounts={{ amount: p.amount_laari }} values={{ date: formatDate(p.paid_on) }} />
-              <Button kind="ghost" label={t('common.remove')} onPress={async () => { if (await confirmDialog({ title: t('ious.removePaymentTitle'), message: t('ious.removePaymentBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) await delPayment.mutateAsync(p.id); }} />
+              <Button kind="ghost" label={t('common.remove')} onPress={() => void removeWithUndo({ remove: () => delPayment.mutateAsync(p.id), restore: () => addPayment.mutateAsync({ iou_id: p.iou_id, amount_laari: p.amount_laari, paid_on: p.paid_on, note: p.note, created_by: p.created_by }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') })} />
             </Row>
           ))}
         </Card>

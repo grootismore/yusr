@@ -44,6 +44,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
   const [currency, setCurrency] = useState(initial.currency ?? 'MVR');
   const [rateText, setRateText] = useState<string | null>(initial.currency && initial.currency !== 'MVR' && initial.rate ? String(Number(initial.rate)) : null);
   const [categoryId, setCategoryId] = useState<string | null>(initial.category_id ?? null);
+  const needsCategory = !income && !categoryId; // Save waits for a category, so no error message is needed
   const [merchant, setMerchant] = useState(initial.merchant ?? '');
   const [date, setDate] = useState(formatDate(initial.date ?? today()));
   const [note, setNote] = useState(initial.note ?? '');
@@ -99,6 +100,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
           {categories.map((c) => <Chip key={c.id} label={catName(c)} icon={c.icon as IconName} selected={c.id === categoryId} onPress={() => setCategoryId(c.id)} />)}
         </Row>
         {flag('category') && !errors.category ? <Row><Icon name="alert-circle" size={18} color={colors.amberDeep} /><Text variant="small">{t('confirm.checkThis')} — {t('confirm.lowConfidence')}</Text></Row> : null}
+        {needsCategory && !flag('category') ? <Text variant="small" color={colors.inkMuted}>{t('expense.pickCategory')}</Text> : null}
         {errors.category ? <Text variant="small" color={colors.coral}>{errors.category}</Text> : null}
       </View>}
     </>
@@ -125,7 +127,7 @@ export function ExpenseForm({ initial = {}, categories, confidence, onSubmit, su
       {offerKeep && income && currency !== 'MVR' ? <SettingRow icon="wallet-outline" title={t('foreign.keep', { currency })} subtitle={t('foreign.keepNote')} value={keep} onValueChange={setKeep} last /> : null}
     </>
   );
-  const save = <Button label={submitLabel} onPress={submit} loading={busy} />;
+  const save = <Button label={submitLabel} onPress={submit} loading={busy} disabled={needsCategory} />;
 
   if (compact) {
     return (
