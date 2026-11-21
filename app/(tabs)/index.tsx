@@ -21,6 +21,7 @@ import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, 
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
+import { useFeature } from '@/features/features/hooks';
 import { useRule } from '@/features/rule/hooks';
 import { RuleCard } from '@/features/rule/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
@@ -64,6 +65,7 @@ export default function Home() {
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
   const rule = useRule(month);
+  const featRecurring = useFeature('recurring'), featDebts = useFeature('debts'), featGiving = useFeature('giving'), featHousehold = useFeature('household');
   const incomeQ = useIncome(month);
   const shared = useSharedTotals(month);
   // In a couple or household, the whole shared pot counts alongside your own.
@@ -174,12 +176,12 @@ export default function Home() {
       <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
         <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
         <QuickAction icon="scan" label={t('tabs.raseedhu')} onPress={() => router.push('/scan')} />
-        <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} />
-        <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} />
+        {featDebts ? <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} /> : null}
+        {featGiving ? <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} /> : null}
       </Row>
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
-      <SharedCard />
+      {featHousehold ? <SharedCard /> : null}
       <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
       {held.length > 0 ? (
         <Card>
@@ -203,7 +205,7 @@ export default function Home() {
         </Card>
       ) : null}
 
-      {recurringDue > 0 ? (
+      {featRecurring && recurringDue > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('recurring.dueCard', { count: recurringDue })} onPress={() => router.push('/recurring')}>
           <Card>
             <Row>
@@ -215,7 +217,7 @@ export default function Home() {
         </Pressable>
       ) : null}
 
-      {debtPlan.open.length > 0 ? (
+      {featDebts && debtPlan.open.length > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
           <Card>
             <Row>
@@ -230,7 +232,7 @@ export default function Home() {
         </Pressable>
       ) : null}
 
-      {goal || giving.total > 0 ? (
+      {featGiving && (goal || giving.total > 0) ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('giving.title')} onPress={() => router.push('/giving')}>
           <Card>
             <Row>

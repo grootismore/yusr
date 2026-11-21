@@ -18,6 +18,7 @@ import { debtMonth } from '@/features/debts/report';
 import { averageSpend, lastMonths } from '@/features/trends/trend';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
+import { useFeature } from '@/features/features/hooks';
 import { useRule } from '@/features/rule/hooks';
 import { RuleCard } from '@/features/rule/ui';
 import { ltr } from '@/lib/money';
@@ -43,6 +44,7 @@ export default function Reports() {
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const shared = useSharedTotals(month);
   const rule = useRule(month);
+  const featDebts = useFeature('debts'), featHousehold = useFeature('household');
   // In a couple or household, the whole shared pot counts alongside your own.
   const total = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const rows = useMemo(() => {
@@ -105,7 +107,7 @@ export default function Reports() {
         ) : null}
       </Card>
 
-      <SharedCard month={month} withActions={false} />
+      {featHousehold ? <SharedCard month={month} withActions={false} /> : null}
 
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>
@@ -116,7 +118,7 @@ export default function Reports() {
 
       <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
 
-      {dm.open > 0 || dm.byYou + dm.fromSalary > 0 ? (
+      {featDebts && (dm.open > 0 || dm.byYou + dm.fromSalary > 0) ? (
         <>
           <Text variant="heading">{t('reports.debtsTitle')}</Text>
           <Card>
