@@ -74,7 +74,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="reports" options={{ title: t('tabs.reports'), tabBarButton: tab('pie-chart-outline', 'pie-chart', tint, t('tabs.reports')) }} />
       <Tabs.Screen name="more" options={{ title: t('tabs.more'), tabBarButton: tab('ellipsis-horizontal-circle-outline', 'ellipsis-horizontal-circle', tint, t('tabs.more')) }} />
     </Tabs>
-    <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + TAB_HEIGHT + space.md} onPick={(kind) => router.push({ pathname: '/add-expense', params: { mode: kind } })} />
+    <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + TAB_HEIGHT + space.md} onPress={() => router.push('/add-expense')} />
     </>
   );
 }
