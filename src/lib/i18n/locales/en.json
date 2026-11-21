@@ -655,7 +655,10 @@
     "howMuch": "How much?",
     "next": "Next",
     "moreOptions": "More options",
-    "fewerOptions": "Fewer options"
+    "fewerOptions": "Fewer options",
+    "leftThisMonth": "{{amount}} left this month",
+    "overBudget": "{{amount}} over this month's budget",
+    "spentSoFar": "{{amount}} spent this month so far"
   },
   "income": {
     "addTitle": "Add income",
@@ -735,7 +738,10 @@
     "all": "All",
     "income": "Income",
     "expenses": "Expenses",
-    "empty": "No activity this month."
+    "empty": "No activity this month.",
+    "search": "Search",
+    "searchHint": "Shop, note, category or amount",
+    "searchEmpty": "Nothing matches that in this month."
   },
   "foreign": {
     "salaryChip": "Salary",
