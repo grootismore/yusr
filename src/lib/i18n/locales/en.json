@@ -1280,7 +1280,9 @@
     "letters": "Letters",
     "english": "English keyboard",
     "space": "Space",
-    "return": "Return"
+    "return": "Return",
+    "shift": "Shift",
+    "symbols": "Symbols and numbers"
   },
   "rule": {
     "title": "50/30/20",

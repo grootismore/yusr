@@ -1,11 +1,30 @@
-import { LETTERS, LOAN, SIGNS, backspaceAt, insertAt } from '@/features/keyboard/thaana';
+import { NUMBERS, ROWS, backspaceAt, insertAt, isSign } from '@/features/keyboard/thaana';
 
 describe('Thaana keyboard layout', () => {
-  it('has every Thaana letter once, and every vowel sign', () => {
-    const all = [...LETTERS.flat(), ...LOAN.flat()];
-    expect(new Set(all).size).toBe(all.length);
-    for (let c = 0x0780; c <= 0x07a5; c++) expect(all).toContain(String.fromCharCode(c));
-    for (let c = 0x07a6; c <= 0x07b0; c++) expect(SIGNS).toContain(String.fromCharCode(c));
+  const all = ROWS.flat().flatMap((k) => (k.shift ? [k.base, k.shift] : [k.base]));
+
+  it('has every Thaana letter once, and every vowel sign once', () => {
+    const letters = all.filter((c) => !isSign(c) && c.charCodeAt(0) >= 0x0780 && c.charCodeAt(0) <= 0x07a5);
+    expect(new Set(letters).size).toBe(letters.length);
+    for (let c = 0x0780; c <= 0x07a5; c++) expect(letters).toContain(String.fromCharCode(c));
+    const signs = all.filter(isSign);
+    expect(new Set(signs).size).toBe(signs.length);
+    for (let c = 0x07a6; c <= 0x07b0; c++) expect(signs).toContain(String.fromCharCode(c));
+  });
+
+  it('puts the unshifted keys where the standard Dhivehi keyboard has them', () => {
+    const base = Object.fromEntries(ROWS.flat().map((k) => [k.latin, k.base]));
+    expect(base).toMatchObject({
+      Q: 'ް', W: 'އ', E: 'ެ', R: 'ރ', T: 'ތ', Y: 'ޔ', U: 'ު', I: 'ި', O: 'ޮ', P: 'ޕ',
+      A: 'ަ', S: 'ސ', D: 'ދ', F: 'ފ', G: 'ގ', H: 'ހ', J: 'ޖ', K: 'ކ', L: 'ލ',
+      Z: 'ޒ', X: 'ޝ', C: 'ޗ', V: 'ވ', B: 'ބ', N: 'ނ', M: 'މ',
+    });
+  });
+
+  it('has the QWERTY rows, ten digits and their symbols', () => {
+    expect(ROWS.map((r) => r.map((k) => k.latin).join(''))).toEqual(['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM']);
+    expect(NUMBERS.map((n) => n.base).join('')).toBe('1234567890');
+    expect(NUMBERS.map((n) => n.shift).join('')).toBe('!@#$%^&*()');
   });
 });
 
