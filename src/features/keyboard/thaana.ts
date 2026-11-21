@@ -7,11 +7,14 @@
  */
 export interface LetterKey { base: string; shift?: string; latin: string }
 
+/** The Rufiyaa sign, Unicode 17+. Shown in the keyboard's own font; where a font lacks it the person can still type Rf. */
+export const RUFIYAA = '\u20C2';
+
 const k = (latin: string, base: string, shift?: string): LetterKey => ({ latin, base, shift });
 
 /** The three letter rows, from the left. Vowel signs (fili) and the sukun are on the same keys, base or Shift. */
 export const ROWS: readonly (readonly LetterKey[])[] = [
-  [k('Q', 'ް', 'ޤ'), k('W', 'އ', 'ޢ'), k('E', 'ެ', 'ޭ'), k('R', 'ރ', 'ޜ'), k('T', 'ތ', 'ޓ'), k('Y', 'ޔ', 'ޠ'), k('U', 'ު', 'ޫ'), k('I', 'ި', 'ީ'), k('O', 'ޮ', 'ޯ'), k('P', 'ޕ', 'ޘ')],
+  [k('Q', 'ް', 'ޤ'), k('W', 'އ', 'ޢ'), k('E', 'ެ', 'ޭ'), k('R', 'ރ', RUFIYAA), k('T', 'ތ', 'ޓ'), k('Y', 'ޔ', 'ޠ'), k('U', 'ު', 'ޫ'), k('I', 'ި', 'ީ'), k('O', 'ޮ', 'ޯ'), k('P', 'ޕ', 'ޘ')],
   [k('A', 'ަ', 'ާ'), k('S', 'ސ', 'ށ'), k('D', 'ދ', 'ޑ'), k('F', 'ފ', 'ﷲ'), k('G', 'ގ', 'ޣ'), k('H', 'ހ', 'ޙ'), k('J', 'ޖ', 'ޛ'), k('K', 'ކ', 'ޚ'), k('L', 'ލ', 'ޅ')],
   [k('Z', 'ޒ', 'ޡ'), k('X', 'ޝ', '﷽'), k('C', 'ޗ', 'ޟ'), k('V', 'ވ', 'ޥ'), k('B', 'ބ', 'ޞ'), k('N', 'ނ', 'ޏ'), k('M', 'މ', 'ޱ')],
 ];
@@ -23,8 +26,8 @@ export const NUMBERS: readonly { base: string; shift: string }[] = [
 /** The symbols page: punctuation and signs, including the Thaana comma, semicolon and question mark. */
 export const SYMBOLS: readonly (readonly string[])[] = [
   ['@', '#', '$', '%', '&', '*', '-', '+', '=', '/'],
-  ['(', ')', 'ޜ', '{', '}', '[', ']', '<', '>', '^'],
-  [':', ';', '،', '÷', '×', '!', '"', "'"],
+  ['(', ')', RUFIYAA, '{', '}', '[', ']', '<', '>', '^'],
+  [':', ';', '،', '÷', '×', '!', '"', "'", 'ޜ'],
 ];
 /** Is this a vowel sign (fili or sukun)? Those are shown on a dotted circle so it is clear they sit on a letter. */
 export const isSign = (ch: string): boolean => ch.length === 1 && ch.charCodeAt(0) >= 0x07a6 && ch.charCodeAt(0) <= 0x07b0;

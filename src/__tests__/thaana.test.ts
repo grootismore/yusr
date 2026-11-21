@@ -1,7 +1,7 @@
-import { NUMBERS, ROWS, backspaceAt, insertAt, isSign } from '@/features/keyboard/thaana';
+import { NUMBERS, ROWS, RUFIYAA, SYMBOLS, backspaceAt, insertAt, isSign } from '@/features/keyboard/thaana';
 
 describe('Thaana keyboard layout', () => {
-  const all = ROWS.flat().flatMap((k) => (k.shift ? [k.base, k.shift] : [k.base]));
+  const all = [...ROWS.flat().flatMap((k) => (k.shift ? [k.base, k.shift] : [k.base])), ...SYMBOLS.flat()];
 
   it('has every Thaana letter once, and every vowel sign once', () => {
     const letters = all.filter((c) => !isSign(c) && c.charCodeAt(0) >= 0x0780 && c.charCodeAt(0) <= 0x07a5);
@@ -19,6 +19,11 @@ describe('Thaana keyboard layout', () => {
       A: 'ަ', S: 'ސ', D: 'ދ', F: 'ފ', G: 'ގ', H: 'ހ', J: 'ޖ', K: 'ކ', L: 'ލ',
       Z: 'ޒ', X: 'ޝ', C: 'ޗ', V: 'ވ', B: 'ބ', N: 'ނ', M: 'މ',
     });
+  });
+
+  it('has the Rufiyaa sign on Shift+R and on the symbols page', () => {
+    expect(ROWS[0][3].shift).toBe(RUFIYAA);
+    expect(SYMBOLS.flat()).toContain(RUFIYAA);
   });
 
   it('has the QWERTY rows, ten digits and their symbols', () => {
