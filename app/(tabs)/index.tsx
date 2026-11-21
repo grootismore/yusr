@@ -27,43 +27,7 @@ import { RuleCard } from '@/features/rule/ui';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
-import { LIFT, radius, space, useColors } from '@/theme/tokens';
-
-type AddKind = 'expense' | 'income' | 'split';
-
-/**
- * The one entry point on Home: a round plus floating above the tab bar, always in reach. Tap it and it opens into the three
- * things you can add (an expense, income, a split payday); tap away to close. Home only.
- */
-function AddMenu({ bottom, onPick }: { bottom: number; onPick: (kind: AddKind) => void }) {
-  const colors = useColors();
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const options: { kind: AddKind; icon: IconName; label: string }[] = [
-    { kind: 'split', icon: 'git-compare-outline', label: t('home.addSplit') },
-    { kind: 'income', icon: 'arrow-down', label: t('home.addIncome') },
-    { kind: 'expense', icon: 'arrow-up', label: t('home.addExpense') },
-  ];
-  return (
-    <>
-      {open ? <Pressable accessibilityRole="button" accessibilityLabel={t('common.cancel')} onPress={() => setOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} /> : null}
-      <View pointerEvents="box-none" style={{ position: 'absolute', end: space.lg, bottom, alignItems: 'flex-end', gap: space.md }}>
-        {open ? options.map((o) => (
-          <Pressable key={o.kind} accessibilityRole="button" accessibilityLabel={o.label} onPress={() => { setOpen(false); onPick(o.kind); }}
-            style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 26, borderCurve: 'continuous', backgroundColor: colors.card,
-              borderWidth: 1, borderColor: colors.cardEdge, boxShadow: LIFT, opacity: pressed ? 0.85 : 1 })}>
-            <Icon name={o.icon} color={colors.accent} />
-            <Text variant="label">{o.label}</Text>
-          </Pressable>
-        )) : null}
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} accessibilityLabel={t('home.addExpense')} onPress={() => setOpen(!open)}
-          style={({ pressed }) => ({ width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, boxShadow: LIFT, transform: [{ scale: pressed ? 0.95 : 1 }] })}>
-          <View style={{ transform: [{ rotate: open ? '45deg' : '0deg' }] }}><Icon name="add" color={colors.onAccent} size={30} /></View>
-        </Pressable>
-      </View>
-    </>
-  );
-}
+import { radius, space, useColors } from '@/theme/tokens';
 
 export default function Home() {
   const colors = useColors();
@@ -152,7 +116,6 @@ export default function Home() {
           <Money laari={spent} variant="heading" color={colors.onHero} />
         </Row>
       </Animated.View>
-      <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + 72 + space.md} onPick={(kind) => router.push({ pathname: '/add-expense', params: { mode: kind } })} />
       </>
     }>
       {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}
@@ -180,7 +143,7 @@ export default function Home() {
             {state === 'over' || state === 'near' ? (
               <Pressable accessibilityRole="button" onPress={() => router.push('/budget')}
                 style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
-                <Icon name={state === 'over' ? 'information-circle' : 'warning'} size={18} color={colors.amber} />
+                <Icon name={state === 'over' ? 'information-circle' : 'warning'} size={18} color={state === 'over' ? '#FF8A7A' : colors.amber} />
                 {state === 'over'
                   ? <Msg k="home.overNext" amounts={{ amount: spent - limit }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
                   : <Text variant="small" color={colors.onHero}>{t('home.nearLimit')}</Text>}
@@ -193,8 +156,6 @@ export default function Home() {
             <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onHero, borderColor: colors.onHero }} />
           </>
         )}
-        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
-        {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
       </View>
 
       {showTiles ? (
