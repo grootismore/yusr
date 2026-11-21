@@ -61,7 +61,7 @@ export function ThaanaKeyboard({ target }: { target: KbTarget }) {
 
   return (
     // The layout is physical, like QWERTY: Q is always on the left, whatever the language of the screen.
-    <View accessibilityViewIsModal={false} {...{ dir: 'ltr' }} style={{ backgroundColor: colors.groundDeep, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: PAD, paddingTop: PAD, paddingBottom: PAD + insets.bottom, gap: GAP }}>
+    <View accessibilityViewIsModal={false} style={{ direction: 'ltr', backgroundColor: colors.groundDeep, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: PAD, paddingTop: PAD, paddingBottom: PAD + insets.bottom, gap: GAP }}>
       <View style={{ height: BAR_H, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={t('kb.english')} hitSlop={8} onPress={() => { tick(); target.system(); }} style={{ paddingHorizontal: 12, height: BAR_H, justifyContent: 'center' }}>
           <Text latin variant="label" color={colors.ink}>ABC</Text>
