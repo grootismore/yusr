@@ -1373,6 +1373,18 @@
     "peopleTitle": "Saved people",
     "peopleNote": "Everyone you make an IOU with is saved here, so you can pick them next time.",
     "removePersonTitle": "Remove {{name}}?",
-    "removePersonBody": "They disappear from this list. IOUs already made with them stay."
+    "removePersonBody": "They disappear from this list. IOUs already made with them stay.",
+    "allSettled": "All settled with {{name}}",
+    "iouCount": "IOUs: {{n}}",
+    "theirIous": "IOUs",
+    "untitled": "IOU",
+    "pt": {
+      "lent": "You lent {{name}} {{amount}}",
+      "borrowed": "{{name}} lent you {{amount}}",
+      "theyPaid": "{{name}} paid you {{amount}}",
+      "youPaid": "You paid {{name}} {{amount}}",
+      "even": "All even",
+      "both": "They owe you {{owed}}, you owe them {{owe}}."
+    }
   }
 }

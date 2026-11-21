@@ -121,3 +121,70 @@ export function personToSave(people: readonly IouPerson[], name: string, email: 
   if (!known.email && email) return { fill: { id: known.id, email } };
   return null;
 }
+
+export interface PersonGroup {
+  /** Who this is: a name you typed (matched without regard to case), or the other person's account. */
+  key: string;
+  name: string;
+  email: string | null;
+  ious: Iou[];
+  owedToMe: number;
+  iOwe: number;
+  /** What the person owes you less what you owe them. Negative means you owe them. */
+  net: number;
+  /** The most pressing state among the open IOUs, or settled when none are open. */
+  status: Status;
+  openCount: number;
+}
+
+const URGENCY: Record<Status, number> = { overdue: 3, dueSoon: 2, open: 1, settled: 0 };
+const personKey = (iou: Iou, me: string): string => (iou.user_id === me ? `n:${iou.person_name.trim().toLowerCase()}` : `a:${iou.user_id}`);
+
+/** The IOUs gathered by the person they are with, so each person shows once however many IOUs there are. */
+export function groupByPerson(ious: readonly Iou[], payments: readonly IouPayment[], me: string, otherLabel: string, today: string): PersonGroup[] {
+  const by = new Map<string, PersonGroup>();
+  for (const i of ious) {
+    const key = personKey(i, me);
+    const g = by.get(key) ?? { key, name: i.user_id === me ? i.person_name.trim() : otherLabel, email: i.user_id === me ? i.person_email : null, ious: [], owedToMe: 0, iOwe: 0, net: 0, status: 'settled' as Status, openCount: 0 };
+    const mine = payments.filter((p) => p.iou_id === i.id);
+    const left = remaining(i, mine);
+    g.ious.push(i);
+    if (left > 0) {
+      g.openCount += 1;
+      if (roleOf(i, me) === 'lent') g.owedToMe += left; else g.iOwe += left;
+      const s = statusOf(i, mine, today);
+      if (URGENCY[s] > URGENCY[g.status]) g.status = s;
+    }
+    if (!g.email && i.user_id === me && i.person_email) g.email = i.person_email;
+    by.set(key, g);
+  }
+  const groups = [...by.values()].map((g) => ({ ...g, net: g.owedToMe - g.iOwe }));
+  // People with something open first, the most pressing first, then the biggest balance; settled people last.
+  return groups.sort((a, b) => (b.openCount > 0 ? 1 : 0) - (a.openCount > 0 ? 1 : 0) || URGENCY[b.status] - URGENCY[a.status] || Math.abs(b.net) - Math.abs(a.net) || a.name.localeCompare(b.name));
+}
+
+export interface PersonEvent {
+  kind: 'lent' | 'borrowed' | 'theyPaid' | 'youPaid';
+  date: string;
+  amount: number;
+  title: string | null;
+  /** What the person owes you after this (negative: you owe them). */
+  net: number;
+  future: boolean;
+}
+
+/** Everything with one person in date order (loans and payments across all their IOUs) with the running balance. */
+export function personTimeline(group: PersonGroup, payments: readonly IouPayment[], me: string, today: string): PersonEvent[] {
+  const raw: Omit<PersonEvent, 'net'>[] = [];
+  for (const i of group.ious) {
+    const role = roleOf(i, me);
+    raw.push({ kind: role === 'lent' ? 'lent' : 'borrowed', date: i.lent_on, amount: i.amount_laari, title: i.title, future: i.lent_on > today });
+    for (const p of payments.filter((x) => x.iou_id === i.id)) raw.push({ kind: role === 'lent' ? 'theyPaid' : 'youPaid', date: p.paid_on, amount: p.amount_laari, title: i.title, future: p.paid_on > today });
+  }
+  const order = { lent: 0, borrowed: 0, theyPaid: 1, youPaid: 1 };
+  raw.sort((a, b) => (a.date === b.date ? order[a.kind] - order[b.kind] : a.date < b.date ? -1 : 1));
+  let net = 0;
+  // What they owe you: a loan from you adds, a loan to you takes away, their payment takes away, your payment adds back.
+  const sign = { lent: 1, borrowed: -1, theyPaid: -1, youPaid: 1 };
+  return raw.map((e) => { net += sign[e.kind] * e.amount; return { ...e, net }; });
+}
