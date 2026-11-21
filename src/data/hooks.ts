@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enqueue } from '@/lib/outbox';
 import { isNetworkError } from '@/lib/online';
@@ -70,6 +70,11 @@ export const useMyInvites = (enabled = true) => useQuery({ queryKey: ['my-invite
 export const useSplit = (enabled = true) => useQuery({ queryKey: ['split'], queryFn: api.listSplit, enabled });
 export const useRecurring = (enabled = true) => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring, enabled });
 export const useRecurringRuns = () => useQuery({ queryKey: ['recurring-runs'], queryFn: api.listRecurringRuns });
+/** Pull to refresh: fetch everything on screen again. Returns a function that resolves when done. */
+export function useRefresh(): () => Promise<unknown> {
+  const qc = useQueryClient();
+  return useCallback(() => qc.refetchQueries({ type: 'active' }), [qc]);
+}
 export const useIous = (enabled = true) => useQuery({ queryKey: ['ious'], queryFn: api.listIous, enabled });
 export const useIouPayments = (enabled = true) => useQuery({ queryKey: ['iou-payments'], queryFn: api.listIouPayments, enabled });
 export const useIouPeople = (enabled = true) => useQuery({ queryKey: ['iou-people'], queryFn: api.listIouPeople, enabled });

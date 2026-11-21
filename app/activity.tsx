@@ -7,7 +7,7 @@ import { Money } from '@/components/Money';
 import { Text } from '@/components/Text';
 import { Card, Icon, IconButton, Row, Screen, Segmented, StackHeader } from '@/components/ui';
 import { SharedRow } from '@/components/SharedRow';
-import { useCategories, useExpenses, useHouseholdEntries, useIncome } from '@/data/hooks';
+import { useCategories, useExpenses, useHouseholdEntries, useIncome, useRefresh } from '@/data/hooks';
 import { useMoneyText } from '@/lib/privacy';
 import { addDays, addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
@@ -24,6 +24,7 @@ export default function Activity() {
   const [month, setMonth] = useState(monthStart());
   const expenses = useExpenses(month).data;
   const income = useIncome(month).data;
+  const refresh = useRefresh();
   const shared = useHouseholdEntries(month).data;
   const cats = useCategories().data;
   const byId = useMemo(() => new Map((cats ?? []).map((c) => [c.id, c])), [cats]);
@@ -44,7 +45,7 @@ export default function Activity() {
   const dayLabel = (d: string) => (d === today() ? t('common.today') : d === addDays(today(), -1) ? t('common.yesterday') : null);
 
   return (
-    <Screen>
+    <Screen onRefresh={refresh}>
       <StackHeader title={t('activity.title')} />
       <>
         <Segmented<Filter> value={filter} onChange={setFilter}

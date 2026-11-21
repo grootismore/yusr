@@ -115,7 +115,8 @@
     "invalidAmount": "Enter an amount, for example 125.50.",
     "invalidDate": "Enter a date as day/month/year.",
     "invalidRate": "Enter an exchange rate, for example 15.42.",
-    "chooseCategory": "Choose a category"
+    "chooseCategory": "Choose a category",
+    "pickCategory": "Choose a category to save."
   },
   "scan": {
     "title": "Raseedhu",
@@ -655,7 +656,8 @@
     "howMuch": "How much?",
     "next": "Next",
     "moreOptions": "More options",
-    "fewerOptions": "Fewer options"
+    "fewerOptions": "Fewer options",
+    "enterAmount": "Enter an amount to continue."
   },
   "income": {
     "addTitle": "Add income",
@@ -824,7 +826,9 @@
     "expenseSaved": "Expense saved",
     "paymentSaved": "Payment recorded",
     "deleted": "Deleted",
-    "updated": "Updated"
+    "updated": "Updated",
+    "undo": "Undo",
+    "restored": "Put back"
   },
   "commit": {
     "title": "Monthly commitments",
@@ -1417,6 +1421,7 @@
       "split": "Split a trip or a dinner with friends.",
       "ious": "Money you lent or borrowed.",
       "register": "A private record of your money matters for someone you trust."
-    }
+    },
+    "hidden": "Hidden. Switch it back on any time under More, Add features."
   }
 }

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Dimensions, Easing, Image, Pressable, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Dimensions, Easing, Image, Pressable, RefreshControl, StyleSheet, Switch, TextInput, View, type PressableProps, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useRouter } from 'expo-router';
@@ -39,10 +39,11 @@ function useCompactTitle(title: string, brand: boolean, back = false) {
 }
 
 /** Page: ground background, safe area, optional scroll. Sets the web preview direction. */
-export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false, tabbed = false }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
+export function Screen({ children, scroll = true, padded = true, bleed = false, scrollY, overlay, grow = false, tabbed = false, onRefresh }: { children: ReactNode; scroll?: boolean; padded?: boolean; /** Let a header band run under the status bar; the screen then handles the top inset itself. */ bleed?: boolean;
   /** Share the scroll position so a header can collapse as the page scrolls. */ scrollY?: Animated.Value; /** Drawn above the scrolling content, e.g. a compact header that fades in. */ overlay?: ReactNode;
   /** Let the content fill the screen so a footer can sit at the bottom (marginTop: 'auto'). */ grow?: boolean;
-  /** A tab screen: leave room for the floating tab bar. */ tabbed?: boolean }) {
+  /** A tab screen: leave room for the floating tab bar. */ tabbed?: boolean;
+  /** Pull down to refresh: load again, then stop the spinner. */ onRefresh?: () => Promise<unknown> }) {
   const colors = useColors();
   const { i18n, t } = useTranslation();
   const router = useRouter();
@@ -57,6 +58,8 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
   // (a sheet shown as a modal on a phone is above the root, so the root could not show it).
   const [kbTarget, setKbTarget] = useState<KbTarget | null>(null);
   const kbApi = useMemo<KbApi>(() => ({ activate: (t) => setKbTarget(t), deactivate: (id) => setKbTarget((cur) => (cur?.id === id ? null : cur)) }), []);
+  const [refreshing, setRefreshing] = useState(false);
+  const pull = useCallback(() => { setRefreshing(true); void Promise.resolve(onRefresh?.()).catch(() => undefined).finally(() => setRefreshing(false)); }, [onRefresh]);
   const scrollRef = useRef<ComponentRef<typeof Animated.ScrollView>>(null);
   const offset = useRef(0);
   const onScrollY = useCallback((e: unknown) => { offset.current = (e as { nativeEvent: { contentOffset: { y: number } } }).nativeEvent.contentOffset.y; }, []);
@@ -78,7 +81,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
       <Backdrop />
       {scroll ? (
         <CompactTitleCtx.Provider value={setCompact}><FieldCtx.Provider value={countField}><KbCtx.Provider value={kbApi}>
-          <Animated.ScrollView ref={scrollRef} contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets={fields > 0} alwaysBounceVertical={false} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled"
+          <Animated.ScrollView ref={scrollRef} contentContainerStyle={inner} showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets={fields > 0} alwaysBounceVertical={!!onRefresh} contentInsetAdjustmentBehavior="never" refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={pull} tintColor={colors.accent} /> : undefined} keyboardShouldPersistTaps="handled"
             scrollEventThrottle={16} // eslint-disable-next-line react-hooks/refs -- the listener only runs on scroll events, never during render
             onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: sy } } }], { useNativeDriver: true, listener: onScrollY })}>{children}</Animated.ScrollView>
         </KbCtx.Provider></FieldCtx.Provider></CompactTitleCtx.Provider>
@@ -392,7 +395,7 @@ export function SettingRow({ icon, title, subtitle, value, onValueChange, disabl
         <Text>{title}</Text>
         {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
       </View>
-      <Switch accessibilityLabel={title} value={value} disabled={disabled} trackColor={{ true: colors.accent, false: colors.control }} onValueChange={onValueChange} />
+      <Switch accessibilityLabel={title} value={value} disabled={disabled} trackColor={{ true: colors.accent, false: colors.control }} onValueChange={(v) => { tick(); onValueChange(v); }} />
     </View>
   );
 }

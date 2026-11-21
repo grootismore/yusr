@@ -17,7 +17,7 @@ import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
 import { setFlag, useFlag } from '@/lib/flags';
 import { dueRuns } from '@/features/recurring/logic';
-import { useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useHouseholdEntries, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
+import { useRefresh, useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useHouseholdEntries, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
 import { goalPercent, monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
@@ -65,6 +65,7 @@ export default function Home() {
   const debtPlan = useMemo(() => computePlan(debtsQ.data ?? [], paymentsQ.data ?? [], planSettings, today()), [debtsQ.data, paymentsQ.data, planSettings]);
   const due = nextDue(debtPlan);
   const rule = useRule(month);
+  const refresh = useRefresh();
   const featRecurring = useFeature('recurring'), featDebts = useFeature('debts'), featGiving = useFeature('giving'), featHousehold = useFeature('household');
   const incomeQ = useIncome(month);
   const shared = useSharedTotals(month);
@@ -117,7 +118,7 @@ export default function Home() {
   }
 
   return (
-    <Screen padded={false} bleed tabbed scrollY={scrollY} overlay={
+    <Screen padded={false} bleed tabbed scrollY={scrollY} onRefresh={refresh} overlay={
       // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.hero, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
         opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
@@ -142,7 +143,10 @@ export default function Home() {
           <IconButton icon={hidden ? 'eye-off-outline' : 'eye-outline'} color={colors.onHero} label={hidden ? t('privacy.show') : t('privacy.hide')} onPress={() => void setHideAmounts(!hidden)} />
         </Row>
         <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
-        <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
+        {expensesQuery.isLoading && !expensesQuery.data
+          // Until the month has loaded, show a dash: a zero would read as a real, wrong figure.
+          ? <Text latin variant="display" color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} accessibilityLabel={t('common.loading')}>MVR —</Text>
+          : <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />}
         {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
         {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
         {limit ? (
