@@ -1,22 +1,33 @@
 /**
  * The Kharadhu Thaana keyboard: what keys there are, and what a key does to the text. Pure, so it is tested without a screen.
  *
- * The keys are in the order of the Thaana alphabet, so nothing has to be learned first. Rows are listed from the right, the
- * way they are read. To change the layout, change only this file.
+ * The keys sit where the standard Dhivehi (Maldives) keyboard puts them, in the QWERTY positions, so a person who types
+ * Dhivehi on their phone or computer already knows where everything is. Each key has what it types and what it types with
+ * Shift, and the Latin letter it sits on as a hint. To change the layout, change only this file.
  */
-export const LETTERS: readonly (readonly string[])[] = [
-  ['ހ', 'ށ', 'ނ', 'ރ', 'ބ', 'ޅ', 'ކ', 'އ', 'ވ'],
-  ['މ', 'ފ', 'ދ', 'ތ', 'ލ', 'ގ', 'ޏ', 'ސ', 'ޑ'],
-  ['ޒ', 'ޓ', 'ޔ', 'ޕ', 'ޖ', 'ޗ'],
+export interface LetterKey { base: string; shift?: string; latin: string }
+
+const k = (latin: string, base: string, shift?: string): LetterKey => ({ latin, base, shift });
+
+/** The three letter rows, from the left. Vowel signs (fili) and the sukun are on the same keys, base or Shift. */
+export const ROWS: readonly (readonly LetterKey[])[] = [
+  [k('Q', 'ް', 'ޤ'), k('W', 'އ', 'ޢ'), k('E', 'ެ', 'ޭ'), k('R', 'ރ', 'ޜ'), k('T', 'ތ', 'ޓ'), k('Y', 'ޔ', 'ޠ'), k('U', 'ު', 'ޫ'), k('I', 'ި', 'ީ'), k('O', 'ޮ', 'ޯ'), k('P', 'ޕ', 'ޘ')],
+  [k('A', 'ަ', 'ާ'), k('S', 'ސ', 'ށ'), k('D', 'ދ', 'ޑ'), k('F', 'ފ', 'ﷲ'), k('G', 'ގ', 'ޣ'), k('H', 'ހ', 'ޙ'), k('J', 'ޖ', 'ޛ'), k('K', 'ކ', 'ޚ'), k('L', 'ލ', 'ޅ')],
+  [k('Z', 'ޒ', 'ޡ'), k('X', 'ޝ', '﷽'), k('C', 'ޗ', 'ޟ'), k('V', 'ވ', 'ޥ'), k('B', 'ބ', 'ޞ'), k('N', 'ނ', 'ޏ'), k('M', 'މ', 'ޱ')],
 ];
-/** The vowel signs (fili) and the sukun, put on the letter before them. */
-export const SIGNS: readonly string[] = ['ަ', 'ާ', 'ި', 'ީ', 'ު', 'ޫ', 'ެ', 'ޭ', 'ޮ', 'ޯ', 'ް'];
-/** Letters used for words from Arabic. */
-export const LOAN: readonly (readonly string[])[] = [
-  ['ޘ', 'ޙ', 'ޚ', 'ޛ', 'ޜ', 'ޝ', 'ޞ'],
-  ['ޟ', 'ޠ', 'ޡ', 'ޢ', 'ޣ', 'ޤ', 'ޥ'],
+/** The number row: the digit, and what Shift gives. */
+export const NUMBERS: readonly { base: string; shift: string }[] = [
+  { base: '1', shift: '!' }, { base: '2', shift: '@' }, { base: '3', shift: '#' }, { base: '4', shift: '$' }, { base: '5', shift: '%' },
+  { base: '6', shift: '^' }, { base: '7', shift: '&' }, { base: '8', shift: '*' }, { base: '9', shift: '(' }, { base: '0', shift: ')' },
 ];
-export const PUNCTUATION: readonly string[] = ['،', '.', '؟'];
+/** The symbols page: punctuation and signs, including the Thaana comma, semicolon and question mark. */
+export const SYMBOLS: readonly (readonly string[])[] = [
+  ['@', '#', '$', '%', '&', '*', '-', '+', '=', '/'],
+  ['(', ')', 'ޜ', '{', '}', '[', ']', '<', '>', '^'],
+  [':', ';', '،', '÷', '×', '!', '"', "'"],
+];
+/** Is this a vowel sign (fili or sukun)? Those are shown on a dotted circle so it is clear they sit on a letter. */
+export const isSign = (ch: string): boolean => ch.length === 1 && ch.charCodeAt(0) >= 0x07a6 && ch.charCodeAt(0) <= 0x07b0;
 
 export interface Selection { start: number; end: number }
 export interface Edit { text: string; caret: number }
