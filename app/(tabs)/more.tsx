@@ -9,10 +9,9 @@ import { useFeatureStates } from '@/features/features/hooks';
 import { FEATURES, GROUPS } from '@/features/features/registry';
 import { useAuth } from '@/lib/auth';
 import { usePending } from '@/lib/outbox';
-import { space, useColors } from '@/theme/tokens';
+import { space } from '@/theme/tokens';
 
 export default function More() {
-  const colors = useColors();
   const { t } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();
@@ -23,7 +22,6 @@ export default function More() {
     <Screen tabbed>
       <ScreenTitle title={t('more.title')} />
       <Card style={{ paddingVertical: space.sm, gap: 0 }}>
-        <ListRow icon="sparkles-outline" title={t('plus.title')} subtitle={plan?.plus ? t('plus.active') : t('plus.more')} onPress={() => router.push('/plus')} />
         <ListRow icon="swap-vertical" title={t('activity.title')} onPress={() => router.push('/activity')} last />
       </Card>
 
@@ -42,11 +40,11 @@ export default function More() {
       })}
 
       <Card style={{ paddingVertical: space.sm, gap: 0 }}>
+        <ListRow icon="sparkles-outline" title={t('plus.title')} subtitle={plan?.plus ? t('plus.active') : t('plus.more')} onPress={() => router.push('/plus')} />
         <ListRow icon="options-outline" title={t('features.add')} subtitle={t('features.addNote')} onPress={() => router.push('/features')} />
         <ListRow icon="settings-outline" title={t('more.settings')} onPress={() => router.push('/settings')} />
         <ListRow icon="information-circle-outline" title={t('about.title')} onPress={() => router.push('/about')} last />
       </Card>
-      <Text variant="small" color={colors.inkMuted}>{t('more.about')}</Text>
       <Button kind="secondary" label={t('more.signOut')} icon="log-out-outline" onPress={async () => {
         if (pending > 0 && !(await confirmDialog({ title: t('offline.signOutWaiting', { count: pending }), confirmLabel: t('offline.signOutAnyway'), cancelLabel: t('common.cancel'), destructive: true }))) return;
         void signOut();

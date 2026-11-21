@@ -140,8 +140,8 @@ export default function DebtDetail() {
           ) : null}
           <DateField label={t('expense.date')} hint={t('expense.dateHint')} value={date} onChangeText={setDate} error={errors.date} />
           <Row>
-            <Button kind="ghost" label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
-            <Button kind="ghost" label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
+            <Chip label={t('common.today')} onPress={() => setDate(formatDate(today()))} />
+            <Chip label={t('common.yesterday')} onPress={() => setDate(formatDate(addDays(today(), -1)))} />
           </Row>
           <Field label={`${t('expense.note')} (${t('common.optional')})`} value={note} onChangeText={setNote} />
           <Button label={editingId ? t('common.save') : t('debts.recordPayment')} onPress={record} loading={add.isPending || updatePayment.isPending} />

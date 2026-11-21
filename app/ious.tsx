@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ export default function Ious() {
   const accept = useWrite(api.acceptIou);
   const decline = useWrite(api.declineIou);
   const people = useIouPeople().data ?? [];
+  const [showPeople, setShowPeople] = useState(false);
   const removePerson = useWrite(api.deleteIouPerson);
   const restorePerson = useWrite(api.addIouPerson);
   const sum = totals(ious, payments, me);
@@ -77,9 +79,15 @@ export default function Ious() {
 
       {people.length ? (
         <Card style={{ gap: space.sm }}>
-          <Text variant="title">{t('ious.peopleTitle')}</Text>
-          <Text variant="small" color={colors.inkMuted}>{t('ious.peopleNote')}</Text>
-          {people.map((p) => (
+          {/* Folded: the saved people are only for picking a name next time, so they take one line until you open them. */}
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: showPeople }} onPress={() => setShowPeople(!showPeople)} style={{ minHeight: 44, justifyContent: 'center' }}>
+            <Row>
+              <Text variant="heading" style={{ flex: 1 }}>{t('ious.peopleTitle')} ({people.length})</Text>
+              <Icon name={showPeople ? 'chevron-up' : 'chevron-down'} color={colors.inkMuted} />
+            </Row>
+          </Pressable>
+          {showPeople ? <Text variant="small" color={colors.inkMuted}>{t('ious.peopleNote')}</Text> : null}
+          {showPeople ? people.map((p) => (
             <Row key={p.id} style={{ justifyContent: 'space-between' }}>
               <View style={{ flex: 1 }}>
                 <Text>{p.name}</Text>
@@ -87,7 +95,7 @@ export default function Ious() {
               </View>
               <Button kind="ghost" label={t('common.remove')} onPress={() => void removeWithUndo({ remove: () => removePerson.mutateAsync(p.id), restore: () => restorePerson.mutateAsync({ name: p.name, email: p.email }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') })} />
             </Row>
-          ))}
+          )) : null}
         </Card>
       ) : null}
     </Screen>
@@ -112,7 +120,6 @@ function PersonRow({ group, payments }: { group: PersonGroup; payments: IouPayme
         <Msg k={group.openCount === 0 ? 'ious.allSettled' : group.net > 0 ? 'ious.owesYou' : group.net < 0 ? 'ious.youOweThem' : 'ious.pt.even'} values={{ name: group.name }} amounts={{ amount: Math.abs(group.net) }} />
         {group.titles.length ? <Text variant="small" color={colors.inkMuted} numberOfLines={2}>{group.titles.slice(0, 2).join(' · ')}{group.titles.length > 2 ? ` ${t('ious.moreCount', { n: group.titles.length - 2 })}` : ''}</Text> : null}
         <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="small" color={colors.inkMuted}>{t('ious.iouCount', { n: group.ious.length })}</Text>
           {group.openCount > 0 ? <Text variant="small" color={colors.inkMuted}>{group.nextDue ? t('ious.nextDue', { date: formatDate(group.nextDue) }) : t('ious.noDue')}</Text> : null}
         </Row>
         <ProgressBar percent={percent} state={group.status === 'overdue' ? 'over' : group.status === 'dueSoon' ? 'near' : 'ok'} label={t('a11y.progress', { percent })} />

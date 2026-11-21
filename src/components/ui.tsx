@@ -155,7 +155,7 @@ export function ScreenTitle({ title, subtitle, trailing }: { title: string; subt
 }
 
 /** Tappable list row: icon tile, title, optional second line, trailing chevron that follows the reading direction. */
-export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { icon: IconName; title: string; subtitle?: string; onPress?: () => void; trailing?: ReactNode; last?: boolean }) {
+export function ListRow({ icon, title, subtitle, subtitleBad, meta, onPress, trailing, last }: { icon: IconName; title: string; subtitle?: string; /** Colour the subtitle as a problem (always in words too). */ subtitleBad?: boolean; /** Something small under the subtitle, such as a status badge. */ meta?: ReactNode; onPress?: () => void; trailing?: ReactNode; last?: boolean }) {
   const colors = useColors();
   return (
     <Pressable
@@ -170,7 +170,8 @@ export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { ic
       </View>
       <View style={{ flex: 1 }}>
         <Text>{title}</Text>
-        {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
+        {subtitle ? <Text variant="small" color={subtitleBad ? colors.coral : colors.inkMuted}>{subtitle}</Text> : null}
+        {meta ? <View style={{ alignItems: 'flex-start', marginTop: 2 }}>{meta}</View> : null}
       </View>
       {trailing ?? (onPress ? <Icon name={'chevron-forward'} size={20} color={colors.inkMuted} /> : null)}
     </Pressable>
@@ -379,7 +380,7 @@ export function Segmented<K extends string>({ options, value, onChange }: { opti
         return (
           <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => { tick(); onChange(o.key); }}
             style={{ flex: 1, minHeight: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.surface : 'transparent', borderWidth: 1, borderColor: on ? colors.cardEdge : 'transparent' }}>
-            <Text variant="small" color={on ? colors.accent : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
+            <Text variant="small" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} color={on ? colors.accent : colors.inkMuted} style={{ fontWeight: on ? '700' : '400' }}>{o.label}</Text>
           </Pressable>
         );
       })}

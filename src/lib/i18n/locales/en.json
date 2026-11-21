@@ -1367,7 +1367,7 @@
       "title": "Reminders",
       "off": "Off",
       "me": "Remind me",
-      "both": "Remind them too",
+      "both": "Me and them",
       "offNote": "No reminders.",
       "meNote": "A reminder on your phone 2 days before it is due, then every 3 days until it is paid.",
       "bothNote": "Reminds you, and emails {{name}} on the same days until it is paid.",
