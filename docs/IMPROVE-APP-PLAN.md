@@ -13,7 +13,7 @@
 ## Phase Status
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
-| 1 | jobs-to-be-done | pending | CUSTOMER.md | |
+| 1 | jobs-to-be-done | done | CUSTOMER.md | 2026-11-21 |
 | 2 | ux-heuristics | pending | DESIGN.md, EXPERIMENTS.md | |
 | 3 | design-everyday-things | pending | DESIGN.md, EXPERIMENTS.md | |
 | 4 | refactoring-ui | pending | DESIGN.md, EXPERIMENTS.md | |
@@ -29,7 +29,10 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 |---|---|---|---|
 | 2026-11-21 | Intake | Run all phases except Phase 8 | Kharadhu is native; browser metrics (INP, LCP, CLS) do not apply. Perceived speed is checked in Phase 5. |
 | 2026-11-21 | Intake | Roughest areas: confusing screens, amateur look, dead interactions, weak wording | Sets Phases 2, 4, 5 and 6 as the heavy ones. |
+| 2026-11-21 | 1 | Core job: see where the money goes; household, debts and giving are adjacent jobs | Keeps one job to aim at; matches the Features switches. Owner confirmed. |
+| 2026-11-21 | 1 | Worst gap: emotional (calm and in control) | Busiest screen and the red over-budget alarm work against calm. Owner confirmed. |
+| 2026-11-21 | 1 | Both first use and daily use get audited | Owner chose both equally. |
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phase 1: confirm the job statement, the worst dimension, and Big Hire vs Little Hire (owner: Areesh, next)
+- [ ] Phase 2: heuristic evaluation of Home, add entry, scan, budget, reports and the first-time path, rated 0-4 (Claude, next)
