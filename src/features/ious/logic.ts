@@ -138,6 +138,10 @@ export interface PersonGroup {
   /** The most pressing state among the open IOUs, or settled when none are open. */
   status: Status;
   openCount: number;
+  /** What the open IOUs were for (the names you gave them), newest first. */
+  titles: string[];
+  /** The earliest due date among the open IOUs, if any. */
+  nextDue: string | null;
 }
 
 const URGENCY: Record<Status, number> = { overdue: 3, dueSoon: 2, open: 1, settled: 0 };
@@ -148,12 +152,14 @@ export function groupByPerson(ious: readonly Iou[], payments: readonly IouPaymen
   const by = new Map<string, PersonGroup>();
   for (const i of ious) {
     const key = personKey(i, me);
-    const g = by.get(key) ?? { key, name: i.user_id === me ? i.person_name.trim() : otherLabel, email: i.user_id === me ? i.person_email : null, ious: [], owedToMe: 0, iOwe: 0, net: 0, status: 'settled' as Status, openCount: 0 };
+    const g = by.get(key) ?? { key, name: i.user_id === me ? i.person_name.trim() : otherLabel, email: i.user_id === me ? i.person_email : null, ious: [], owedToMe: 0, iOwe: 0, net: 0, status: 'settled' as Status, openCount: 0, titles: [], nextDue: null };
     const mine = payments.filter((p) => p.iou_id === i.id);
     const left = remaining(i, mine);
     g.ious.push(i);
     if (left > 0) {
       g.openCount += 1;
+      if (i.title?.trim()) g.titles.push(i.title.trim());
+      if (i.due_on && (!g.nextDue || i.due_on < g.nextDue)) g.nextDue = i.due_on;
       if (roleOf(i, me) === 'lent') g.owedToMe += left; else g.iOwe += left;
       const s = statusOf(i, mine, today);
       if (URGENCY[s] > URGENCY[g.status]) g.status = s;

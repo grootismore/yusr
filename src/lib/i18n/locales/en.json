@@ -1419,7 +1419,14 @@
       "even": "All even",
       "both": "They owe you {{owed}}, you owe them {{owe}}."
     },
-    "tooMuch": "That is more than what is left ({{amount}})."
+    "tooMuch": "That is more than what is left ({{amount}}).",
+    "untitledLent": "Lent on {{date}}",
+    "untitledBorrowed": "Borrowed on {{date}}",
+    "nextDue": "Next due {{date}}",
+    "noDue": "No due date",
+    "moreCount": "+{{n}} more",
+    "datesLine": "Lent {{lent}} · due {{due}}",
+    "lentLine": "Lent {{lent}}"
   },
   "features": {
     "title": "Features",
