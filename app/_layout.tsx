@@ -23,6 +23,7 @@ import { CACHE_MAX_AGE, KEEP, persister } from '@/lib/queryCache';
 import { CrashScreen } from '@/features/crash/CrashScreen';
 import { useZakatReminderSync } from '@/features/giving/useReminderSync';
 import { useIouReminderSync } from '@/features/ious/useReminderSync';
+import { useFeatureSeed } from '@/features/features/hooks';
 import { useActivity } from '@/features/register/useActivity';
 import { WEB_LIMITED } from '@/lib/platform';
 import { useOutboxSync } from '@/lib/useOutboxSync';
@@ -51,6 +52,7 @@ function Routes() {
   const { signedIn, waiting, needsConsent, needsSetup } = useGate();
   useZakatReminderSync(signedIn && !WEB_LIMITED);
   useIouReminderSync(signedIn && !WEB_LIMITED, useAuth().userId);
+  useFeatureSeed(signedIn && !WEB_LIMITED);
   useActivity(signedIn && !WEB_LIMITED);
   useOutboxSync(signedIn && !WEB_LIMITED);
   useEffect(() => { if (!waiting) hideSplash(); }, [waiting]);
@@ -107,6 +109,7 @@ function Routes() {
           <Stack.Screen name="giving-commitment" options={{ presentation: 'modal' }} />
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
+          <Stack.Screen name="features" />
           <Stack.Screen name="rule" />
           <Stack.Screen name="ious" />
           <Stack.Screen name="iou" />

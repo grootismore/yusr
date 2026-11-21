@@ -1386,5 +1386,28 @@
       "even": "All even",
       "both": "They owe you {{owed}}, you owe them {{owe}}."
     }
+  },
+  "features": {
+    "title": "Features",
+    "add": "Add features",
+    "addNote": "Switch on only what you need",
+    "intro": "Kharadhu starts simple. Switch on what you want to use. Switching something off only hides it: nothing is deleted.",
+    "note": "Adding entries, Raseedhu, budgets and reports are always on.",
+    "groups": {
+      "money": "Money",
+      "people": "With other people",
+      "safety": "Safety"
+    },
+    "desc": {
+      "recurring": "Rent, bills and subscriptions that repeat.",
+      "debts": "What you owe, and a plan to pay it off.",
+      "giving": "Zakat, sadaqah and what you give.",
+      "pools": "A savings circle you pay into every month.",
+      "rule": "Split your income into needs, wants and savings.",
+      "household": "One shared pot with your partner or family.",
+      "split": "Split a trip or a dinner with friends.",
+      "ious": "Money you lent or borrowed.",
+      "register": "A private record of your money matters for someone you trust."
+    }
   }
 }

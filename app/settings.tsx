@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CURRENCIES } from '@/components/ExpenseForm';
 import { Text } from '@/components/Text';
 import { DeleteAccountCard } from '@/features/account/DeleteAccountCard';
-import { Card, Chip, Field, Row, Screen, SettingRow, StackHeader } from '@/components/ui';
+import { Card, Chip, Field, ListRow, Row, Screen, SettingRow, StackHeader } from '@/components/ui';
 import { setFlag, useFlag } from '@/lib/flags';
 import * as api from '@/data/api';
 import { usePlan, useProfile, useRates, useWrite } from '@/data/hooks';
@@ -60,6 +60,9 @@ export default function Settings() {
   return (
     <Screen>
       <StackHeader title={t('settings.title')} />
+      <Card style={{ paddingVertical: space.xs }}>
+        <ListRow icon="options-outline" title={t('features.add')} subtitle={t('features.addNote')} onPress={() => router.push('/features')} last />
+      </Card>
       {email ? <Text latin variant="small" color={colors.inkMuted} style={{ marginTop: -space.sm }}>{email}</Text> : null}
         <Card style={{ paddingVertical: space.sm, gap: 0 }}>
           <SettingRow icon="finger-print" title={t('settings.biometric')} subtitle={!bioOk ? t('settings.biometricUnavailable') : undefined} value={bio} disabled={!bioOk}
