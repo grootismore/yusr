@@ -20,7 +20,7 @@ import { dueRuns } from '@/features/recurring/logic';
 import { useRefresh, useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useHouseholdEntries, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
 import { monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
-import { DueBadge, useMonthLabel } from '@/features/debts/ui';
+import { useMonthLabel } from '@/features/debts/ui';
 import { useFeature } from '@/features/features/hooks';
 import { useRule } from '@/features/rule/hooks';
 import { RuleCard } from '@/features/rule/ui';
@@ -182,17 +182,16 @@ export default function Home() {
         const rows: ('household' | 'recurring' | 'debts' | 'giving')[] = [...(featHousehold ? ['household' as const] : []), ...(showRecurring ? ['recurring' as const] : []), ...(showDebts ? ['debts' as const] : []), ...(showGiving ? ['giving' as const] : [])];
         if (!rows.length) return null;
         const last = (k: string) => rows[rows.length - 1] === k;
-        const chev = <Icon name="chevron-forward" size={20} color={colors.inkMuted} />;
         return (
           <Card style={{ paddingVertical: space.xs }}>
             {featHousehold ? <HouseholdGlanceRow last={last('household')} /> : null}
             {showRecurring ? <ListRow icon="repeat" title={t('recurring.dueCard', { count: recurringDue })} onPress={() => router.push('/recurring')} last={last('recurring')} /> : null}
-            {showDebts ? (
-              <ListRow icon="leaf-outline" title={t('debts.title')} last={last('debts')} onPress={() => router.push('/debts')}
-                subtitle={debtPlan.result.debtFreeMonth ? t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) }) : t('debts.onTrack')}
-                meta={due ? <DueBadge state={due.due.state} days={due.due.days} /> : null}
-                trailing={<Row style={{ gap: space.sm }}><Money laari={debtPlan.total} variant="label" />{chev}</Row>} />
-            ) : null}
+            {showDebts ? (() => {
+              // One short line: what is owed, then either the next thing due (in words, red when overdue) or when it will be cleared.
+              const overdue = due?.due.state === 'overdue';
+              const status = due && (overdue || due.due.state === 'due_soon') ? (overdue ? t('debts.due.overdue', { count: due.due.days }) : due.due.days === 0 ? t('debts.due.today') : t('debts.due.soon', { count: due.due.days })) : debtPlan.result.debtFreeMonth ? monthLabel(debtPlan.result.debtFreeMonth) : t('debts.onTrack');
+              return <ListRow icon="leaf-outline" title={t('debts.title')} last={last('debts')} onPress={() => router.push('/debts')} subtitle={`${money(debtPlan.total)} · ${status}`} subtitleBad={overdue} />;
+            })() : null}
             {showGiving ? (
               <ListRow icon="heart-outline" title={t('giving.title')} last={last('giving')} onPress={() => router.push('/giving')}
                 subtitle={goal ? t('giving.homeCardGoal', { given: money(giving.goalCounted), goal: money(goal) }) : t('giving.homeCardGiven', { given: money(giving.total) })} />
