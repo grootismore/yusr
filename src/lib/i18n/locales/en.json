@@ -95,7 +95,8 @@
     "addExpense": "Add expense",
     "income": "Income",
     "incomeLine": "Income {{amount}}",
-    "leftLabel": "Left of budget"
+    "leftLabel": "Left of budget",
+    "scanReceipt": "Scan receipt"
   },
   "expense": {
     "addTitle": "Add expense",
@@ -1140,7 +1141,9 @@
     "leaveGroup": "Leave this group",
     "leaveGroupBody": "You stop seeing this group. Your name and costs stay for the others.",
     "left": "You left the group",
-    "thisIsYou": "This is you."
+    "thisIsYou": "This is you.",
+    "removePaymentTitle": "Remove this payment?",
+    "removePaymentBody": "Balances are worked out again without it."
   },
   "calendar": {
     "pick": "Choose a date",
@@ -1390,7 +1393,8 @@
       "youPaid": "You paid {{name}} {{amount}}",
       "even": "All even",
       "both": "They owe you {{owed}}, you owe them {{owe}}."
-    }
+    },
+    "tooMuch": "That is more than what is left ({{amount}})."
   },
   "features": {
     "title": "Features",

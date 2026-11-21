@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -12,12 +12,13 @@ import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow } from '@
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { PersonPick } from '@/features/household/PersonPick';
-import { useCategories, useCategoryName, useHousehold, useWrite } from '@/data/hooks';
+import { useCategories, useCategoryName, useExpenses, useHousehold, useWrite } from '@/data/hooks';
+import { categoriesByUse } from '@/lib/categoryOrder';
 import type { HouseholdEntryInput } from '@/features/household/logic';
 import { useAuth } from '@/lib/auth';
 import { setFlag, useFlag } from '@/lib/flags';
 import type { NewExpense } from '@/data/types';
-import { formatDate } from '@/lib/dates';
+import { addMonths, formatDate, monthStart } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { displayAmount } from '@/lib/keypad';
 import { parseAmount, toMvrLaari } from '@/lib/money';
@@ -36,7 +37,11 @@ export default function AddExpense() {
   const [step, setStep] = useState<'amount' | 'details' | 'done'>('amount');
   const [typed, setTyped] = useState('');
   const [saved, setSaved] = useState<NewExpense | null>(null);
-  const categories = useCategories().data ?? [];
+  const allCategories = useCategories().data;
+  // The categories you use most come first, so the one you want is usually at the top.
+  const thisMonth = useExpenses(monthStart()).data;
+  const lastMonth = useExpenses(addMonths(monthStart(), -1)).data;
+  const categories = useMemo(() => categoriesByUse(allCategories ?? [], [...(thisMonth ?? []), ...(lastMonth ?? [])]), [allCategories, thisMonth, lastMonth]);
   const addExpense = useWrite(api.addExpense);
   const addIncome = useWrite(api.addIncome);
   const addSplit = useWrite(api.addIncomeSplit);

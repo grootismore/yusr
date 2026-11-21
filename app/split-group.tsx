@@ -127,7 +127,7 @@ export default function SplitGroupScreen() {
                   <Text latin variant="small" color={colors.inkMuted}>{formatDate(s.settled_on)}</Text>
                 </View>
                 <Text latin>{text(s.amount_minor, g.currency)}</Text>
-                <IconButton icon="trash-outline" label={t('common.remove')} onPress={() => removeSettlement.mutate(s.id, { onSuccess: () => toast(t('toast.deleted')) })} />
+                <IconButton icon="trash-outline" label={t('common.remove')} onPress={async () => { if (await confirmDialog({ title: t('split.removePaymentTitle'), message: t('split.removePaymentBody'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) removeSettlement.mutate(s.id, { onSuccess: () => toast(t('toast.deleted')) }); }} />
               </Row>
             ))}
           </Card>
