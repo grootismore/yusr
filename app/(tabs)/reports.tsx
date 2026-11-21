@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { ExpenseRow } from '@/components/ExpenseRow';
 import { TrendChart } from '@/components/TrendChart';
 import { historyNeedsPlus } from '@/features/plus/limits';
-import { SharedCard } from '@/features/household/SharedCard';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { LoadError } from '@/components/LoadError';
@@ -44,7 +43,7 @@ export default function Reports() {
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const shared = useSharedTotals(month);
   const rule = useRule(month);
-  const featDebts = useFeature('debts'), featHousehold = useFeature('household');
+  const featDebts = useFeature('debts');
   // In a couple or household, the whole shared pot counts alongside your own.
   const total = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const rows = useMemo(() => {
@@ -93,20 +92,10 @@ export default function Reports() {
         {overall ? (
           <>
             <ProgressBar onHero percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
-            {overallState === 'over' || overallState === 'near' ? (
-              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
-                <Icon name={overallState === 'over' ? 'information-circle' : 'warning'} size={18} color={overallState === 'over' ? '#FF8A7A' : colors.amber} />
-                {overallState === 'over'
-                  ? <Msg k="home.overNext" amounts={{ amount: total - overall }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
-                  : <Text variant="small" color={colors.onHero}>{t('reports.nearLimit')}</Text>}
-              </View>
-            ) : null}
             {overallState === 'over' ? null : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} color={colors.onHero} />}
           </>
         ) : null}
       </Card>
-
-      {featHousehold ? <SharedCard month={month} withActions={false} /> : null}
 
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>

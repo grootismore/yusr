@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
@@ -48,18 +48,19 @@ function LimitRow({ title, icon, categoryId, limit, spent, last }: { title: stri
   const state = budgetState(spent, limit);
   return (
     <View style={{ gap: space.sm, paddingVertical: space.sm, borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.line }}>
-      <Row style={{ minHeight: 52 }}>
-        <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name={icon} color={colors.accent} />
-        </View>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text>{title}</Text>
-          {limit
-            ? <Text latin variant="small" color={colors.inkMuted} style={{ writingDirection: 'ltr' }}>MVR {formatNumber(spent)} / {formatNumber(limit)}</Text>
-            : <Text variant="small" color={colors.inkMuted}>{t('budget.noLimit')}</Text>}
-        </View>
-        <Button kind="secondary" label={limit ? t('common.edit') : t('budget.setLimit')} onPress={() => setEditing(!editing)} style={{ minHeight: 44, paddingHorizontal: space.lg }} />
-      </Row>
+      {/* With a limit the whole row opens the editor; without one the only thing to do is "Set limit", so no "No limit" line repeats it. */}
+      <Pressable accessibilityRole="button" accessibilityLabel={limit ? `${title}, ${t('common.edit')}` : `${title}, ${t('budget.setLimit')}`} onPress={() => setEditing(!editing)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+        <Row style={{ minHeight: 52 }}>
+          <View style={{ width: 44, height: 44, borderRadius: radius.md, borderCurve: 'continuous', backgroundColor: colors.accentWash, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name={icon} color={colors.accent} />
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text>{title}</Text>
+            {limit ? <Text latin variant="small" color={colors.inkMuted} style={{ writingDirection: 'ltr' }}>MVR {formatNumber(spent)} / {formatNumber(limit)}</Text> : null}
+          </View>
+          {limit ? <Icon name={editing ? 'chevron-up' : 'chevron-down'} size={20} color={colors.inkMuted} /> : <View style={{ minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.control, alignItems: 'center', justifyContent: 'center' }}><Text variant="label">{t('budget.setLimit')}</Text></View>}
+        </Row>
+      </Pressable>
       {limit ? <ProgressBar percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} /> : null}
       {limit && state !== 'ok' && state !== 'none' ? (
         <Row>

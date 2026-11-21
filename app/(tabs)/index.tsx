@@ -4,7 +4,7 @@ import { Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { SharedCard } from '@/features/household/SharedCard';
+import { HouseholdGlanceRow } from '@/features/household/SharedCard';
 import { SharedRow } from '@/components/SharedRow';
 import { recentRows, type RecentRow } from '@/features/household/recent';
 import { ExpenseRow } from '@/components/ExpenseRow';
@@ -12,13 +12,13 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { LoadError } from '@/components/LoadError';
-import { Button, Card, Icon, IconButton, Logo, PanelArt, ProgressBar, Row, Screen, ScreenTitle, Tile, type IconName } from '@/components/ui';
+import { Button, Card, Icon, IconButton, ListRow, Logo, PanelArt, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import { paydayValue } from '@/features/foreign/logic';
 import { setHideAmounts, useHideAmounts, useMoneyText } from '@/lib/privacy';
 import { setFlag, useFlag } from '@/lib/flags';
 import { dueRuns } from '@/features/recurring/logic';
 import { useRefresh, useBudgets, useCategories, useCategoryName, useDebtPayments, useDebts, useExpenses, useGiving, useHoldings, useIncome, usePlanSettings, useHouseholdEntries, useRecurring, useRecurringRuns, useSharedTotals, useZakat } from '@/data/hooks';
-import { goalPercent, monthGiving } from '@/features/giving/logic';
+import { monthGiving } from '@/features/giving/logic';
 import { computePlan, nextDue } from '@/features/debts/compute';
 import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { useFeature } from '@/features/features/hooks';
@@ -159,15 +159,48 @@ export default function Home() {
       </View>
 
       {showTiles ? (
-        <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
-          {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} onPress={() => router.push({ pathname: '/income', params: { month } })} /> : null}
-        </Row>
+        <View style={{ marginTop: -44, paddingHorizontal: space.lg }}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('add.income')} onPress={() => router.push({ pathname: '/income', params: { month } })}>
+            <Card style={{ paddingVertical: space.md }}>
+              <Row>
+                <Text style={{ flex: 1 }}>{t('add.income')}</Text>
+                <Money laari={incomeTotal} variant="heading" color={colors.income} />
+                <Icon name="chevron-forward" size={20} color={colors.inkMuted} />
+              </Row>
+            </Card>
+          </Pressable>
+        </View>
       ) : null}
 
 
       <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: showTiles ? space.lg : -36 + space.lg }}>
-      {featHousehold ? <SharedCard /> : null}
       <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
+      {(() => {
+        const showDebts = featDebts && debtPlan.open.length > 0;
+        const showGiving = featGiving && (goal || giving.total > 0);
+        const showRecurring = featRecurring && recurringDue > 0;
+        const rows: ('household' | 'recurring' | 'debts' | 'giving')[] = [...(featHousehold ? ['household' as const] : []), ...(showRecurring ? ['recurring' as const] : []), ...(showDebts ? ['debts' as const] : []), ...(showGiving ? ['giving' as const] : [])];
+        if (!rows.length) return null;
+        const last = (k: string) => rows[rows.length - 1] === k;
+        const chev = <Icon name="chevron-forward" size={20} color={colors.inkMuted} />;
+        return (
+          <Card style={{ paddingVertical: space.xs }}>
+            {featHousehold ? <HouseholdGlanceRow last={last('household')} /> : null}
+            {showRecurring ? <ListRow icon="repeat" title={t('recurring.dueCard', { count: recurringDue })} onPress={() => router.push('/recurring')} last={last('recurring')} /> : null}
+            {showDebts ? (
+              <ListRow icon="leaf-outline" title={t('debts.title')} last={last('debts')} onPress={() => router.push('/debts')}
+                subtitle={debtPlan.result.debtFreeMonth ? t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) }) : t('debts.onTrack')}
+                meta={due ? <DueBadge state={due.due.state} days={due.due.days} /> : null}
+                trailing={<Row style={{ gap: space.sm }}><Money laari={debtPlan.total} variant="label" />{chev}</Row>} />
+            ) : null}
+            {showGiving ? (
+              <ListRow icon="heart-outline" title={t('giving.title')} last={last('giving')} onPress={() => router.push('/giving')}
+                subtitle={goal ? t('giving.homeCardGoal', { given: money(giving.goalCounted), goal: money(goal) }) : t('giving.homeCardGiven', { given: money(giving.total) })} />
+            ) : null}
+          </Card>
+        );
+      })()}
+
       {held.length > 0 ? (
         <Card>
           {/* Folded by default so the figures are not on show; one tap opens it, and Convert is inside. */}
@@ -188,51 +221,6 @@ export default function Home() {
             </Row>
           )) : null}
         </Card>
-      ) : null}
-
-      {featRecurring && recurringDue > 0 ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={t('recurring.dueCard', { count: recurringDue })} onPress={() => router.push('/recurring')}>
-          <Card>
-            <Row>
-              <Icon name="repeat" color={colors.accent} />
-              <Text variant="heading" style={{ flex: 1 }}>{t('recurring.dueCard', { count: recurringDue })}</Text>
-              <Icon name={'chevron-forward'} color={colors.inkMuted} />
-            </Row>
-          </Card>
-        </Pressable>
-      ) : null}
-
-      {featDebts && debtPlan.open.length > 0 ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={t('debts.title')} onPress={() => router.push('/debts')}>
-          <Card>
-            <Row>
-              <Icon name="leaf-outline" color={colors.accent} />
-              <Text variant="heading" style={{ flex: 1 }}>{t('debts.title')}</Text>
-              <Icon name={'chevron-forward'} color={colors.inkMuted} />
-            </Row>
-            <Money laari={debtPlan.total} variant="title" />
-            {debtPlan.result.debtFreeMonth ? <Text color={colors.inkMuted}>{t('debts.debtFree', { month: monthLabel(debtPlan.result.debtFreeMonth) })}</Text> : null}
-            {due ? <><Text>{t('debts.nextDue', { name: due.debt.lender })}</Text><DueBadge state={due.due.state} days={due.due.days} /></> : <Text color={colors.inkMuted}>{t('debts.onTrack')}</Text>}
-          </Card>
-        </Pressable>
-      ) : null}
-
-      {featGiving && (goal || giving.total > 0) ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={t('giving.title')} onPress={() => router.push('/giving')}>
-          <Card>
-            <Row>
-              <Icon name="heart-outline" color={colors.accent} />
-              <Text variant="heading" style={{ flex: 1 }}>{t('giving.title')}</Text>
-              <Icon name={'chevron-forward'} color={colors.inkMuted} />
-            </Row>
-            {goal ? (
-              <>
-                <Msg k="giving.homeCardGoal" amounts={{ given: giving.goalCounted, goal }} />
-                <ProgressBar percent={Math.min(100, goalPercent(giving.goalCounted, goal))} state="ok" label={t('a11y.progress', { percent: goalPercent(giving.goalCounted, goal) })} />
-              </>
-            ) : <Msg k="giving.homeCardGiven" amounts={{ given: giving.total }} />}
-          </Card>
-        </Pressable>
       ) : null}
 
       <View style={{ gap: space.md }}>
