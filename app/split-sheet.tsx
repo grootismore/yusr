@@ -56,8 +56,8 @@ export default function SplitSheet() {
     <Screen>
       <StackHeader title={t('sheet.title')} />
       <Row style={{ justifyContent: 'space-between' }}>
-        <Button kind="ghost" icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('sheet.prevDay')} onPress={() => setText(formatDate(addDays(date, -1)))} />
-        <Button kind="ghost" icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('sheet.nextDay')} disabled={date >= today()} onPress={() => setText(formatDate(addDays(date, 1)))} />
+        <Button kind="ghost" icon={'chevron-back'} label={t('sheet.prevDay')} onPress={() => setText(formatDate(addDays(date, -1)))} />
+        <Button kind="ghost" icon={'chevron-forward'} label={t('sheet.nextDay')} disabled={date >= today()} onPress={() => setText(formatDate(addDays(date, 1)))} />
       </Row>
       <DateField label={t('expense.date')} value={text} onChangeText={setText} max={today()} />
       {meRow && meRow.name === t('split.meDefault') ? <Field label={t('sheet.yourName')} hint={t('sheet.yourNameHint')} value={shown} onChangeText={setMyName} maxLength={40} autoCapitalize="words" /> : null}

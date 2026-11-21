@@ -30,7 +30,7 @@ import { toast } from '@/lib/toast';
 
 export default function Reports() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const money = useMoneyText();
   const router = useRouter();
   const catName = useCategoryName();
@@ -73,18 +73,17 @@ export default function Reports() {
   const trend = useTrend(trendMonths).data;
   const overall = limits?.get(null);
   const overallState = budgetState(total, overall);
-  const rtl = i18n.language === 'dv';
 
   return (
     <Screen tabbed>
       <ScreenTitle title={t('reports.title')} />
       {expensesQuery.isError && !expensesQuery.data ? <LoadError onRetry={() => void expensesQuery.refetch()} busy={expensesQuery.isFetching} /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
-        <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => (historyNeedsPlus(addMonths(month, -1), monthStart(), plus) ? router.push({ pathname: '/plus', params: { reason: 'history' } }) : setMonth(addMonths(month, -1)))} />
+        <IconButton icon={'chevron-back'} label={t('reports.prev')} onPress={() => (historyNeedsPlus(addMonths(month, -1), monthStart(), plus) ? router.push({ pathname: '/plus', params: { reason: 'history' } }) : setMonth(addMonths(month, -1)))} />
         <View style={{ paddingVertical: space.sm, paddingHorizontal: space.xl, borderRadius: radius.pill, backgroundColor: colors.accentWash }}>
           <Text variant="label" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="label">{month.slice(0, 4)}</Text></Text>
         </View>
-        <IconButton icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
+        <IconButton icon={'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
       </Row>
 
       <Card tone="hero" style={{ gap: space.md, padding: space.xl }}>

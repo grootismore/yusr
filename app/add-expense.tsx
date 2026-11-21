@@ -30,7 +30,7 @@ const PRESETS = ['50', '100', '250', '500'];
 /** Add an expense or income in three calm steps: type the amount on a keypad, fill in the details, see it saved. */
 export default function AddExpense() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
   const { mode: startMode } = useLocalSearchParams<{ mode?: string }>(); // Home's plus can open straight on income or split pay
@@ -129,7 +129,7 @@ export default function AddExpense() {
     return (
       <Screen>
         <Row style={{ gap: space.xs }}>
-          <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => setStep('amount')} />
+          <IconButton icon={'arrow-back'} label={t('common.back')} onPress={() => setStep('amount')} />
           <Text variant="title" style={{ flex: 1 }}>{t('add.details')}</Text>
         </Row>
         <Card tone="hero" style={{ alignItems: 'center' }}>

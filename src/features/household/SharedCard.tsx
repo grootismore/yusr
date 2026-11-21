@@ -34,7 +34,7 @@ export function SharedCard({ month = monthStart(), withActions = true }: { month
             <Text variant="heading" numberOfLines={1}>{data.household.name}</Text>
             <Text variant="small" color={colors.inkMuted}>{t(`household.mode.${couple ? 'couple' : 'household'}`)}</Text>
           </View>
-          <Icon name="chevron-forward" color={colors.inkMuted} />
+          <Icon name={'chevron-forward'} color={colors.inkMuted} />
         </Row>
       </Pressable>
       <Row style={{ alignItems: 'flex-start', gap: space.lg }}>

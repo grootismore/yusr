@@ -9,10 +9,10 @@ import { space, useColors } from '@/theme/tokens';
 /** What a signed-in person sees on the web: only the two things the website is for. */
 export default function WebHome() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { signOut } = useAuth();
-  const chevron = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
+  const chevron = 'chevron-forward';
   return (
     <Screen>
       <Text variant="display" color={colors.accent} style={{ paddingTop: space.xxl }}>{t('app.name')}</Text>

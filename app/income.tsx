@@ -15,7 +15,7 @@ import { space, useColors } from '@/theme/tokens';
 /** Where the month's income came from: by person, by source and by currency, then every entry. Opens from the Income tiles. */
 export default function Income() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const money = useMoneyText();
   const me = useAuth().userId;
@@ -25,16 +25,15 @@ export default function Income() {
   const own = useIncome(month).data;
   const shared = useHouseholdEntries(month).data;
   const members = useHousehold().data?.members;
-  const rtl = i18n.language === 'dv';
   const b = useMemo(() => incomeBreakdown(own ?? [], shared ?? [], members ?? [], me, { you: t('income.you'), income: t('add.income'), someone: t('household.former') }), [own, shared, members, me, t]);
 
   return (
     <Screen onRefresh={refresh}>
       <StackHeader title={t('income.screenTitle')} />
       <Row style={{ justifyContent: 'space-between' }}>
-        <IconButton icon={rtl ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
+        <IconButton icon={'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
         <Text variant="heading" accessibilityLiveRegion="polite">{(t('months', { returnObjects: true }) as string[])[Number(month.slice(5, 7)) - 1]} <Text latin variant="heading">{month.slice(0, 4)}</Text></Text>
-        <IconButton icon={rtl ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
+        <IconButton icon={'chevron-forward'} label={t('reports.next')} disabled={month >= monthStart()} onPress={() => setMonth(addMonths(month, 1))} />
       </Row>
 
       <Card tone="hero" style={{ gap: space.xs }}>

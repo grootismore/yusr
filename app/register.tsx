@@ -20,13 +20,13 @@ function Step({ done, label }: { done: boolean; label: string }) {
 
 export default function Register() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const items = useRegisterItems().data ?? [];
   const contacts = useContacts().data ?? [];
   const debts = useDebts().data ?? [];
   const r = readiness(items, contacts, debts.filter((d) => d.in_register && d.balance_laari > 0).length);
-  const chevron = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
+  const chevron = 'chevron-forward';
 
   return (
     <Screen>

@@ -20,7 +20,7 @@ import { radius, space, useColors } from '@/theme/tokens';
 /** A shared account: one pot of expenses and income that everyone in the household sees. Private entries never appear here. */
 export default function HouseholdScreen() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
   const { userId } = useAuth();
@@ -57,9 +57,9 @@ export default function HouseholdScreen() {
     <Screen onRefresh={refresh}>
       <StackHeader title={data.household.name} />
       <Row style={{ justifyContent: 'space-between' }}>
-        <IconButton icon={i18n.language === 'dv' ? 'chevron-forward' : 'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
+        <IconButton icon={'chevron-back'} label={t('reports.prev')} onPress={() => setMonth(addMonths(month, -1))} />
         <Text variant="label">{month.slice(0, 7)}</Text>
-        <IconButton icon={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} label={t('reports.next')} onPress={() => setMonth(addMonths(month, 1))} disabled={month >= monthStart()} />
+        <IconButton icon={'chevron-forward'} label={t('reports.next')} onPress={() => setMonth(addMonths(month, 1))} disabled={month >= monthStart()} />
       </Row>
       <Row style={{ alignItems: 'stretch', gap: space.md }}>
         <Tile color={colors.tile} label={t('household.spent')} laari={summary.spent} />

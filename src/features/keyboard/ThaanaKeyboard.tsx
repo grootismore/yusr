@@ -96,7 +96,7 @@ export function ThaanaKeyboard({ target }: { target: KbTarget }) {
         {cap('?', () => target.press(symbols ? '?' : '؟'), { children: text(symbols ? '?' : '؟') })}
         {cap('space', () => target.press(' '), { flex: 4, children: <Text variant="small" color={colors.inkMuted} numberOfLines={1}>{t('kb.space')}</Text>, a11y: t('kb.space') })}
         {cap('.', () => target.press('.'), { children: text('.') })}
-        {cap('enter', () => target.enter(), { flex: 1.5, fn: true, a11y: t('kb.return'), children: <Icon name="return-down-back" size={22} color={colors.ink} /> })}
+        {cap('enter', () => target.enter(), { flex: 1.5, fn: true, a11y: t('kb.return'), children: <Icon fixed name="return-down-back" size={22} color={colors.ink} /> })}
       </>, 'bottom')}
     </View>
   );

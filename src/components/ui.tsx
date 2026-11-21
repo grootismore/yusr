@@ -20,9 +20,14 @@ import { DialogHost } from '@/lib/dialog';
 
 export type IconName = keyof typeof Ionicons.glyphMap;
 // The database default icon "ellipsis" is not an Ionicons glyph; unknown names fall back to one that is.
-export const Icon = ({ name, size = 22, color }: { name: string; size?: number; color?: string }) => {
+/** Icons that point along the reading direction: they mirror in Dhivehi, so every screen just names the left-to-right one. */
+const DIRECTIONAL = /^(chevron|arrow|caret|play)-(back|forward)|^return-|^arrow-(undo|redo)|^log-(in|out)|^exit|^enter|^send/;
+/** Pass `fixed` for an icon that must not mirror (for example inside the keyboard, which is always left to right). */
+export const Icon = ({ name, size = 22, color, fixed }: { name: string; size?: number; color?: string; fixed?: boolean }) => {
   const colors = useColors();
-  return <Ionicons name={(name in Ionicons.glyphMap ? name : 'ellipsis-horizontal') as IconName} size={size} color={color ?? colors.ink} accessible={false} importantForAccessibility="no" />;
+  const { i18n } = useTranslation();
+  const mirror = !fixed && i18n.language === 'dv' && DIRECTIONAL.test(name);
+  return <Ionicons name={(name in Ionicons.glyphMap ? name : 'ellipsis-horizontal') as IconName} size={size} color={color ?? colors.ink} style={mirror ? { transform: [{ scaleX: -1 }] } : undefined} accessible={false} importantForAccessibility="no" />;
 };
 
 // A screen's title, told to the Screen by the ScreenTitle or StackHeader inside it, so the Screen can keep it on show
@@ -92,7 +97,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
           // status-bar height as its own top padding and keeps the title in the clear space below it.
           style={{ position: 'absolute', top: 0, start: 0, end: 0, height: 44 + insets.top, paddingTop: insets.top, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.ground, borderBottomWidth: 1, borderBottomColor: colors.line,
             opacity: sy.interpolate({ inputRange: [48, 96], outputRange: [0, 1], extrapolate: 'clamp' }) }}>
-          {compact.back ? <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} /> : null}
+          {compact.back ? <IconButton icon={'arrow-back'} label={t('common.back')} onPress={() => router.back()} /> : null}
           {compact.brand ? <Logo size={22} /> : null}
           <Text variant="heading" numberOfLines={1} style={{ flex: 1 }}>{compact.title}</Text>
         </Animated.View>
@@ -154,7 +159,6 @@ export function ScreenTitle({ title, subtitle, trailing }: { title: string; subt
 /** Tappable list row: icon tile, title, optional second line, trailing chevron that follows the reading direction. */
 export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { icon: IconName; title: string; subtitle?: string; onPress?: () => void; trailing?: ReactNode; last?: boolean }) {
   const colors = useColors();
-  const { i18n } = useTranslation();
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : undefined}
@@ -170,7 +174,7 @@ export function ListRow({ icon, title, subtitle, onPress, trailing, last }: { ic
         <Text>{title}</Text>
         {subtitle ? <Text variant="small" color={colors.inkMuted}>{subtitle}</Text> : null}
       </View>
-      {trailing ?? (onPress ? <Icon name={i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward'} size={20} color={colors.inkMuted} /> : null)}
+      {trailing ?? (onPress ? <Icon name={'chevron-forward'} size={20} color={colors.inkMuted} /> : null)}
     </Pressable>
   );
 }
@@ -273,7 +277,7 @@ export function Field({ label, error, flag, hint, trailing, inputRef, ...rest }:
           ...faceFor(i18n.language, 'regular', rest.keyboardType === 'decimal-pad' || rest.keyboardType === 'number-pad' || rest.keyboardType === 'numbers-and-punctuation' || rest.keyboardType === 'email-address'), fontSize: 17, color: colors.ink, ...(ltr ? { writingDirection: 'ltr', textAlign: 'left' } : { writingDirection: i18n.language === 'dv' ? 'rtl' : 'ltr' }) }, rest.style]}
         {...(ltr ? { dir: 'ltr' } : {})}
       />
-      {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, right: 4, justifyContent: 'center' }}>{trailing}</View> : null}
+      {trailing ? <View style={{ position: 'absolute', top: 0, bottom: 0, end: 4, justifyContent: 'center' }}>{trailing}</View> : null}
       </View>
       {flag && !bad ? (
         <View style={{ flexDirection: 'row', gap: space.xs, alignItems: 'center' }}>
@@ -330,12 +334,12 @@ export const Row = ({ children, style, ...rest }: ViewProps & { children: ReactN
 
 /** Header for pushed screens: a 44 pt back arrow at the start edge (mirrored in Dhivehi) and the title beside it. */
 export function StackHeader({ title, numberOfLines }: { title: string; numberOfLines?: number }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   useCompactTitle(title, false, true);
   return (
     <Row style={{ gap: space.sm, paddingTop: space.sm, paddingBottom: space.sm }}>
-      <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} onPress={() => router.back()} />
+      <IconButton icon={'arrow-back'} label={t('common.back')} onPress={() => router.back()} />
       <Text variant="title" style={{ flex: 1 }} numberOfLines={numberOfLines}>{title}</Text>
     </Row>
   );
@@ -349,13 +353,13 @@ export function HeaderBand({ title, subtitle, eyebrow, onBack, children }: { tit
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   return (
     <View style={{ backgroundColor: colors.hero, paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: 44, gap: space.xs, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, borderCurve: 'continuous', overflow: 'hidden' }}>
       <PanelArt />
       {onBack ? (
         <View style={{ alignSelf: 'flex-start', marginStart: -space.sm }}>
-          <IconButton icon={i18n.language === 'dv' ? 'arrow-forward' : 'arrow-back'} label={t('common.back')} color={colors.onHero} onPress={() => router.back()} />
+          <IconButton icon={'arrow-back'} label={t('common.back')} color={colors.onHero} onPress={() => router.back()} />
         </View>
       ) : null}
       {eyebrow ? <Text variant="heading" color={colors.onHero}>{eyebrow}</Text> : null}
@@ -408,7 +412,7 @@ export function Tile({ color, label, laari, onPress }: { color: string; label: s
     <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text variant="small" color={colors.onTile}>{label}</Text>
-        {onPress ? <Icon name="chevron-forward" size={16} color={colors.onTile} /> : null}
+        {onPress ? <Icon name={'chevron-forward'} size={16} color={colors.onTile} /> : null}
       </View>
       <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} color={colors.onTile} />
     </View>
