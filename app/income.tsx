@@ -96,7 +96,7 @@ export default function Income() {
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Money laari={e.mvr} prefix="+" color={colors.accent} />
+                    <Money laari={e.mvr} prefix="+" color={colors.income} />
                     {e.currency !== 'MVR' ? <Money laari={e.minor} currency={e.currency} variant="small" color={colors.inkMuted} /> : null}
                   </View>
                 </Pressable>

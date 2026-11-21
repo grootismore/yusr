@@ -86,7 +86,7 @@ export default function Activity() {
                       <Text numberOfLines={1}>{i.note || t('add.income')}</Text>
                       {i.currency !== 'MVR' ? <Text latin variant="small" color={colors.inkMuted}>{money(i.amount_laari, i.currency)}</Text> : null}
                     </View>
-                    <Money laari={i.mvr_laari} prefix="+" color={colors.accent} />
+                    <Money laari={i.mvr_laari} prefix="+" color={colors.income} />
                   </Pressable>
                 );
               })}

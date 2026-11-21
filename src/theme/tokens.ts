@@ -22,6 +22,7 @@ export const light = {
   sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
   tile: '#D9DFE5', // neutral figure tile
   onTile: '#1E2023', // text on the tiles
+  income: '#0F5A35', // money coming in: amounts and signs on rows (always with a + and words, never colour alone)
   coral: '#A52D26', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
   amberDeep: '#8A5A00', // warning icons and borders (3:1+ on ground and white)
@@ -57,6 +58,7 @@ export const dark: Palette = {
   sky: '#8EC5F0',
   tile: '#C0C8CF',
   onTile: '#1E2023',
+  income: '#6FD0A0',
   coral: '#FF9A8C',
   amber: '#E0A526',
   amberDeep: '#F0C45A',

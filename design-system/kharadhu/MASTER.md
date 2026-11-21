@@ -20,6 +20,7 @@ A calm, flat, money-first look. A dusty blue-grey page, lighter flat cards with 
 | hero / onHero | #222428 / #FFFFFF | the month's figure panel |
 | sky | #8EC5F0 | progress, the Left tile, active tab |
 | amber / amberDeep / amberWash | #E0A526 / #8A5A00 / #F1E5C6 | close to the limit, warnings (fill only; icons use amberDeep) |
+| income | #0F5A35 (dark #6FD0A0) | money coming in: the amount and its + on rows in Activity, Income and the shared lists; always with the + sign and words, never colour alone |
 | coral / coralWash | #A52D26 / #F1DDD9 | over budget, errors |
 
 **One meaning for state, everywhere** (bars, icons, text, switches): sky or ink = fine, amber = close, red = over. On the dark panel "over" is the light red `#FF8A7A`. Colour is never the only cue: an icon or words always go with it. Every text pair and control border is contrast-tested in `src/__tests__/theme.test.ts` (4.5:1 text, 3:1 controls), light and dark.
