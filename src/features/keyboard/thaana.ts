@@ -11,9 +11,9 @@ const k = (latin: string, base: string, shift?: string): LetterKey => ({ latin, 
 
 /** The three letter rows, from the left. Vowel signs (fili) and the sukun are on the same keys, base or Shift. */
 export const ROWS: readonly (readonly LetterKey[])[] = [
-  [k('Q', 'ް', 'ޤ'), k('W', 'އ', 'ޢ'), k('E', 'ެ', 'ޭ'), k('R', 'ރ', 'ޜ'), k('T', 'ތ', 'ޓ'), k('Y', 'ޔ', 'ޠ'), k('U', 'ު', 'ޫ'), k('I', 'ި', 'ީ'), k('O', 'ޮ', 'ޯ'), k('P', 'ޕ')],
+  [k('Q', 'ް', 'ޤ'), k('W', 'އ', 'ޢ'), k('E', 'ެ', 'ޭ'), k('R', 'ރ', 'ޜ'), k('T', 'ތ', 'ޓ'), k('Y', 'ޔ', 'ޠ'), k('U', 'ު', 'ޫ'), k('I', 'ި', 'ީ'), k('O', 'ޮ', 'ޯ'), k('P', 'ޕ', 'ޘ')],
   [k('A', 'ަ', 'ާ'), k('S', 'ސ', 'ށ'), k('D', 'ދ', 'ޑ'), k('F', 'ފ', 'ﷲ'), k('G', 'ގ', 'ޣ'), k('H', 'ހ', 'ޙ'), k('J', 'ޖ', 'ޛ'), k('K', 'ކ', 'ޚ'), k('L', 'ލ', 'ޅ')],
-  [k('Z', 'ޒ', 'ޡ'), k('X', 'ޝ', 'ޘ'), k('C', 'ޗ', 'ޟ'), k('V', 'ވ', 'ޥ'), k('B', 'ބ', 'ޞ'), k('N', 'ނ', 'ޏ'), k('M', 'މ', 'ޱ')],
+  [k('Z', 'ޒ', 'ޡ'), k('X', 'ޝ', '﷽'), k('C', 'ޗ', 'ޟ'), k('V', 'ވ', 'ޥ'), k('B', 'ބ', 'ޞ'), k('N', 'ނ', 'ޏ'), k('M', 'މ', 'ޱ')],
 ];
 /** The number row: the digit, and what Shift gives. */
 export const NUMBERS: readonly { base: string; shift: string }[] = [
