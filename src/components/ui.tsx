@@ -72,7 +72,7 @@ export function Screen({ children, scroll = true, padded = true, bleed = false, 
     }, 80);
     return () => { live = false; clearTimeout(wait); };
   }, [kbTarget, insets.bottom]);
-  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 96 : 0), ...(grow ? { flexGrow: 1 } : {}) };
+  const inner: ViewStyle = { padding: padded ? space.lg : 0, gap: space.lg, paddingBottom: space.xxl + (tabbed ? 104 : 0), ...(grow ? { flexGrow: 1 } : {}) };
   return (
     <SafeAreaView edges={bleed ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.ground }} {...{ dir: i18n.language === 'dv' ? 'rtl' : 'ltr' }}>
       <Backdrop />
@@ -311,7 +311,8 @@ function Fill({ percent, color }: { percent: number; color: string }) {
 
 export function ProgressBar({ percent, state, label, onHero }: { percent: number; state: 'ok' | 'near' | 'over'; label: string; onHero?: boolean }) {
   const colors = useColors();
-  const fill = onHero ? colors.sky : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
+  // On the dark panel the bar stays sky until the budget is passed, then amber: calm, but no longer saying "fine".
+  const fill = onHero ? (state === 'ok' ? colors.sky : colors.amber) : state === 'over' ? colors.coral : state === 'near' ? colors.amber : colors.accent;
   return (
     <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: percent }}
       style={{ height: 14, borderRadius: radius.pill, backgroundColor: onHero ? 'rgba(255,255,255,0.28)' : colors.groundDeep, overflow: 'hidden' }}>
@@ -403,7 +404,7 @@ export function Tile({ color, label, laari }: { color: string; label: string; la
   return (
     <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
       <Text variant="small" color={colors.onTile}>{label}</Text>
-      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit color={colors.onTile} />
+      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} color={colors.onTile} />
     </View>
   );
 }

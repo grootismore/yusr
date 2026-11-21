@@ -95,11 +95,11 @@ export default function Reports() {
           <>
             <ProgressBar onHero percent={percentUsed(total, overall)} state={overallState === 'none' ? 'ok' : overallState} label={t('a11y.progress', { percent: percentUsed(total, overall) })} />
             {overallState === 'over' || overallState === 'near' ? (
-              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.pill, backgroundColor: overallState === 'over' ? colors.coralWash : colors.amberWash }}>
-                <Icon name={overallState === 'over' ? 'alert-circle' : 'warning'} size={18} color={overallState === 'over' ? colors.coral : colors.amberDeep} />
+              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
+                <Icon name={overallState === 'over' ? 'information-circle' : 'warning'} size={18} color={colors.amber} />
                 {overallState === 'over'
-                  ? <Msg k="reports.overBy" amounts={{ amount: total - overall }} variant="small" color={colors.coral} />
-                  : <Text variant="small" color={colors.ink}>{t('reports.nearLimit')}</Text>}
+                  ? <Msg k="home.overNext" amounts={{ amount: total - overall }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
+                  : <Text variant="small" color={colors.onHero}>{t('reports.nearLimit')}</Text>}
               </View>
             ) : null}
             {overallState === 'over' ? null : <Msg k="reports.leftOf" amounts={{ amount: overall - total, limit: overall }} color={colors.onHero} />}
