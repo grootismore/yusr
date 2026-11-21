@@ -130,6 +130,7 @@ export default function AddExpense() {
         <ExpenseForm
           key={mode}
           hideAmount
+          compact
           initial={{ amountLaari: laari }}
           income={isIncome}
           offerKeep={!!(shared && household)}
