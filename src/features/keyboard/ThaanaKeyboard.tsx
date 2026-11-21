@@ -38,7 +38,7 @@ export function ThaanaKeyboard({ target }: { target: KbTarget }) {
     </Pressable>
   );
   const text = (label: string, color: string = colors.ink, size?: number) => (
-    <Text variant="heading" latin={/^[A-Za-z0-9!-/:-@[-`{-~]/.test(label)} color={color} numberOfLines={1} adjustsFontSizeToFit style={size ? { fontSize: size, lineHeight: size + 10 } : undefined}>{isSign(label) ? `◌${label}` : label}</Text>
+    <Text variant="heading" latin={/^[A-Za-z0-9!-/:-@[-`{-~]/.test(label)} color={color} numberOfLines={1} adjustsFontSizeToFit style={size ? { fontSize: size, lineHeight: size + 10 } : undefined}>{isSign(label) ? `◌${label}` : /^[A-Za-z0-9!-/:-@[-`{-~÷×]/.test(label) ? `\u2066${label}\u2069` : label}</Text>
   );
   const row = (keys: ReactNode, key: string, inset = 0) => <View key={key} style={{ flexDirection: 'row', gap: GAP, paddingHorizontal: inset }}>{keys}</View>;
   const backspace = (flex = 1.5) => (
