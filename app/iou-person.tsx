@@ -6,10 +6,10 @@ import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
 import { Button, Card, Row, Screen, StackHeader } from '@/components/ui';
 import { useIous, useIouPayments } from '@/data/hooks';
-import { groupByPerson, paidOf, personTimeline, remaining, roleOf, statusOf } from '@/features/ious/logic';
+import { groupByPerson, paidOf, personTimeline, remaining, roleOf, statusOf, type Iou } from '@/features/ious/logic';
 import { PersonTimeline, StatusPill } from '@/features/ious/ui';
 import { useAuth } from '@/lib/auth';
-import { today } from '@/lib/dates';
+import { formatDate, today } from '@/lib/dates';
 import { space, useColors } from '@/theme/tokens';
 
 /** Everything with one person: where you stand overall, the whole story in date order, and each IOU. */
@@ -24,6 +24,8 @@ export default function IouPerson() {
   const group = groupByPerson(ious, payments, me, t('ious.other'), today()).find((g) => g.key === key);
   if (!group) return <Screen><StackHeader title={t('ious.title')} /><Text>{t('common.loading')}</Text></Screen>;
   const events = personTimeline(group, payments, me, today());
+  // An IOU with no "what for" is named by when it began, not just "IOU".
+  const untitled = (i: Iou) => t(roleOf(i, me) === 'lent' ? 'ious.untitledLent' : 'ious.untitledBorrowed', { date: formatDate(i.lent_on) });
   const mine = group.key.startsWith('n:');
   return (
     <Screen>
@@ -47,14 +49,15 @@ export default function IouPerson() {
         const left = remaining(i, mineP);
         const role = roleOf(i, me);
         return (
-          <Pressable key={i.id} accessibilityRole="button" accessibilityLabel={i.title ?? t('ious.untitled')} onPress={() => router.push({ pathname: '/iou', params: { id: i.id } })}>
+          <Pressable key={i.id} accessibilityRole="button" accessibilityLabel={i.title ?? untitled(i)} onPress={() => router.push({ pathname: '/iou', params: { id: i.id } })}>
             <Card style={{ gap: space.xs }}>
               <Row style={{ justifyContent: 'space-between' }}>
-                <Text variant="title" style={{ flex: 1 }}>{i.title ?? t('ious.untitled')}</Text>
+                <Text variant="title" style={{ flex: 1 }}>{i.title?.trim() || untitled(i)}</Text>
                 <StatusPill status={statusOf(i, mineP, today())} />
               </Row>
               <Msg k={left === 0 ? 'ious.paidInFull' : role === 'lent' ? 'ious.owesYou' : 'ious.youOweThem'} values={{ name: group.name }} amounts={{ amount: left === 0 ? i.amount_laari : left }} />
               <Msg k="ious.ofTotal" amounts={{ paid: paidOf(mineP), total: i.amount_laari }} variant="small" color={colors.inkMuted} />
+              <Text variant="small" color={colors.inkMuted}>{i.due_on ? t('ious.datesLine', { lent: formatDate(i.lent_on), due: formatDate(i.due_on) }) : t('ious.lentLine', { lent: formatDate(i.lent_on) })}</Text>
             </Card>
           </Pressable>
         );

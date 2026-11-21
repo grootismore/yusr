@@ -11,7 +11,7 @@ import { useIous, useIouInvites, useIouPayments, useIouPeople, useWrite } from '
 import { groupByPerson, paidOf, totals, type IouPayment, type PersonGroup } from '@/features/ious/logic';
 import { StatusPill } from '@/features/ious/ui';
 import { useAuth } from '@/lib/auth';
-import { today } from '@/lib/dates';
+import { formatDate, today } from '@/lib/dates';
 import { toast } from '@/lib/toast';
 import { space, useColors } from '@/theme/tokens';
 
@@ -110,7 +110,11 @@ function PersonRow({ group, payments }: { group: PersonGroup; payments: IouPayme
           <StatusPill status={group.status} />
         </Row>
         <Msg k={group.openCount === 0 ? 'ious.allSettled' : group.net > 0 ? 'ious.owesYou' : group.net < 0 ? 'ious.youOweThem' : 'ious.pt.even'} values={{ name: group.name }} amounts={{ amount: Math.abs(group.net) }} />
-        <Text variant="small" color={colors.inkMuted}>{t('ious.iouCount', { n: group.ious.length })}</Text>
+        {group.titles.length ? <Text variant="small" color={colors.inkMuted} numberOfLines={2}>{group.titles.slice(0, 2).join(' · ')}{group.titles.length > 2 ? ` ${t('ious.moreCount', { n: group.titles.length - 2 })}` : ''}</Text> : null}
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Text variant="small" color={colors.inkMuted}>{t('ious.iouCount', { n: group.ious.length })}</Text>
+          {group.openCount > 0 ? <Text variant="small" color={colors.inkMuted}>{group.nextDue ? t('ious.nextDue', { date: formatDate(group.nextDue) }) : t('ious.noDue')}</Text> : null}
+        </Row>
         <ProgressBar percent={percent} state={group.status === 'overdue' ? 'over' : group.status === 'dueSoon' ? 'near' : 'ok'} label={t('a11y.progress', { percent })} />
       </Card>
     </Pressable>

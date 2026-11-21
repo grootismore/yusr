@@ -94,3 +94,12 @@ it('names the person who owes as the payer, not whoever typed the payment in', (
   expect(payerOf('lent', 'Ahmed', 'you')).toBe('Ahmed'); // you lent, so Ahmed pays you back, even if you record it
   expect(payerOf('borrowed', 'Ahmed', 'you')).toBe('you'); // you borrowed, so you pay Ahmed
 });
+
+it('lists what each open IOU was for and the earliest due date', () => {
+  const x: Iou = { ...iou, id: 'x', person_name: 'Fathima', title: 'Lunch', due_on: '2026-12-20', amount_laari: 3_000 };
+  const y: Iou = { ...iou, id: 'y', person_name: 'Fathima', title: null, due_on: '2026-12-05', amount_laari: 2_000 };
+  const z: Iou = { ...iou, id: 'z', person_name: 'Fathima', title: 'Taxi', due_on: null, amount_laari: 1_000 };
+  const [g] = groupByPerson([x, y, z], [], 'me', 'Them', '2026-11-21');
+  expect(g.titles).toEqual(['Lunch', 'Taxi']);
+  expect(g.nextDue).toBe('2026-12-05');
+});
