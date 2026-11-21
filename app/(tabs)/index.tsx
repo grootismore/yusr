@@ -200,7 +200,7 @@ export default function Home() {
       {showTiles ? (
         <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
           {limit && state !== 'over' ? <Tile color={colors.sky} label={t('home.leftLabel')} laari={limit - spent} /> : null}
-          {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} /> : null}
+          {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} onPress={() => router.push({ pathname: '/income', params: { month } })} /> : null}
         </Row>
       ) : null}
 

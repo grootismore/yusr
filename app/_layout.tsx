@@ -110,6 +110,7 @@ function Routes() {
           <Stack.Screen name="zakat" options={{ presentation: 'modal' }} />
           <Stack.Screen name="debts" />
           <Stack.Screen name="features" />
+          <Stack.Screen name="income" />
           <Stack.Screen name="rule" />
           <Stack.Screen name="ious" />
           <Stack.Screen name="iou" />
