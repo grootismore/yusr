@@ -1,4 +1,4 @@
-import { budgetState, effectiveBudgets, percentUsed } from '@/lib/budget';
+import { dailyAllowance, daysLeftInMonth, budgetState, effectiveBudgets, percentUsed } from '@/lib/budget';
 import { checkTotals } from '@/lib/receipt';
 
 const rows = [
@@ -33,4 +33,21 @@ describe('receipt total check (same rule as the server)', () => {
   });
   it('a wrong total is flagged', () => expect(checkTotals({ ...base, total: 15000, includesGst: false }).match).toBe(false));
   it('service charge and discount count', () => expect(checkTotals({ items: [10000], gst: 880, service: 1000, discount: 500, total: 11380, includesGst: false }).match).toBe(true));
+});
+
+describe('what is left to spend', () => {
+  it('counts the days left in the month, today included', () => {
+    expect(daysLeftInMonth('2026-11-21')).toBe(10);
+    expect(daysLeftInMonth('2026-11-30')).toBe(1);
+    expect(daysLeftInMonth('2026-02-01')).toBe(28);
+    expect(daysLeftInMonth('2028-02-10')).toBe(20); // leap year
+  });
+  it('shares what is left evenly over the days, rounding down', () => {
+    expect(dailyAllowance(200_000, 1_200_000, '2026-11-21')).toEqual({ left: 1_000_000, days: 10, perDay: 100_000 });
+    expect(dailyAllowance(0, 1_000_000, '2026-11-24').perDay).toBe(142_857); // 1,000,000 / 7
+  });
+  it('is zero once the budget is spent or passed', () => {
+    expect(dailyAllowance(1_200_000, 1_200_000, '2026-11-21')).toEqual({ left: 0, days: 10, perDay: 0 });
+    expect(dailyAllowance(3_000_000, 1_200_000, '2026-11-21').left).toBe(0);
+  });
 });

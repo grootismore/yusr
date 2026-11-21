@@ -100,7 +100,12 @@
     "scanReceipt": "Scan receipt",
     "overNext": "You are {{amount}} over your budget. Raise it, or look at where it went.",
     "addIncome": "Add income",
-    "addSplit": "Add split pay"
+    "addSplit": "Add split pay",
+    "leftHeadline": "Left this month",
+    "overHeadline": "Over budget by",
+    "perDay": "{{amount}} a day for {{days}} days",
+    "spentOfBudget": "Spent {{spent}} of {{budget}}",
+    "overAction": "Raise your budget, or look at where it went."
   },
   "expense": {
     "addTitle": "Add expense",

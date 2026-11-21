@@ -24,7 +24,7 @@ import { DueBadge, useMonthLabel } from '@/features/debts/ui';
 import { useFeature } from '@/features/features/hooks';
 import { useRule } from '@/features/rule/hooks';
 import { RuleCard } from '@/features/rule/ui';
-import { budgetState, percentUsed } from '@/lib/budget';
+import { budgetState, dailyAllowance, percentUsed } from '@/lib/budget';
 import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
@@ -72,6 +72,7 @@ export default function Home() {
   const spent = expenses.reduce((s, e) => s + e.mvr_laari, 0) + shared.spent;
   const limit = budgets?.get(null);
   const state = budgetState(spent, limit);
+  const allowance = dailyAllowance(spent, limit ?? 0, today());
   const sharedEntries = useHouseholdEntries(month).data;
   // Recent: your own and the shared pot's expenses together.
   const recentGroups = useMemo(() => {
@@ -79,7 +80,7 @@ export default function Home() {
     for (const r of recentRows(expenses, sharedEntries, 6)) groups.set(r.date, [...(groups.get(r.date) ?? []), r]);
     return [...groups];
   }, [expenses, sharedEntries]);
-  const showTiles = (!!limit && state !== 'over') || incomeTotal > 0;
+  const showTiles = incomeTotal > 0; // what is left is the headline of the panel above, so it is not repeated as a tile
   const top = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -131,22 +132,21 @@ export default function Home() {
           </Row>
           <IconButton icon={hidden ? 'eye-off-outline' : 'eye-outline'} color={colors.onHero} label={hidden ? t('privacy.show') : t('privacy.hide')} onPress={() => void setHideAmounts(!hidden)} />
         </Row>
-        <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
+        <Text color={colors.onHero}>{limit ? t(state === 'over' ? 'home.overHeadline' : 'home.leftHeadline') : `${t('home.thisMonth')} · ${t('home.spent')}`}</Text>
         {expensesQuery.isLoading && !expensesQuery.data
           // Until the month has loaded, show a dash: a zero would read as a real, wrong figure.
           ? <Text latin variant="display" color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} accessibilityLabel={t('common.loading')}>MVR —</Text>
-          : <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />}
+          : <Money laari={limit ? Math.abs(limit - spent) : spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={limit && state === 'over' ? '#FF8A7A' : colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />}
         {limit ? (
           <>
-            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onHero} />
+            {state !== 'over' ? <Msg k="home.perDay" amounts={{ amount: allowance.perDay }} values={{ days: allowance.days }} variant="small" color={colors.onHero} /> : null}
             <ProgressBar onHero percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
+            <Msg k="home.spentOfBudget" amounts={{ spent, budget: limit }} variant="small" color={colors.onHero} />
             {state === 'over' || state === 'near' ? (
               <Pressable accessibilityRole="button" onPress={() => router.push('/budget')}
                 style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
                 <Icon name={state === 'over' ? 'information-circle' : 'warning'} size={18} color={state === 'over' ? '#FF8A7A' : colors.amber} />
-                {state === 'over'
-                  ? <Msg k="home.overNext" amounts={{ amount: spent - limit }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
-                  : <Text variant="small" color={colors.onHero}>{t('home.nearLimit')}</Text>}
+                <Text variant="small" color={colors.onHero} style={{ flexShrink: 1 }}>{t(state === 'over' ? 'home.overAction' : 'home.nearLimit')}</Text>
               </Pressable>
             ) : null}
           </>
@@ -160,7 +160,6 @@ export default function Home() {
 
       {showTiles ? (
         <Row style={{ alignItems: 'stretch', gap: space.md, marginTop: -44, paddingHorizontal: space.lg }}>
-          {limit && state !== 'over' ? <Tile color={colors.sky} label={t('home.leftLabel')} laari={limit - spent} /> : null}
           {incomeTotal > 0 ? <Tile color={colors.tile} label={t('add.income')} laari={incomeTotal} onPress={() => router.push({ pathname: '/income', params: { month } })} /> : null}
         </Row>
       ) : null}
