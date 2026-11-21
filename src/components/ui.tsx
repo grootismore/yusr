@@ -413,7 +413,7 @@ export function Tile({ color, label, laari, onPress }: { color: string; label: s
         <Text variant="small" color={colors.onTile}>{label}</Text>
         {onPress ? <Icon name={'chevron-forward'} size={16} color={colors.onTile} /> : null}
       </View>
-      <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} color={colors.onTile} />
+      <Money laari={laari} compact variant="heading" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7} color={colors.onTile} />
     </View>
   );
   // A tile that goes somewhere is a button, with the arrow to say so.

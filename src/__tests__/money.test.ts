@@ -1,4 +1,4 @@
-import { formatMoney, formatMVR, ltr, money, parseAmount, parseRate, toMvrLaari, MoneyError, sum } from '@/lib/money';
+import { formatCompactMoney, formatMoney, formatMVR, ltr, money, parseAmount, parseRate, toMvrLaari, MoneyError, sum } from '@/lib/money';
 
 describe('parseAmount', () => {
   it.each([
@@ -42,5 +42,18 @@ describe('currency conversion', () => {
   it('sums safely', () => {
     expect(sum([1, 2, 3])).toBe(6);
     expect(() => sum([Number.MAX_SAFE_INTEGER, 1])).toThrow(MoneyError);
+  });
+});
+
+describe('compact money for a small box', () => {
+  it('leaves amounts under a million alone', () => {
+    expect(formatCompactMoney(123_456_78)).toBe('MVR 123,456.78');
+    expect(formatCompactMoney(99_999_999)).toBe('MVR 999,999.99');
+  });
+  it('shortens millions and billions to at most two decimals', () => {
+    expect(formatCompactMoney(123_475_689_00)).toBe('MVR 123.48M');
+    expect(formatCompactMoney(1_000_000_00)).toBe('MVR 1M');
+    expect(formatCompactMoney(2_500_000_000_00)).toBe('MVR 2.5B');
+    expect(formatCompactMoney(-12_340_000_00)).toBe('-MVR 12.34M');
   });
 });

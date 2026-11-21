@@ -78,6 +78,18 @@ export function formatMoney(laari: number, currency = 'MVR'): string {
   const n = formatNumber(laari);
   return n.startsWith('-') ? `-${currency} ${n.slice(1)}` : `${currency} ${n}`;
 }
+/**
+ * A short form for a small box: "MVR 1.23M" from a million up, "MVR 4.5B" from a billion (rounded to at most two decimals).
+ * Below a million the full amount is already short, so it is returned unchanged.
+ */
+export function formatCompactMoney(laari: number, currency = 'MVR'): string {
+  assertLaari(laari);
+  const abs = Math.abs(laari) / LAARI_PER_MVR;
+  if (abs < 1_000_000) return formatMoney(laari, currency);
+  const [div, unit] = abs >= 1_000_000_000 ? [1_000_000_000, 'B'] : [1_000_000, 'M'];
+  const short = `${Number((abs / div).toFixed(2))}${unit}`;
+  return `${laari < 0 ? '-' : ''}${currency} ${short}`;
+}
 export const formatMVR = (laari: number): string => formatMoney(laari, 'MVR');
 
 const LRI = '⁦'; // left-to-right isolate
