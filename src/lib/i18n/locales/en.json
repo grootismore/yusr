@@ -98,7 +98,9 @@
     "incomeLine": "Income {{amount}}",
     "leftLabel": "Left of budget",
     "scanReceipt": "Scan receipt",
-    "overNext": "You are {{amount}} over your budget. Raise it, or look at where it went."
+    "overNext": "You are {{amount}} over your budget. Raise it, or look at where it went.",
+    "addIncome": "Add income",
+    "addSplit": "Add split pay"
   },
   "expense": {
     "addTitle": "Add expense",

@@ -29,19 +29,39 @@ import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
+type AddKind = 'expense' | 'income' | 'split';
+
 /**
- * The one action on Home, floating above the tab bar so it is always in reach however far the page is scrolled.
- * Home only: other screens have their own actions.
+ * The one entry point on Home: a round plus floating above the tab bar, always in reach. Tap it and it opens into the three
+ * things you can add (an expense, income, a split payday); tap away to close. Home only.
  */
-function AddButton({ bottom, onPress, label }: { bottom: number; onPress: () => void; label: string }) {
+function AddMenu({ bottom, onPick }: { bottom: number; onPick: (kind: AddKind) => void }) {
   const colors = useColors();
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const options: { kind: AddKind; icon: IconName; label: string }[] = [
+    { kind: 'split', icon: 'git-compare-outline', label: t('home.addSplit') },
+    { kind: 'income', icon: 'arrow-down', label: t('home.addIncome') },
+    { kind: 'expense', icon: 'arrow-up', label: t('home.addExpense') },
+  ];
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
-      style={({ pressed }) => ({ position: 'absolute', end: space.lg, bottom, flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 56, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 28, borderCurve: 'continuous',
-        backgroundColor: colors.accent, boxShadow: '0 8px 20px rgba(0,0,0,0.28)', opacity: pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-      <Icon name="add" color={colors.onAccent} size={26} />
-      <Text variant="label" color={colors.onAccent}>{label}</Text>
-    </Pressable>
+    <>
+      {open ? <Pressable accessibilityRole="button" accessibilityLabel={t('common.cancel')} onPress={() => setOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} /> : null}
+      <View pointerEvents="box-none" style={{ position: 'absolute', end: space.lg, bottom, alignItems: 'flex-end', gap: space.md }}>
+        {open ? options.map((o) => (
+          <Pressable key={o.kind} accessibilityRole="button" accessibilityLabel={o.label} onPress={() => { setOpen(false); onPick(o.kind); }}
+            style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 26, borderCurve: 'continuous', backgroundColor: colors.card,
+              borderWidth: 1, borderColor: colors.cardEdge, boxShadow: '0 6px 16px rgba(0,0,0,0.22)', opacity: pressed ? 0.85 : 1 })}>
+            <Icon name={o.icon} color={colors.accent} />
+            <Text variant="label">{o.label}</Text>
+          </Pressable>
+        )) : null}
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} accessibilityLabel={t('home.addExpense')} onPress={() => setOpen(!open)}
+          style={({ pressed }) => ({ width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, boxShadow: '0 8px 20px rgba(0,0,0,0.28)', transform: [{ scale: pressed ? 0.95 : 1 }] })}>
+          <View style={{ transform: [{ rotate: open ? '45deg' : '0deg' }] }}><Icon name="add" color={colors.onAccent} size={30} /></View>
+        </Pressable>
+      </View>
+    </>
   );
 }
 
@@ -132,7 +152,7 @@ export default function Home() {
           <Money laari={spent} variant="heading" color={colors.onHero} />
         </Row>
       </Animated.View>
-      <AddButton bottom={Math.max(insets.bottom, space.sm) + space.xs + 72 + space.md} label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
+      <AddMenu bottom={Math.max(insets.bottom, space.sm) + space.xs + 72 + space.md} onPick={(kind) => router.push({ pathname: '/add-expense', params: { mode: kind } })} />
       </>
     }>
       {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}

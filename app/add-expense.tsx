@@ -33,7 +33,8 @@ export default function AddExpense() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const catName = useCategoryName();
-  const [mode, setMode] = useState<'expense' | 'income' | 'split'>('expense');
+  const { mode: startMode } = useLocalSearchParams<{ mode?: string }>(); // Home's plus can open straight on income or split pay
+  const [mode, setMode] = useState<'expense' | 'income' | 'split'>(startMode === 'income' || startMode === 'split' ? startMode : 'expense');
   const [splitDone, setSplitDone] = useState<number | null>(null);
   const [step, setStep] = useState<'amount' | 'details' | 'done'>('amount');
   const [typed, setTyped] = useState('');
