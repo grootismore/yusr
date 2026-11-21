@@ -670,7 +670,14 @@
     "addTitle": "Add income",
     "noteLabel": "Where is it from?",
     "deleteTitle": "Delete this income?",
-    "none": "No income recorded this month."
+    "none": "No income recorded this month.",
+    "screenTitle": "Income",
+    "total": "Income this month",
+    "byPerson": "By person",
+    "bySource": "By source",
+    "byCurrency": "In other currencies",
+    "entries": "Entries",
+    "you": "You"
   },
   "trend": {
     "title": "Last 6 months",

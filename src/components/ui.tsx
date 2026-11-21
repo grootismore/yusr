@@ -402,14 +402,19 @@ export function SettingRow({ icon, title, subtitle, value, onValueChange, disabl
 }
 
 /** Pastel figure tile: a short label over one amount, dark text on sky or tile. */
-export function Tile({ color, label, laari }: { color: string; label: string; laari: number }) {
+export function Tile({ color, label, laari, onPress }: { color: string; label: string; laari: number; onPress?: () => void }) {
   const colors = useColors();
-  return (
+  const tile = (
     <View accessible style={{ flex: 1, minHeight: 92, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color, padding: space.lg, justifyContent: 'space-between' }}>
-      <Text variant="small" color={colors.onTile}>{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text variant="small" color={colors.onTile}>{label}</Text>
+        {onPress ? <Icon name="chevron-forward" size={16} color={colors.onTile} /> : null}
+      </View>
       <Money laari={laari} variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} color={colors.onTile} />
     </View>
   );
+  // A tile that goes somewhere is a button, with the arrow to say so.
+  return onPress ? <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })}>{tile}</Pressable> : tile;
 }
 
 /**

@@ -111,7 +111,7 @@ export default function Reports() {
 
       {incomeTotal > 0 ? (
         <Row style={{ alignItems: 'stretch', gap: space.md }}>
-          <Tile color={colors.tile} label={t('reports.income')} laari={incomeTotal} />
+          <Tile color={colors.tile} label={t('reports.income')} laari={incomeTotal} onPress={() => router.push({ pathname: '/income', params: { month } })} />
           <Tile color={colors.sky} label={t('reports.netShort')} laari={incomeTotal - total - dm.byYou} />
         </Row>
       ) : null}
