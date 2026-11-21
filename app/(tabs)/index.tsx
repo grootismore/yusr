@@ -29,17 +29,18 @@ import { DEFAULT_PLAN } from '@/data/api';
 import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
-/** Round shortcut: an icon in a circle over a short label. */
-/** A round shortcut under the panel. The main one (Add expense) is filled and larger so it is plainly the first thing to tap. */
-function QuickAction({ icon, label, onPress, main }: { icon: IconName; label: string; onPress: () => void; main?: boolean }) {
+/**
+ * The one action on Home, floating above the tab bar so it is always in reach however far the page is scrolled.
+ * Home only: other screens have their own actions.
+ */
+function AddButton({ bottom, onPress, label }: { bottom: number; onPress: () => void; label: string }) {
   const colors = useColors();
-  const size = main ? 64 : 56;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}>
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: main ? colors.accent : colors.field, borderWidth: main ? 0 : 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon} color={main ? colors.onAccent : colors.accent} size={main ? 28 : 22} />
-      </View>
-      <Text variant="small" numberOfLines={2} style={{ textAlign: 'center', fontWeight: main ? '700' : '400' }}>{label}</Text>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
+      style={({ pressed }) => ({ position: 'absolute', end: space.lg, bottom, flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 56, paddingStart: space.lg, paddingEnd: space.xl, borderRadius: 28, borderCurve: 'continuous',
+        backgroundColor: colors.accent, boxShadow: '0 8px 20px rgba(0,0,0,0.28)', opacity: pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+      <Icon name="add" color={colors.onAccent} size={26} />
+      <Text variant="label" color={colors.onAccent}>{label}</Text>
     </Pressable>
   );
 }
@@ -121,7 +122,8 @@ export default function Home() {
 
   return (
     <Screen padded={false} bleed tabbed scrollY={scrollY} onRefresh={refresh} overlay={
-      // The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view.
+      <>
+      {/* The big band scrolls away; this slim bar fades in under the status bar so the month's figure stays in view. */}
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, start: 0, end: 0, backgroundColor: colors.hero, paddingTop: insets.top + space.sm, paddingBottom: space.md, paddingHorizontal: space.xl,
         opacity: scrollY.interpolate({ inputRange: [110, 190], outputRange: [0, 1], extrapolate: 'clamp' }),
         transform: [{ translateY: scrollY.interpolate({ inputRange: [110, 190], outputRange: [-12, 0], extrapolate: 'clamp' }) }] }}>
@@ -130,6 +132,8 @@ export default function Home() {
           <Money laari={spent} variant="heading" color={colors.onHero} />
         </Row>
       </Animated.View>
+      <AddButton bottom={Math.max(insets.bottom, space.sm) + space.xs + 72 + space.md} label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
+      </>
     }>
       {/* Pulling the page down past the top shows the panel colour, not the page colour behind it. */}
       <View pointerEvents="none" style={{ position: 'absolute', top: -900, start: 0, end: 0, height: 900, backgroundColor: colors.hero }} />
@@ -180,12 +184,8 @@ export default function Home() {
         </Row>
       ) : null}
 
-      <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
-        <QuickAction main icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
-        {/* One action, nothing to choose between: Scan is the middle tab, and Debts and Giving have their own cards below when switched on. */}
-      </Row>
 
-      <View style={{ paddingHorizontal: space.lg, gap: space.lg }}>
+      <View style={{ paddingHorizontal: space.lg, gap: space.lg, marginTop: showTiles ? space.lg : -36 + space.lg }}>
       {featHousehold ? <SharedCard /> : null}
       <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} />
       {held.length > 0 ? (
