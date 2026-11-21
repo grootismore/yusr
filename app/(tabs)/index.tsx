@@ -30,14 +30,16 @@ import { addDays, formatDate, monthStart, today } from '@/lib/dates';
 import { radius, space, useColors } from '@/theme/tokens';
 
 /** Round shortcut: an icon in a circle over a short label. */
-function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
+/** A round shortcut under the panel. The main one (Add expense) is filled and larger so it is plainly the first thing to tap. */
+function QuickAction({ icon, label, onPress, main }: { icon: IconName; label: string; onPress: () => void; main?: boolean }) {
   const colors = useColors();
+  const size = main ? 64 : 56;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.6 : 1 })}>
-      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.field, borderWidth: 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={icon} color={colors.accent} />
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: space.xs, opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}>
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: main ? colors.accent : colors.field, borderWidth: main ? 0 : 1, borderColor: colors.cardEdge, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} color={main ? colors.onAccent : colors.accent} size={main ? 28 : 22} />
       </View>
-      <Text variant="small" numberOfLines={2} style={{ textAlign: 'center' }}>{label}</Text>
+      <Text variant="small" numberOfLines={2} style={{ textAlign: 'center', fontWeight: main ? '700' : '400' }}>{label}</Text>
     </Pressable>
   );
 }
@@ -174,7 +176,7 @@ export default function Home() {
       ) : null}
 
       <Row style={{ alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.lg, marginTop: showTiles ? 0 : -36 }}>
-        <QuickAction icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
+        <QuickAction main icon="add" label={t('home.addExpense')} onPress={() => router.push('/add-expense')} />
         <QuickAction icon="scan" label={t('home.scanReceipt')} onPress={() => router.push('/scan')} />
         {featDebts ? <QuickAction icon="leaf-outline" label={t('more.debts')} onPress={() => router.push('/debts')} /> : null}
         {featGiving ? <QuickAction icon="heart-outline" label={t('more.giving')} onPress={() => router.push('/giving')} /> : null}

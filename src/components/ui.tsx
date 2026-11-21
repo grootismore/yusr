@@ -186,7 +186,7 @@ export function Button({ label, kind = 'primary', icon, loading, disabled, style
       disabled={disabled || loading}
       style={(s) => [
         { minHeight: 52, minWidth: TOUCH, paddingHorizontal: space.xl, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: space.sm,
-          borderWidth: kind === 'secondary' ? 1.5 : 0, borderColor: colors.accent, opacity: disabled ? 0.5 : s.pressed ? 0.85 : 1 },
+          borderWidth: kind === 'secondary' ? 1.5 : 0, borderColor: colors.accent, opacity: disabled ? 0.5 : s.pressed ? 0.85 : 1, transform: [{ scale: s.pressed && !disabled ? 0.98 : 1 }] },
         typeof style === 'function' ? style(s) : style,
       ]}
       {...rest}
@@ -438,8 +438,8 @@ export function PanelArt() {
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill} onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
       {box.w > 0 ? (markBoot('panel-art-svg'), (
         <Svg width={box.w} height={box.h} style={[StyleSheet.absoluteFill, { direction: 'ltr' }]}>
-          <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={132} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
-            fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.17}>MVR</SvgText>
+          <SvgText x={rtl ? 6 : box.w - 6} y={box.h + 14} fontSize={104} fontFamily="SpaceGrotesk_700Bold" textAnchor={rtl ? 'start' : 'end'}
+            fill="none" stroke={colors.onHero} strokeWidth={1.2} strokeOpacity={0.07}>MVR</SvgText>
           {dotPaths.map((b, i) => (b.d ? <Path key={i} d={b.d} fill={colors.onHero} fillOpacity={b.opacity} /> : null))}
         </Svg>
       )) : null}
