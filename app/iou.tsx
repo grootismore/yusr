@@ -10,7 +10,7 @@ import { Text } from '@/components/Text';
 import { Button, Card, Field, ProgressBar, Row, Screen, StackHeader } from '@/components/ui';
 import * as api from '@/data/api';
 import { useIous, useIouPayments, useWrite } from '@/data/hooks';
-import { nudgeDates, nudgeMessage, paidOf, remaining, roleOf, statusOf, timeline } from '@/features/ious/logic';
+import { nudgeDates, nudgeMessage, paidOf, payerOf, remaining, roleOf, statusOf, timeline } from '@/features/ious/logic';
 import { IouTimeline, StatusPill } from '@/features/ious/ui';
 import { useAuth } from '@/lib/auth';
 import { formatDate, parseDate, today } from '@/lib/dates';
@@ -101,7 +101,7 @@ export default function Iou() {
 
       <Card style={{ gap: space.md }}>
         <Text variant="title">{t('ious.timeline')}</Text>
-        <IouTimeline events={events} overdue={status === 'overdue'} names={(by) => (by === me ? t('ious.you') : name)} />
+        <IouTimeline events={events} overdue={status === 'overdue'} names={() => payerOf(role, name, t('ious.you'))} />
       </Card>
 
       {payments.some((p) => p.created_by === me) ? (

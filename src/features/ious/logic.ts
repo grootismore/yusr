@@ -28,6 +28,9 @@ export const roleOf = (iou: Iou, me: string): Direction => (iou.user_id === me ?
 /** The name to show for the other person: the name the maker gave, or for the other side, the maker's name is not known, so a neutral label comes from the screen. */
 export const otherName = (iou: Iou, me: string, fallback: string): string => (iou.user_id === me ? iou.person_name : fallback);
 
+/** Who a payment came from: the person who owes. When you lent, that is them; when you borrowed, it is you. (Not who typed it in: you can record a payment they made.) */
+export const payerOf = (role: Direction, otherName: string, youName: string): string => (role === 'lent' ? otherName : youName);
+
 export const paidOf = (payments: readonly IouPayment[]): number => payments.reduce((s, p) => s + p.amount_laari, 0);
 /** What is still owed. Never below zero: paying too much just settles it. */
 export const remaining = (iou: Iou, payments: readonly IouPayment[]): number => Math.max(0, iou.amount_laari - paidOf(payments));
