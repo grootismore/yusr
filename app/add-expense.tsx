@@ -8,7 +8,7 @@ import { Keypad } from '@/components/Keypad';
 import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { Text } from '@/components/Text';
-import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow } from '@/components/ui';
+import { Button, Card, Chip, Icon, IconButton, Row, Screen, SettingRow, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
 import { saveRate } from '@/data/api';
 import { PersonPick } from '@/features/household/PersonPick';
@@ -19,7 +19,7 @@ import type { HouseholdEntryInput } from '@/features/household/logic';
 import { useAuth } from '@/lib/auth';
 import { setFlag, useFlag } from '@/lib/flags';
 import type { NewExpense } from '@/data/types';
-import { addMonths, formatDate, monthStart } from '@/lib/dates';
+import { addMonths, formatDate, monthStart, today } from '@/lib/dates';
 import { success } from '@/lib/haptics';
 import { displayAmount } from '@/lib/keypad';
 import { parseAmount, toMvrLaari } from '@/lib/money';
@@ -60,6 +60,20 @@ export default function AddExpense() {
   const isSplit = mode === 'split';
   let laari = 0;
   try { laari = typed ? parseAmount(typed) : 0; } catch { laari = 0; }
+
+  // Save an entry: into the shared pot when sharing is on, else as a private expense or income. Used by the details form and by the one-tap category save.
+  async function commit(e: NewExpense) {
+    if (shared && household) {
+      const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, keep_in_currency: isIncome ? e.keep_in_currency : undefined };
+      await addShared.mutateAsync({ householdId: household.household.id, input: { ...input, user_id: whose ?? userId ?? undefined }, userId: whose ?? userId ?? undefined });
+    } else await (isIncome ? addIncome : addExpense).mutateAsync(e);
+    if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
+    success();
+    setSaved(e); setStep('done');
+  }
+  const saving = addExpense.isPending || addIncome.isPending || addShared.isPending;
+  /** Two taps from the keypad: the amount, then the category. The entry is dated today, in MVR; "Add details" is there for anything else. */
+  const quickSave = (categoryId: string) => void commit({ amount_laari: laari, currency: 'MVR', fx_rate_to_mvr: '1', category_id: categoryId, merchant: null, spent_at: today(), note: null });
 
   if (isSplit && splitDone !== null) {
     return (
@@ -144,16 +158,8 @@ export default function AddExpense() {
           offerKeep={!!(shared && household)}
           categories={categories}
           submitLabel={t('common.save')}
-          busy={addExpense.isPending || addIncome.isPending || addShared.isPending}
-          onSubmit={async (e) => {
-            if (shared && household) {
-              const input: HouseholdEntryInput = { kind: isIncome ? 'income' : 'expense', amount_laari: e.amount_laari, currency: e.currency, fx_rate_to_mvr: e.fx_rate_to_mvr, category_id: isIncome ? null : e.category_id, merchant: e.merchant, note: e.note, entry_date: e.spent_at, keep_in_currency: isIncome ? e.keep_in_currency : undefined };
-              await addShared.mutateAsync({ householdId: household.household.id, input: { ...input, user_id: whose ?? userId ?? undefined }, userId: whose ?? userId ?? undefined });
-            } else await (isIncome ? addIncome : addExpense).mutateAsync(e);
-            if (e.currency !== 'MVR') await saveRate(e.currency, e.fx_rate_to_mvr); // prefill next time
-            success();
-            setSaved(e); setStep('done');
-          }}
+          busy={saving}
+          onSubmit={commit}
         >
           {household && shared ? <PersonPick label={isIncome ? t('household.whoReceived') : t('household.whoPaidIt')} value={whose ?? userId ?? null} onChange={setWhose} /> : null}
           {household ? (
@@ -187,7 +193,15 @@ export default function AddExpense() {
       </Row>
       <Keypad value={typed} onChange={setTyped} />
       {laari <= 0 ? <Text variant="small" color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('add.enterAmount')}</Text> : null}
-      <Button label={t('add.next')} disabled={laari <= 0} onPress={() => setStep('details')} />
+      {!isIncome && laari > 0 ? (
+        <View style={{ gap: space.sm }}>
+          <Text variant="small" color={colors.inkMuted} style={{ textAlign: 'center' }}>{t('add.pickToSave')}</Text>
+          <Row style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+            {categories.slice(0, 6).map((c) => <Chip key={c.id} label={catName(c)} icon={c.icon as IconName} onPress={() => { if (!saving) quickSave(c.id); }} />)}
+          </Row>
+        </View>
+      ) : null}
+      <Button kind={isIncome ? 'primary' : 'secondary'} label={t(isIncome ? 'add.next' : 'add.moreDetails')} disabled={laari <= 0 || saving} onPress={() => setStep('details')} />
     </Screen>
   );
 }

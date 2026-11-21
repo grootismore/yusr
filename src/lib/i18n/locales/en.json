@@ -664,7 +664,9 @@
     "enterAmount": "Enter an amount to continue.",
     "leftThisMonth": "{{amount}} left this month",
     "overBudget": "{{amount}} over this month's budget",
-    "spentSoFar": "{{amount}} spent this month so far"
+    "spentSoFar": "{{amount}} spent this month so far",
+    "pickToSave": "Tap a category to save",
+    "moreDetails": "Add details"
   },
   "income": {
     "addTitle": "Add income",
