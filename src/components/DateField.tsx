@@ -16,7 +16,10 @@ const YEARS = 12;
  */
 export function DateField({ label, hint, value, onChangeText, error, flag, min, max }: { label: string; hint?: string; value: string; onChangeText: (v: string) => void; error?: string | null; flag?: boolean; min?: string; max?: string }) {
   const colors = useColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // The layout flips in Dhivehi, so the arrows point the other way too: previous is on the right and points right.
+  const backIcon = i18n.language === 'dv' ? 'chevron-forward' : 'chevron-back';
+  const fwdIcon = i18n.language === 'dv' ? 'chevron-back' : 'chevron-forward';
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('days');
   const selected = parseDate(value);
@@ -65,11 +68,11 @@ export function DateField({ label, hint, value, onChangeText, error, flag, min, 
             {mode === 'days' ? (
               <>
                 <Row style={{ justifyContent: 'space-between' }}>
-                  {nav('chevron-back', 'calendar.prevMonth', () => setView((v) => shiftMonth(v.year, v.month, -1)))}
+                  {nav(backIcon, 'calendar.prevMonth', () => setView((v) => shiftMonth(v.year, v.month, -1)))}
                   <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.chooseMonth')} onPress={() => { setYearFrom(view.year - 5); setMode('months'); }} style={{ minHeight: TOUCH, justifyContent: 'center', paddingHorizontal: space.md }}>
                     <Text variant="title">{months[view.month - 1]} {view.year}</Text>
                   </Pressable>
-                  {nav('chevron-forward', 'calendar.nextMonth', () => setView((v) => shiftMonth(v.year, v.month, 1)))}
+                  {nav(fwdIcon, 'calendar.nextMonth', () => setView((v) => shiftMonth(v.year, v.month, 1)))}
                 </Row>
                 <View style={{ flexDirection: 'row' }}>
                   {weekdays.map((w) => <View key={w} style={{ width: '14.285%', alignItems: 'center' }}><Text variant="small" color={colors.inkMuted}>{w}</Text></View>)}
@@ -96,11 +99,11 @@ export function DateField({ label, hint, value, onChangeText, error, flag, min, 
             ) : mode === 'months' ? (
               <>
                 <Row style={{ justifyContent: 'space-between' }}>
-                  {nav('chevron-back', 'calendar.prevYear', () => setView((v) => ({ ...v, year: v.year - 1 })))}
+                  {nav(backIcon, 'calendar.prevYear', () => setView((v) => ({ ...v, year: v.year - 1 })))}
                   <Pressable accessibilityRole="button" accessibilityLabel={t('calendar.chooseYear')} onPress={() => { setYearFrom(view.year - 5); setMode('years'); }} style={{ minHeight: TOUCH, justifyContent: 'center', paddingHorizontal: space.md }}>
                     <Text variant="title">{view.year}</Text>
                   </Pressable>
-                  {nav('chevron-forward', 'calendar.nextYear', () => setView((v) => ({ ...v, year: v.year + 1 })))}
+                  {nav(fwdIcon, 'calendar.nextYear', () => setView((v) => ({ ...v, year: v.year + 1 })))}
                 </Row>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {months.map((m, i) => cell(m, m.slice(0, 3), view.month === i + 1, () => { setView((v) => ({ ...v, month: i + 1 })); setMode('days'); }, true))}
@@ -109,9 +112,9 @@ export function DateField({ label, hint, value, onChangeText, error, flag, min, 
             ) : (
               <>
                 <Row style={{ justifyContent: 'space-between' }}>
-                  {nav('chevron-back', 'calendar.prevYears', () => setYearFrom((y) => y - YEARS))}
+                  {nav(backIcon, 'calendar.prevYears', () => setYearFrom((y) => y - YEARS))}
                   <Text variant="title" style={{ writingDirection: 'ltr' }}>{yearFrom} – {yearFrom + YEARS - 1}</Text>
-                  {nav('chevron-forward', 'calendar.nextYears', () => setYearFrom((y) => y + YEARS))}
+                  {nav(fwdIcon, 'calendar.nextYears', () => setYearFrom((y) => y + YEARS))}
                 </Row>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {Array.from({ length: YEARS }, (_, i) => yearFrom + i).map((y) => cell(String(y), String(y), view.year === y, () => { setView((v) => ({ ...v, year: y })); setMode('months'); }, true))}
