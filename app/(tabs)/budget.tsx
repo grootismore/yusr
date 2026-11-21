@@ -5,13 +5,12 @@ import { Money } from '@/components/Money';
 import { Msg } from '@/components/Msg';
 import { LoadError } from '@/components/LoadError';
 import { Text } from '@/components/Text';
-import { Button, Card, Field, Icon, ListRow, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
+import { Button, Card, Field, Icon, ProgressBar, Row, Screen, ScreenTitle, type IconName } from '@/components/ui';
 import * as api from '@/data/api';
 import { useBudgets, useCategories, useCategoryName, useExpenses, useSharedTotals, useWrite } from '@/data/hooks';
 import { budgetState, percentUsed } from '@/lib/budget';
 import { useRule } from '@/features/rule/hooks';
 import { RuleCard } from '@/features/rule/ui';
-import { useRouter } from 'expo-router';
 import { monthStart } from '@/lib/dates';
 import { formatNumber, parseAmount } from '@/lib/money';
 import { radius, space, useColors } from '@/theme/tokens';
@@ -85,7 +84,6 @@ export default function Budget() {
   const [editingAll, setEditingAll] = useState(false);
   const shared = useSharedTotals(month);
   const rule = useRule(month);
-  const router = useRouter();
   const spentBy = useMemo(() => {
     const m = new Map<string | null, number>();
     for (const e of expenses ?? []) m.set(e.category_id, (m.get(e.category_id) ?? 0) + e.mvr_laari);
@@ -115,9 +113,7 @@ export default function Budget() {
         {editingAll ? <LimitEditor categoryId={null} limit={overall} onDone={() => setEditingAll(false)} /> : null}
       </Card>
 
-      {rule.enabled ? <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} /> : (
-        <Card><ListRow icon="pie-chart-outline" title={t('rule.use')} subtitle={t('rule.intro')} onPress={() => router.push('/rule')} last /></Card>
-      )}
+      {rule.enabled ? <RuleCard lines={rule.lines} income={rule.income} debtPaid={rule.debtPaid} /> : null}
 
       <Card style={{ paddingVertical: space.sm, gap: 0 }}>
         {categories.map((c, i) => (
