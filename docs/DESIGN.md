@@ -30,6 +30,19 @@ Phase 2 heuristic evaluation, 2026-11-21. Source: audit of the screens in a 390p
 | U10 | The shared card is titled with the household's name ("Home" in the preview). If a household is named something generic, the card reads like the Home tab. | 2 Real world | 1 | Title the card "Together" with the household name as the subtitle. | open |
 | U11 | Raseedhu is used as a plain word in English in Plus ("100 Raseedhu scans a month") and on the scan screen title. New users do not know it. | 2 Real world | 2 | Pair it once: "Scan receipts (Raseedhu)", then use "scan". Copy detail belongs to Phase 6. | open |
 
+### Phase 3 findings: where the design misleads (Norman: gulfs of execution and evaluation)
+Source: audit of the core flows in code and the phone preview: add an entry, scan, edit and delete an entry, switch a feature off, share, save feedback.
+
+| # | Issue | Heuristic (Norman gulf) | Severity (0-4) | Fix | Status |
+|---|---|---|---|---|---|
+| D1 | Deleting an entry asks "Delete?" in a dialog. People tap through confirmations; a wrong delete cannot be taken back. | Execution: slip prevented by a dialog, not by undo | 3 | Delete at once, then show "Deleted. Undo" for 6 seconds that puts it back. Keep the dialog only for deleting a whole group or account. | open |
+| D2 | Switching a feature off in Features hides it without saying where it went or how to bring it back. | Evaluation: no feedback on state change | 2 | After a switch off: "Hidden. Switch it back on under More, Add features." | open |
+| D3 | The toast has no action, so no message can offer a way back ("Deleted", "Removed"). | Evaluation: feedback with no recovery | 2 | Let a toast carry one action button (used by D1). | open |
+| D4 | A save that cannot be sent says "That didn't save. Please try again." without saying why (no signal, a rule refused it, a server error). | Evaluation: error says what, not why or how | 2 | Say the reason when known: no connection (saved on this phone, will send later), a limit (Plus), otherwise try again. Offline is already handled; the generic text covers the rest. | open |
+| D5 | The Next button on the amount screen is grey and disabled with no hint why. | Execution: missing signifier | 1 | Keep the constraint; let the amount line say "Enter an amount" while it reads 0. | open |
+| D6 | Category is required for an expense and enforced only when Save is tapped. | Execution: constraint after the fact | 1 | Highlight the category group and disable Save until one is chosen, or default to the most used category (now first in the list). | open |
+| D7 | Removing a payment or a person asks first (good), but the dialogs use different words for the same act (Remove, Delete, Leave). | Evaluation: inconsistent language | 1 | Use Remove for taking a thing out of a list, Delete for erasing a record, Leave for stopping to see it. Audit in Phase 6. | open |
+
 ### Trunk Test (Home, daily use)
 | Question | Result |
 |---|---|

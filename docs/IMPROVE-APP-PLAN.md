@@ -14,8 +14,8 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done | CUSTOMER.md | 2026-11-21 |
-| 2 | ux-heuristics | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
-| 3 | design-everyday-things | pending | DESIGN.md, EXPERIMENTS.md | |
+| 2 | ux-heuristics | done | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
+| 3 | design-everyday-things | in-progress | DESIGN.md, EXPERIMENTS.md | 2026-11-21 |
 | 4 | refactoring-ui | pending | DESIGN.md, EXPERIMENTS.md | |
 | 5 | microinteractions | pending | DESIGN.md, EXPERIMENTS.md | |
 | 6 | made-to-stick | pending | POSITIONING.md, EXPERIMENTS.md | |
@@ -32,7 +32,11 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-11-21 | 1 | Core job: see where the money goes; household, debts and giving are adjacent jobs | Keeps one job to aim at; matches the Features switches. Owner confirmed. |
 | 2026-11-21 | 1 | Worst gap: emotional (calm and in control) | Busiest screen and the red over-budget alarm work against calm. Owner confirmed. |
 | 2026-11-21 | 1 | Both first use and daily use get audited | Owner chose both equally. |
+| 2026-11-21 | 2 | Fix all four severity-3 findings (U1 tab labels, U2 no cut-off amounts, U3 calm over-budget, U4 Plus honesty) | Owner chose all four; ordered by severity times screen frequency. |
+| 2026-11-21 | 2 | Fix severity 1-2 findings (U5-U11) in the same pass, including Activity search | Owner chose the full pass. |
+| 2026-11-21 | 2,3 | Phases 2 and 3 run from the built-in method (ux-heuristics and design-everyday-things skills not installed) | Owner declined nothing; fallback is allowed by the journey. |
 | 2026-11-21 | Intake | No usage evidence yet | Findings come from audits of the shipped screens, tagged by who found them (audit vs the owner's report). |
 
 ## Next Actions
-- [ ] Phase 2: owner decides which severity-3 findings (U1-U4) are fixed now and which are backlogged (Areesh, next)
+- [ ] Phase 3: owner decides where undo replaces a confirm dialog and where a constraint replaces an error (Areesh, next)
+- [ ] Implement U1-U11 and the Phase 3 fixes in PRs after the audits (Claude, after Phase 7)
