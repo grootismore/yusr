@@ -143,20 +143,19 @@ export default function Home() {
         </Row>
         <Text color={colors.onHero}>{t('home.thisMonth')} · {t('home.spent')}</Text>
         <Money laari={spent} variant="display" numberOfLines={1} adjustsFontSizeToFit color={colors.onHero} style={{ fontSize: 44, lineHeight: 56 }} />
-        {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
-        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
         {limit ? (
           <>
+            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onHero} />
             <ProgressBar onHero percent={percentUsed(spent, limit)} state={state === 'none' ? 'ok' : state} label={t('a11y.progress', { percent: percentUsed(spent, limit) })} />
             {state === 'over' || state === 'near' ? (
-              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.pill, backgroundColor: state === 'over' ? colors.coralWash : colors.amberWash }}>
-                <Icon name={state === 'over' ? 'alert-circle' : 'warning'} size={18} color={state === 'over' ? colors.coral : colors.amberDeep} />
+              <Pressable accessibilityRole="button" onPress={() => router.push('/budget')}
+                style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs, paddingHorizontal: space.md, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.14)' }}>
+                <Icon name={state === 'over' ? 'information-circle' : 'warning'} size={18} color={colors.amber} />
                 {state === 'over'
-                  ? <Msg k="home.over" amounts={{ amount: spent - limit }} variant="small" color={colors.coral} />
-                  : <Text variant="small" color={colors.ink}>{t('home.nearLimit')}</Text>}
-              </View>
+                  ? <Msg k="home.overNext" amounts={{ amount: spent - limit }} variant="small" color={colors.onHero} style={{ flexShrink: 1 }} />
+                  : <Text variant="small" color={colors.onHero}>{t('home.nearLimit')}</Text>}
+              </Pressable>
             ) : null}
-            <Msg k="home.ofBudget" amounts={{ budget: limit }} variant="small" color={colors.onHero} />
           </>
         ) : (
           <>
@@ -164,6 +163,8 @@ export default function Home() {
             <Button kind="secondary" label={t('home.setBudget')} onPress={() => router.push('/budget')} style={{ backgroundColor: colors.onHero, borderColor: colors.onHero }} />
           </>
         )}
+        {incomeTotal > 0 ? <Msg k="home.incomeLine" amounts={{ amount: incomeTotal }} variant="small" color={colors.onHero} /> : null}
+        {shared.spent > 0 ? <Msg k="household.includesShared" amounts={{ amount: shared.spent }} variant="small" color={colors.onHero} /> : null}
       </View>
 
       {showTiles ? (

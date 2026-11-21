@@ -97,7 +97,7 @@ export default function HouseholdScreen() {
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text numberOfLines={1}>{title}</Text>
-                <Text variant="small" color={colors.inkMuted} numberOfLines={1}>{nameOf(data.members, e.user_id) || t('household.former')} · <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.entry_date)}</Text></Text>
+                <Text variant="small" color={colors.inkMuted} numberOfLines={2}>{nameOf(data.members, e.user_id) || t('household.former')} · <Text latin variant="small" color={colors.inkMuted}>{formatDate(e.entry_date)}</Text></Text>
               </View>
               <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
                 <Money laari={e.mvr_laari} prefix={e.kind === 'expense' ? '−' : '+'} color={e.kind === 'income' ? colors.accent : undefined} />

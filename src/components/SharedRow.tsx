@@ -29,7 +29,7 @@ export function SharedRow({ entry, category, hideDate }: { entry: HouseholdEntry
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text numberOfLines={1}>{title}</Text>
-        <Text variant="small" color={colors.inkMuted} numberOfLines={1}>
+        <Text variant="small" color={colors.inkMuted} numberOfLines={2}>
           {t('household.sharedBy', { name: who })}{hideDate ? '' : ' · '}{hideDate ? null : <Text latin variant="small" color={colors.inkMuted}>{formatDate(entry.entry_date)}</Text>}
         </Text>
       </View>
