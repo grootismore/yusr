@@ -1,32 +1,32 @@
 import { useColorScheme } from 'react-native';
 
 // Design tokens. One source for colour, spacing and type; every screen uses these.
-// Look: "Ink and sky". A light page, a matte-black figure panel, one soft sky-blue accent for progress and the active tab.
+// Look: "Grouped". The system grouped look: a light grey page, white cards with a hairline rim, one blue accent, a near-black figure panel with a soft sky accent for progress.
 // Text and icons are matte black; dark mode lifts the same roles. Warning amber and over-budget coral keep their own meaning.
 export const light = {
-  ground: '#CBD2D9', // page background: dusty blue-grey
-  groundDeep: '#B9C1C9', // tracks, unselected segments
-  surface: '#E4E9EE', // solid surfaces: one step lighter than the page, never pure white
-  card: '#E4E9EE', // card fill: lighter than the page (#CBD2D9) so cards read as cards, not as the page itself
-  cardEdge: '#B7BFC8', // card rim
-  field: '#D9DFE5', // input and chip fill
-  ink: '#1E2023', // text and icons: matte black
-  inkMuted: '#4A4E54', // secondary text (AA on ground and card)
-  line: '#B7BFC8', // hairlines
-  control: '#69717A', // borders of inputs and buttons (3:1 against ground)
-  accent: '#1E2023', // primary actions, selected states
+  ground: '#F2F2F7', // page background: dusty blue-grey
+  groundDeep: '#E5E5EA', // tracks, unselected segments
+  surface: '#FFFFFF', // solid surfaces: one step lighter than the page, never pure white
+  card: '#FFFFFF', // card fill: lighter than the page (#CBD2D9) so cards read as cards, not as the page itself
+  cardEdge: '#E3E3E8', // card rim
+  field: '#F2F2F7', // input and chip fill
+  ink: '#1C1C1E', // text and icons: matte black
+  inkMuted: '#636366', // secondary text (AA on ground and card)
+  line: '#E3E3E8', // hairlines
+  control: '#85858B', // borders of inputs and buttons (3:1 against ground)
+  accent: '#0B67D6', // primary actions, selected states
   onAccent: '#FFFFFF',
-  accentWash: '#C0C8D0', // tinted tiles behind icons
-  hero: '#222428', // the month's figure panel: matte black
+  accentWash: '#E3EEFC', // tinted tiles behind icons
+  hero: '#1C1C1E', // the month's figure panel: matte black
   onHero: '#FFFFFF',
   sky: '#8EC5F0', // the one soft accent: progress on the panel, the Left tile, the active tab
-  tile: '#D9DFE5', // neutral figure tile
-  onTile: '#1E2023', // text on the tiles
-  coral: '#A52D26', // over budget, errors
+  tile: '#E5E5EA', // neutral figure tile
+  onTile: '#1C1C1E', // text on the tiles
+  coral: '#B3261E', // over budget, errors
   amber: '#E0A526', // warnings: fill only; the state is always also said in text. Never text or a lone icon
   amberDeep: '#8A5A00', // warning icons and borders (3:1+ on ground and white)
-  amberWash: '#F1E5C6', // warning background; ink text on it
-  coralWash: '#F1DDD9',
+  amberWash: '#FFF3D6', // warning background; ink text on it
+  coralWash: '#FBE4E1',
 } as const;
 
 /** Colours for charts, in the order they are used. Every chart also names what each colour is, so colour is never the only cue. */
@@ -39,20 +39,20 @@ export type Palette = { [K in keyof typeof light]: string };
 
 /** The same roles in the dark theme: same hues, lifted for contrast on a dark ground (every text pair is tested). */
 export const dark: Palette = {
-  ground: '#141517',
-  groundDeep: '#212327',
-  surface: '#1D1F22',
-  card: '#1D1F22',
-  cardEdge: '#2C2F34',
-  field: '#1D1F22',
-  ink: '#F1F1EF',
-  inkMuted: '#A3A6AB',
-  line: '#2C2F34',
-  control: '#7A7D83',
-  accent: '#8EC5F0',
-  onAccent: '#1E2023',
-  accentWash: '#2A2C30',
-  hero: '#27292D',
+  ground: '#000000',
+  groundDeep: '#1C1C1E',
+  surface: '#1C1C1E',
+  card: '#1C1C1E',
+  cardEdge: '#2C2C2E',
+  field: '#2C2C2E',
+  ink: '#F5F5F7',
+  inkMuted: '#A1A1A6',
+  line: '#2C2C2E',
+  control: '#8E8E93',
+  accent: '#4DA3FF',
+  onAccent: '#0B0B0C',
+  accentWash: '#14283F',
+  hero: '#1C1C1E',
   onHero: '#FFFFFF',
   sky: '#8EC5F0',
   tile: '#C0C8CF',
