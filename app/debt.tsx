@@ -172,7 +172,7 @@ export default function DebtDetail() {
         ))}
       </Card>
 
-      <Button kind="ghost" label={t('debts.delete')} icon="trash-outline"
+      <Button kind="ghost" label={t('debts.delete')} busyLabel={t('common.deleting')} icon="trash-outline"
         onPress={async () => { if (await confirmDialog({ title: t('debts.deleteTitle'), message: t('debts.deleteBody'), confirmLabel: t('debts.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await removeDebt.mutateAsync(debt.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );

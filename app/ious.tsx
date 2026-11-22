@@ -93,7 +93,7 @@ export default function Ious() {
                 <Text>{p.name}</Text>
                 {p.email ? <Text variant="small" color={colors.inkMuted} latin>{p.email}</Text> : null}
               </View>
-              <Button kind="ghost" label={t('common.remove')} onPress={() => void removeWithUndo({ remove: () => removePerson.mutateAsync(p.id), restore: () => restorePerson.mutateAsync({ name: p.name, email: p.email }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') })} />
+              <Button kind="ghost" label={t('common.remove')} busyLabel={t('common.deleting')} onPress={() => removeWithUndo({ remove: () => removePerson.mutateAsync(p.id), restore: () => restorePerson.mutateAsync({ name: p.name, email: p.email }), text: t('toast.deleted'), undo: t('toast.undo'), restored: t('toast.restored'), failed: t('common.saveFailed') })} />
             </Row>
           )) : null}
         </Card>

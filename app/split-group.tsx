@@ -173,7 +173,7 @@ export default function SplitGroupScreen() {
           onPress={async () => { if (await confirmDialog({ title: t('split.leaveGroup'), message: t('split.leaveGroupBody'), confirmLabel: t('split.leaveGroup'), cancelLabel: t('common.cancel'), destructive: true })) leave.mutate(g.id, { onSuccess: () => { toast(t('split.left')); router.back(); } }); }} />
       )}
 
-      {isOwner ? <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')}
+      {isOwner ? <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')} busyLabel={t('common.deleting')}
         onPress={async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }} /> : null}
     </Screen>
   );

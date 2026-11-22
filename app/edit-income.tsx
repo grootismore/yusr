@@ -53,7 +53,7 @@ export default function EditIncome() {
       </ExpenseForm>
       <ConvertActions source={{ kind: 'income', id: row.id, name: row.note, amountMinor: row.amount_laari, currency: row.currency, fxRate: row.fx_rate_to_mvr, categoryId: null, note: row.note, date: row.received_at }}
         canShare canRepeat removeOriginal={() => remove.mutateAsync(row.id)} />
-      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
+      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')} busyLabel={t('common.deleting')}
         onPress={async () => {
           // Income kept in its currency counts toward what is held, which Undo would not restore, so it keeps the question.
           if (!row.keep_in_currency) {
