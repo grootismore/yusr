@@ -128,7 +128,7 @@ export default function Iou() {
       <Row style={{ flexWrap: 'wrap' }}>
         {mine ? <Button kind="secondary" label={t('common.edit')} onPress={() => router.push({ pathname: '/iou-edit', params: { id: iou.id } })} /> : null}
         {mine ? (
-          <Button kind="danger" label={t('ious.delete')} busyLabel={t('common.deleting')} onPress={async () => { if (await confirmDialog({ title: t('ious.deleteTitle'), message: t('ious.deleteBody'), confirmLabel: t('ious.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await delIou.mutateAsync(iou.id); router.back(); } }} />
+          <Button kind="danger" label={t('ious.delete')} busyLabel={t('common.deleting')} loading={delIou.isPending} onPress={() => void (async () => { if (await confirmDialog({ title: t('ious.deleteTitle'), message: t('ious.deleteBody'), confirmLabel: t('ious.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await delIou.mutateAsync(iou.id); router.back(); } })()} />
         ) : (
           <Button kind="danger" label={t('ious.leave')} onPress={async () => { if (await confirmDialog({ title: t('ious.leaveTitle'), message: t('ious.leaveBody'), confirmLabel: t('ious.leave'), cancelLabel: t('common.cancel'), destructive: true })) { await leave.mutateAsync(iou.id); router.back(); } }} />
         )}

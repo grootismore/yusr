@@ -44,7 +44,7 @@ A calm, flat, money-first look. A dusty blue-grey page, lighter flat cards with 
 - **Icons:** one family (Ionicons), outline for rest, filled for selected. Direction-sensitive icons (chevrons, back arrows) mirror themselves in Dhivehi inside `Icon`; screens name the left-to-right icon only.
 - **Lists:** `ListRow` with an icon tile, title, optional second line, trailing chevron. Date-grouped history.
 - **Forms:** visible labels, helper text, error below the field with words, numeric keypad for amounts, Thaana keyboard for Dhivehi text (always left to right inside).
-- **Feedback:** every delete or move has Undo; saves confirm briefly; empty states say what to do next and give the action.
+- **Feedback:** deleting an expense, income, debt, IOU or group asks first ("Delete this expense?"), and the button shows "Deleting…" with a spinner while it works; lightweight removals (an IOU payment, a saved person) skip the question and offer Undo; saves confirm briefly; empty states say what to do next and give the action.
 - **Motion:** short, interruptible, never blocks input; respect reduced motion.
 
 ## Direction (Dhivehi first)

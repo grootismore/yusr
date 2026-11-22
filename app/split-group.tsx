@@ -174,7 +174,7 @@ export default function SplitGroupScreen() {
       )}
 
       {isOwner ? <Button kind="ghost" icon="trash-outline" label={t('split.deleteGroup')} busyLabel={t('common.deleting')}
-        onPress={async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } }} /> : null}
+        loading={removeGroup.isPending} onPress={() => void (async () => { if (await confirmDialog({ title: t('split.deleteGroup'), message: t('split.deleteGroupBody'), confirmLabel: t('split.deleteGroup'), cancelLabel: t('common.cancel'), destructive: true })) { await removeGroup.mutateAsync(g.id); toast(t('toast.deleted')); router.back(); } })()} /> : null}
     </Screen>
   );
 }
