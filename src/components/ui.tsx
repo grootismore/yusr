@@ -178,27 +178,38 @@ export function ListRow({ icon, title, subtitle, subtitleBad, meta, onPress, tra
   );
 }
 
-type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean; /** Override the label colour, e.g. a ghost button on a accent band. */ textColor?: string };
-export function Button({ label, kind = 'primary', icon, loading, disabled, style, textColor, ...rest }: ButtonProps) {
+type ButtonProps = Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; loading?: boolean; /** Override the label colour, e.g. a ghost button on a accent band. */ textColor?: string; /** What the label says while the press is still working (for example "Deleting..."). */ busyLabel?: string };
+export function Button({ label, kind = 'primary', icon, loading, disabled, style, textColor, busyLabel, onPress, ...rest }: ButtonProps) {
   const colors = useColors();
+  // A press that starts something slow (a delete, a save) shows its spinner at once and ignores a second tap, so it never looks like nothing happened.
+  const [pending, setPending] = useState(false);
+  const working = !!loading || pending;
+  const shown = working && busyLabel ? busyLabel : label;
   const primary = kind === 'primary' || kind === 'danger';
   const bg = kind === 'danger' ? colors.coral : kind === 'primary' ? colors.accent : 'transparent';
   const fg = textColor ?? (primary ? colors.onAccent : colors.accent);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
-      disabled={disabled || loading}
+      accessibilityLabel={shown}
+      accessibilityState={{ disabled: !!disabled || working, busy: working }}
+      disabled={disabled || working}
+      onPress={onPress ? (e) => {
+        const result = onPress(e) as unknown;
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          setPending(true);
+          void (result as Promise<unknown>).then(() => setPending(false), () => setPending(false));
+        }
+      } : undefined}
       style={(s) => [
         { minHeight: 52, minWidth: TOUCH, paddingHorizontal: space.xl, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: space.sm,
-          borderWidth: kind === 'secondary' ? 1.5 : 0, borderColor: colors.accent, opacity: disabled ? 0.5 : s.pressed ? 0.85 : 1, transform: [{ scale: s.pressed && !disabled ? 0.98 : 1 }] },
+          borderWidth: kind === 'secondary' ? 1.5 : 0, borderColor: colors.accent, opacity: disabled ? 0.5 : working ? 0.75 : s.pressed ? 0.85 : 1, transform: [{ scale: s.pressed && !disabled ? 0.98 : 1 }] },
         typeof style === 'function' ? style(s) : style,
       ]}
       {...rest}
     >
-      {loading ? <ActivityIndicator color={fg} /> : icon ? <Icon name={icon} color={fg} /> : null}
-      <Text variant="label" color={fg}>{label}</Text>
+      {working ? <ActivityIndicator color={fg} /> : icon ? <Icon name={icon} color={fg} /> : null}
+      <Text variant="label" color={fg}>{shown}</Text>
     </Pressable>
   );
 }

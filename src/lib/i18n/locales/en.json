@@ -28,7 +28,8 @@
     "yesterday": "Yesterday",
     "scanned": "Scanned",
     "other": "Other",
-    "saveFailed": "That didn't save. Please try again."
+    "saveFailed": "That didn't save. Please try again.",
+    "deleting": "Deleting…"
   },
   "auth": {
     "welcome": "Know where your money goes.",

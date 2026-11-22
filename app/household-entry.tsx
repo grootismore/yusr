@@ -73,7 +73,7 @@ export default function HouseholdEntryScreen() {
         <Button kind="secondary" icon="lock-closed-outline" label={t('edit.makePrivate')}
           onPress={async () => { if (await confirmDialog({ title: t('edit.privateTitle'), message: t('edit.privateBody'), confirmLabel: t('edit.makePrivate'), cancelLabel: t('common.cancel') })) void makePrivate(); }} />
       ) : null}
-      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
+      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')} busyLabel={t('common.deleting')}
         onPress={async () => { if (await confirmDialog({ title: t('household.deleteTitle'), message: t('household.deleteBody'), confirmLabel: t('edit.delete'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(entry.id); toast(t('toast.deleted')); router.back(); } }} />
     </Screen>
   );

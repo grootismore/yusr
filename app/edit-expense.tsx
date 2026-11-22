@@ -69,7 +69,7 @@ export default function EditExpense() {
       {expense.receipt_id ? <ReceiptDetails receiptId={expense.receipt_id} totalLaari={expense.mvr_laari} /> : null}
       <ConvertActions source={{ kind: 'expense', id: expense.id, name: expense.merchant, amountMinor: expense.amount_laari, currency: expense.currency, fxRate: expense.fx_rate_to_mvr, categoryId: expense.category_id, note: expense.note, date: expense.spent_at }}
         canShare={!sadaqah && !poolPaid} canRepeat={!sadaqah && !poolPaid} removeOriginal={() => remove.mutateAsync(expense.id)} />
-      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')}
+      <Button kind="ghost" icon="trash-outline" label={t('edit.delete')} busyLabel={t('common.deleting')}
         onPress={async () => {
           // A plain expense is removed at once with an Undo; one tied to a giving record or a pool keeps the question, since Undo could not bring that record back.
           if (!sadaqah && !poolPaid) {
