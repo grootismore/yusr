@@ -66,7 +66,7 @@ export default function RegisterItemScreen() {
       <Button label={t('common.save')} onPress={submit} loading={save.isPending} />
       {id ? (
         <Button kind="ghost" label={t('common.remove')} busyLabel={t('common.deleting')} icon="trash-outline"
-          onPress={async () => { if (await confirmDialog({ title: t('register.deleteTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } }} />
+          loading={remove.isPending} onPress={() => void (async () => { if (await confirmDialog({ title: t('register.deleteTitle'), confirmLabel: t('common.remove'), cancelLabel: t('common.cancel'), destructive: true })) { await remove.mutateAsync(id); toast(t('toast.deleted')); router.back(); } })()} />
       ) : null}
       <Text variant="small" color={colors.inkMuted}>{t('register.honest')}</Text>
     </Screen>
